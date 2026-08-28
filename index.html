@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPSPAMS TIRTA MAKMUR - SINDUHARJO 08/04</title>
+    <!-- Library XLSX (Excel), jsPDF, & jsPDF AutoTable -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        /* Highlight Khusus Baris Pelanggan Ber-Saldo */
+        tr.row-deposit { background-color: #f0fdf4 !important; }
+        tr.row-tunggakan { background-color: #fef2f2 !important; }
+
+        .badge-saldo { 
+            display: inline-block; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-size: 0.7rem; 
+            font-weight: 700; 
+            margin-left: 4px;
+        }
+        .badge-saldo-plus { background-color: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+        .badge-saldo-minus { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f1f5f9; margin: 0; padding: 12px; color: #1e293b; }
+        .container { max-width: 650px; margin: auto; }
+        
+        .header-app { 
+            background: linear-gradient(135deg, #1e40af, #0284c7); 
+            color: white; 
+            padding: 16px 14px; 
+            border-radius: 12px; 
+            text-align: center; 
+            margin-bottom: 12px; 
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15); 
+        }
+        .header-app h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+        .header-app p { margin: 4px 0 0 0; font-size: 0.85rem; opacity: 0.9; }
+
+        .card { 
+            background: white; 
+            padding: 14px; 
+            border-radius: 12px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+            margin-bottom: 12px; 
+        }
+
+        .period-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        .period-nav {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .btn-nav {
+            padding: 10px;
+            font-size: 0.8rem;
+            flex: 1;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-prev { background-color: #64748b; color: white; }
+        .btn-next-nav { background-color: #0284c7; color: white; }
+        .btn-tutup-buku { background-color: #16a34a; color: white; width: 100%; margin-top: 8px; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .summary-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+        .summary-box span { display: block; font-size: 0.72rem; color: #64748b; }
+        .summary-box b { font-size: 0.95rem; color: #1e40af; }
+        
+        input.search-input, input.form-input { 
+            padding: 10px 12px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 0.9rem; 
+            width: 100%; 
+            outline: none;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { 
+            background-color: #1e40af; 
+            color: white; 
+            padding: 10px 8px; 
+            font-size: 0.8rem; 
+            text-transform: uppercase;
+            text-align: left;
+        }
+        td { border-bottom: 1px solid #f1f5f9; padding: 10px 8px; vertical-align: middle; font-size: 0.85rem; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+
+        .nama-pelanggan { font-weight: 700; color: #0f172a; display: block; margin-bottom: 3px; }
+        
+        .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+        .badge-lunas { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-dicatat { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-belum { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        button { padding: 8px 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.82rem; }
+        .btn-bayar { background-color: #2563eb; color: white; width: 100%; }
+        .btn-edit { background-color: #f59e0b; color: white; width: 100%; }
+        
+        .db-action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .btn-pdf-export { background-color: #dc2626; color: white; width: 100%; font-size: 0.82rem; padding: 10px; border-radius: 6px; }
+        .btn-pdf-share { background-color: #2563eb; color: white; width: 100%; font-size: 0.82rem; padding: 10px; border-radius: 6px; }
+        .btn-excel-export { background-color: #0284c7; color: white; width: 100%; font-size: 0.85rem; padding: 10px; border-radius: 6px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 100; overflow-y: auto; }
+        .modal-content-wrapper { padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .form-box { background: white; border-radius: 12px; width: 100%; max-width: 440px; padding: 18px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; color: #1e40af; }
+
+        .info-meter-detail {
+            font-size: 0.73rem;
+            color: #64748b;
+            margin-top: 2px;
+            display: block;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-app">
+        <h2>BPSPAMS TIRTA MAKMUR</h2>
+        <p>Wilayah Penagihan: <b>SINDUHARJO 08/04</b></p>
+    </div>
+
+    <!-- PANEL PERIODE -->
+    <div class="period-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700; color:#1e40af; font-size:0.88rem;">📅 Periode Tampil:</span>
+            <span id="labelPeriodeAktif" style="font-weight:800; font-size:1.1rem; color:#0f172a;">Juni 2026</span>
+        </div>
+        
+        <!-- Navigasi Mundur-Maju Murni -->
+        <div class="period-nav">
+            <button class="btn-nav btn-prev" onclick="kembaliBulanLalu()">⬅️ Bulan Sebelum</button>
+            <button class="btn-nav btn-next-nav" onclick="lanjutBulanBerikutnya()">Bulan Sesudah ➡️</button>
+        </div>
+        
+        <!-- Tombol Tutup Buku Terpisah -->
+        <button class="btn-nav btn-tutup-buku" onclick="prosesTutupBukuDanLanjut()">🔒 Tutup Buku & Buat Periode Baru ➡️</button>
+    </div>
+
+    <!-- Summary Rekap -->
+    <div class="summary-grid">
+        <div class="summary-box">
+            <span>Total Pelanggan</span>
+            <b id="recTotalPelanggan">0</b>
+        </div>
+        <div class="summary-box">
+            <span>Sudah Bayar</span>
+            <b id="recLunas" style="color:#16a34a;">0</b>
+        </div>
+        <div class="summary-box">
+            <span>Jumlah Pemakaian Air</span>
+            <b id="recTotalM3" style="color:#0284c7;">0 m³</b>
+        </div>
+        <div class="summary-box">
+            <span>Total Uang (m³)</span>
+            <b id="recTotalUangM3" style="color:#16a34a;">Rp 0</b>
+        </div>
+    </div>
+
+    <!-- TOMBOL CETAK & SHARE LAPORAN PDF BULANAN -->
+    <div class="card">
+        <div style="font-weight: bold; margin-bottom: 8px; color: #1e40af; font-size: 0.88rem;">📄 Laporan Bulanan (PDF):</div>
+        <div class="db-action-grid">
+            <button class="btn-pdf-export" onclick="downloadLaporanPDF()">📄 Download PDF Bulan Ini</button>
+            <button class="btn-pdf-share" onclick="shareLaporanPDF()">📲 Share Laporan WA</button>
+        </div>
+    </div>
+
+    <!-- PANEL KELOLA DATABASE & STATUS KONEKSI -->
+    <div class="card">
+        <div style="font-weight: bold; margin-bottom: 8px; color: #1e40af; font-size: 0.88rem;">📊 Status Database & Ekspor Data:</div>
+        
+        <div id="dbStatusBadge" style="background:#f8fafc; border:1px solid #cbd5e1; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:0.82rem; font-weight:600; display:flex; justify-content:space-between; align-items:center;">
+            <span>Status Koneksi MySQL:</span>
+            <span id="statusKoneksiText" style="color:#eab308;">🟡 Memeriksa Koneksi...</span>
+        </div>
+
+        <div class="db-action-grid" style="grid-template-columns: 1fr;">
+            <button class="btn-excel-export" onclick="downloadFileExcel()">📥 Download Backup Excel</button>
+        </div>
+    </div>
+
+    <!-- Search Input -->
+    <div class="card">
+        <input type="text" id="searchInput" class="search-input" onkeyup="cariPelanggan()" placeholder="🔍 Cari nama pelanggan...">
+    </div>
+
+    <!-- Tabel Utama -->
+    <div class="card">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 38%;">Pelanggan</th>
+                        <th style="width: 25%;">Pemakaian</th>
+                        <th style="width: 22%;">Total Tagihan</th>
+                        <th style="width: 15%; text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FORM INPUT POP-UP -->
+<div id="modalInput" class="modal">
+    <div class="modal-content-wrapper">
+        <div class="form-box">
+            <h3 style="margin-top:0; color:#1e40af; border-bottom:2px solid #1e40af; padding-bottom:6px; font-size:1.1rem;">📝 Pencatatan Meteran</h3>
+            
+            <div class="form-group">
+                <label>Nama Pelanggan:</label>
+                <input type="text" id="formNama" class="form-input" style="background:#f8fafc; font-weight:bold;" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Meter Awal:</label>
+                <input type="number" id="mLalu" class="form-input" oninput="hitungTagihanModal()">
+            </div>
+            
+            <div class="form-group">
+                <label>Meter Akhir:</label>
+                <input type="number" id="mKini" class="form-input" oninput="hitungTagihanModal()" placeholder="Masukkan angka meteran baru">
+            </div>
+
+            <div class="form-group">
+                <label>Uang Cash / Diterima Dari Pelanggan (Rp):</label>
+                <input type="number" id="mCash" class="form-input" oninput="hitungTagihanModal()" placeholder="Contoh: 20000">
+            </div>
+
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin:10px 0; font-size:0.83rem; line-height:1.5;">
+                <div style="display:flex; justify-content:space-between;"><span>Pemakaian Air:</span><b id="uiPemakaian">0 m³</b></div>
+                <div style="display:flex; justify-content:space-between;"><span>Biaya Air (x Rp 2.500):</span><b id="uiBiayaAir">Rp 0</b></div>
+                <div style="display:flex; justify-content:space-between;"><span>Biaya Beban Bulan Ini:</span><b id="uiBiayaBeban">Rp 2.000</b></div>
+                <div style="display:flex; justify-content:space-between;"><span>Saldo Bulan Lalu (+/-):</span><b id="uiSaldoLalu">Rp 0</b></div>
+                <hr style="border:0; border-top:1px dashed #bfdbfe; margin:6px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:0.95rem; color:#1e40af;"><span>Total Harus Dibayar:</span><b id="uiTotalHarusBayar">Rp 0</b></div>
+                <div style="font-size:0.88rem; margin-top:6px; font-weight:bold;" id="uiCashStatus">Keterangan: Rp 0</div>
+            </div>
+
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+                <button style="background:#16a34a; color:white; flex:1;" onclick="simpanSudahBayar()">Sudah Bayar ✅</button>
+                <button style="background:#ea580c; color:white; flex:1;" onclick="simpanBelumBayar()">Catat Saja (Belum Bayar) 📝</button>
+                <button style="background:#64748b; color:white;" onclick="tutupModal()">Batal</button>
+            </div>
+
+            <div style="margin-top: 10px; text-align: center;">
+                <button style="background:#4f46e5; color:white; width:100%; padding:8px;" onclick="cetakStrukPDF()">📄 Cetak Struk Individu PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const TARIF_PER_M3 = 2500;
+    const BIAYA_BEBAN_STANDAR = 2000;
+    const NAMA_PETUGAS = "ANDRI";
+    
+    const API_URL = "api.php"; 
+
+    const daftarBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    
+    let currentBulanIndex = localStorage.getItem('activeBulanIndex') !== null 
+        ? parseInt(localStorage.getItem('activeBulanIndex')) 
+        : 5; // Default: 5 = Juni
+        
+    let currentTahun = localStorage.getItem('activeTahun') !== null 
+        ? parseInt(localStorage.getItem('activeTahun')) 
+        : 2026;
+
+    // URUTAN PATEN SESUAI PERMINTAAN
+    const defaultNames = [
+        "HARTOYO", "SUPOYO", "HERU", "LEGIMAN / TINAH", "SUWARNI", "TRIYANTO", 
+        "BU SITI", "KISWANTO", "MARNI SATE", "ENI ( OUTLET)", "ERTA", "SUTOPO", 
+        "SUPRAPTI", "SUMARNO", "NUR W", "ADIT", "BOWO", "SUGINO", "MADRIM", 
+        "GALIH (LAMPU)", "GAGAN (BENGKEL)", "SUCI ( PIJAT)", "ATIK", "RINI", 
+        "SUKINO", "AGUS", "TRI W", "DAKIMAH", "NARTI", "WAGIYO", "KATIYO", 
+        "ANI", "ABDULLAH", "ISKAK KISNO", "BAMBANG PARLIS", "MULYONO", "SUTARNO", 
+        "SARPAN", "SUHAR (ADEK)", "SUPRIYONO (TAMBAL BAN)", "GITO", "NGATIRAN", 
+        "CANDRA", "ISBAROH", "BU IS (TOL)"
+    ];
+
+    let excelData = [];
+    let selectedIndex = null;
+
+    function simpanPeriodeAktif() {
+        localStorage.setItem('activeBulanIndex', currentBulanIndex);
+        localStorage.setItem('activeTahun', currentTahun);
+    }
+
+    function getPeriodeText() {
+        return `${daftarBulan[currentBulanIndex]} ${currentTahun}`;
+    }
+
+    function updateStatusKoneksi(terhubung, pesan = "") {
+        const el = document.getElementById('statusKoneksiText');
+        if (!el) return;
+        
+        if (terhubung) {
+            el.style.color = "#16a34a";
+            el.innerHTML = "🟢 Terhubung (Database MySQL)";
+        } else {
+            el.style.color = "#dc2626";
+            el.innerHTML = `🔴 Terputus ${pesan ? '(' + pesan + ')' : ''}`;
+        }
+    }
+
+    async function loadDataPeriodeIni() {
+        simpanPeriodeAktif();
+
+        let key = getPeriodeText();
+        document.getElementById('labelPeriodeAktif').innerText = key;
+
+        try {
+            let response = await fetch(`${API_URL}?action=get_data&periode=${encodeURIComponent(key)}`);
+            let result = await response.json();
+
+            if (result.status === 'success') {
+                updateStatusKoneksi(true);
+
+                if (result.data.length > 0) {
+                    // Mengurutkan data dari database MySQL agar selalu sesuai dengan urutan defaultNames
+                    let dataMap = new Map();
+                    result.data.forEach(item => dataMap.set(item.NAMA, item));
+
+                    excelData = defaultNames.map(nama => {
+                        if (dataMap.has(nama)) {
+                            let item = dataMap.get(nama);
+                            return {
+                                NAMA: item.NAMA,
+                                METER_AWAL: parseFloat(item.METER_AWAL) || 0,
+                                METER_AKHIR: parseFloat(item.METER_AKHIR) || 0,
+                                CASH: parseFloat(item.CASH) || 0,
+                                BIAYA_BEBAN: parseFloat(item.BIAYA_BEBAN) || BIAYA_BEBAN_STANDAR,
+                                SALDO_LALU: parseFloat(item.SALDO_LALU) || 0,
+                                STATUS: item.STATUS || 'Belum Bayar'
+                            };
+                        } else {
+                            return {
+                                NAMA: nama,
+                                METER_AWAL: 0,
+                                METER_AKHIR: 0,
+                                CASH: 0,
+                                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                                SALDO_LALU: 0,
+                                STATUS: 'Belum Bayar'
+                            };
+                        }
+                    });
+                } else {
+                    excelData = defaultNames.map(nama => ({
+                        NAMA: nama,
+                        METER_AWAL: 0,
+                        METER_AKHIR: 0,
+                        CASH: 0,
+                        BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                        SALDO_LALU: 0,
+                        STATUS: 'Belum Bayar'
+                    }));
+                }
+            } else {
+                updateStatusKoneksi(false, "Respon Error");
+            }
+            renderTabel();
+        } catch (err) {
+            console.error("Gagal mengambil data dari MySQL KSWEB:", err);
+            updateStatusKoneksi(false, "Offline/KSWEB Mati");
+        }
+    }
+
+    function hitungDetailPelanggan(item) {
+        let mLalu = parseFloat(item.METER_AWAL) || 0;
+        let mKini = parseFloat(item.METER_AKHIR) || 0;
+        let pemakaian = (mKini - mLalu) > 0 ? (mKini - mLalu) : 0;
+        
+        let biayaAir = pemakaian * TARIF_PER_M3;
+        let beban = BIAYA_BEBAN_STANDAR; 
+        let saldoLalu = parseFloat(item.SALDO_LALU) || 0;
+
+        let tagihanBulanIni = biayaAir + beban;
+        let sisaTagihanNet = tagihanBulanIni - saldoLalu;
+        
+        let totalHarusBayar = sisaTagihanNet > 0 ? sisaTagihanNet : 0;
+        let cash = parseFloat(item.CASH) || 0;
+        let selisihAset = cash - sisaTagihanNet;
+
+        return {
+            pemakaian,
+            biayaAir,
+            beban,
+            saldoLalu,
+            tagihanBulanIni,
+            totalHarusBayar,
+            cash,
+            selisihAset
+        };
+    }
+
+    function renderTabel() {
+        const tbody = document.getElementById('tabelBody');
+        tbody.innerHTML = '';
+
+        excelData.forEach((item, index) => {
+            let info = hitungDetailPelanggan(item);
+            let tr = document.createElement('tr');
+            
+            let saldoAktif = item.STATUS === 'Sudah Bayar' ? info.selisihAset : info.saldoLalu;
+
+            if (saldoAktif > 0) {
+                tr.classList.add('row-deposit');
+            } else if (saldoAktif < 0) {
+                tr.classList.add('row-tunggakan');
+            }
+
+            let badgeSaldoHtml = '';
+            if (saldoAktif > 0) {
+                badgeSaldoHtml = `<span class="badge-saldo badge-saldo-plus">🟢 Deposit: Rp ${saldoAktif.toLocaleString('id-ID')}</span>`;
+            } else if (saldoAktif < 0) {
+                badgeSaldoHtml = `<span class="badge-saldo badge-saldo-minus">🔴 Utang: Rp ${Math.abs(saldoAktif).toLocaleString('id-ID')}</span>`;
+            }
+
+            let statusBadgeHtml = '';
+            let isMeterEntered = item.METER_AKHIR > 0 && item.METER_AKHIR >= item.METER_AWAL;
+
+            if (item.STATUS === 'Sudah Bayar') {
+                statusBadgeHtml = `<span class="badge badge-lunas">Lunas ✅</span>`;
+            } else if (isMeterEntered) {
+                statusBadgeHtml = `<span class="badge badge-dicatat">Meter Dicatat 📝</span>`;
+            } else {
+                statusBadgeHtml = `<span class="badge badge-belum">Belum Dicatat 🔴</span>`;
+            }
+
+            tr.innerHTML = `
+                <td>
+                    <span class="nama-pelanggan">${item.NAMA}</span>
+                    ${statusBadgeHtml}
+                    ${badgeSaldoHtml}
+                </td>
+                <td>
+                    <b>${info.pemakaian} m³</b>
+                    <span class="info-meter-detail">(${item.METER_AWAL} ➔ ${item.METER_AKHIR})</span>
+                </td>
+                <td><b style="color:#1e40af;">Rp ${info.totalHarusBayar.toLocaleString('id-ID')}</b></td>
+                <td style="text-align:center;">
+                    <button class="${item.STATUS === 'Sudah Bayar' || isMeterEntered ? 'btn-edit' : 'btn-bayar'}" onclick="bukaModal(${index})">
+                        ${item.STATUS === 'Sudah Bayar' ? 'Edit' : (isMeterEntered ? 'Edit Meter' : 'Catat')}
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        hitungRekap();
+    }
+
+    function hitungRekap() {
+        let totalPelanggan = excelData.length;
+        let lunasCount = 0;
+        let totalM3BulanIni = 0;
+
+        excelData.forEach(item => {
+            let info = hitungDetailPelanggan(item);
+            if (item.STATUS === 'Sudah Bayar') {
+                lunasCount++;
+            }
+            totalM3BulanIni += info.pemakaian;
+        });
+
+        let totalUangM3 = totalM3BulanIni * TARIF_PER_M3;
+
+        document.getElementById('recTotalPelanggan').innerText = totalPelanggan;
+        document.getElementById('recLunas').innerText = lunasCount + ' / ' + totalPelanggan;
+        document.getElementById('recTotalM3').innerText = totalM3BulanIni.toLocaleString('id-ID') + ' m³';
+        document.getElementById('recTotalUangM3').innerText = 'Rp ' + totalUangM3.toLocaleString('id-ID');
+    }
+
+    function kembaliBulanLalu() {
+        currentBulanIndex--;
+        if (currentBulanIndex < 0) {
+            currentBulanIndex = 11;
+            currentTahun--;
+        }
+        simpanPeriodeAktif();
+        loadDataPeriodeIni();
+    }
+
+    function lanjutBulanBerikutnya() {
+        currentBulanIndex++;
+        if (currentBulanIndex > 11) {
+            currentBulanIndex = 0;
+            currentTahun++;
+        }
+        simpanPeriodeAktif();
+        loadDataPeriodeIni();
+    }
+
+    async function prosesTutupBukuDanLanjut() {
+        let periodeSekarang = getPeriodeText();
+
+        let konfirmasi1 = confirm(
+            `⚠️ PERINGATAN KRUSIAL! ⚠️\n\n` +
+            `Apakah Anda yakin ingin MELAKUKAN TUTUP BUKU untuk periode "${periodeSekarang}"?\n\n` +
+            `• Meter Akhir akan terkunci dan menjadi Meter Awal bulan depan.\n` +
+            `• Sisa Deposit / Tunggakan akan otomatis dialihkan ke bulan berikutnya.\n\n` +
+            `Klik [OK] untuk Ya (Lanjut) atau [Cancel] untuk Batal.`
+        );
+
+        if (!konfirmasi1) return;
+
+        let konfirmasi2 = confirm(
+            `🔴 KONFIRMASI TERAKHIR 🔴\n\n` +
+            `Proses penguncian data untuk periode ${periodeSekarang} akan dieksekusi.\n\n` +
+            `Apakah Anda benar-benar yakin seluruh data transaksi periode ini sudah 100% valid?`
+        );
+
+        if (!konfirmasi2) return;
+
+        let bulanSekarang = currentBulanIndex;
+        let tahunSekarang = currentTahun;
+
+        currentBulanIndex++;
+        if (currentBulanIndex > 11) {
+            currentBulanIndex = 0;
+            currentTahun++;
+        }
+
+        let periodeBaruKey = getPeriodeText();
+
+        let itemsBaru = excelData.map(item => {
+            let infoLama = hitungDetailPelanggan(item);
+            return {
+                NAMA: item.NAMA,
+                METER_AWAL: parseFloat(item.METER_AKHIR) || parseFloat(item.METER_AWAL) || 0,
+                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                SALDO_LALU: infoLama.selisihAset
+            };
+        });
+
+        try {
+            let res = await fetch(`${API_URL}?action=tutup_buku`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    periode_baru: periodeBaruKey,
+                    items: itemsBaru
+                })
+            });
+            let result = await res.json();
+            
+            if (result.status === 'success') {
+                simpanPeriodeAktif();
+                await loadDataPeriodeIni();
+                alert(`🎉 BERHASIL!\nTutup Buku Selesai. Selamat Bekerja di Periode Baru: ${periodeBaruKey}`);
+            } else {
+                alert("❌ Gagal Tutup Buku di Database: " + result.message);
+                currentBulanIndex = bulanSekarang;
+                currentTahun = tahunSekarang;
+            }
+        } catch (e) {
+            alert("❌ Kesalahan Server KSWEB saat Tutup Buku.");
+            currentBulanIndex = bulanSekarang;
+            currentTahun = tahunSekarang;
+        }
+    }
+
+    function bukaModal(index) {
+        selectedIndex = index;
+        let item = excelData[index];
+        document.getElementById('formNama').value = item.NAMA;
+        document.getElementById('mLalu').value = item.METER_AWAL || 0;
+        document.getElementById('mKini').value = item.METER_AKHIR || 0;
+        document.getElementById('mCash').value = item.CASH || "";
+        hitungTagihanModal();
+        document.getElementById('modalInput').style.display = 'block';
+    }
+
+    function tutupModal() { document.getElementById('modalInput').style.display = 'none'; }
+
+    function hitungTagihanModal() {
+        let item = excelData[selectedIndex];
+        let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
+        let mKini = parseFloat(document.getElementById('mKini').value) || 0;
+        let cash = parseFloat(document.getElementById('mCash').value) || 0;
+
+        let pemakaian = (mKini - mLalu) > 0 ? (mKini - mLalu) : 0;
+        let biayaAir = pemakaian * TARIF_PER_M3;
+        let beban = BIAYA_BEBAN_STANDAR;
+        let saldoLalu = parseFloat(item.SALDO_LALU) || 0;
+
+        let tagihanBulanIni = biayaAir + beban;
+        let sisaTagihan = tagihanBulanIni - saldoLalu;
+        
+        let totalHarusBayar = sisaTagihan > 0 ? sisaTagihan : 0;
+        let sisaDepositAwal = sisaTagihan < 0 ? Math.abs(sisaTagihan) : 0;
+
+        let selisihCash = cash - totalHarusBayar;
+
+        document.getElementById('uiPemakaian').innerText = pemakaian + " m³";
+        document.getElementById('uiBiayaAir').innerText = "Rp " + biayaAir.toLocaleString('id-ID');
+        document.getElementById('uiBiayaBeban').innerText = "Rp " + beban.toLocaleString('id-ID');
+        
+        let elSaldo = document.getElementById('uiSaldoLalu');
+        if (saldoLalu > 0) {
+            elSaldo.innerHTML = `<span style="color:#16a34a;">(+) Rp ${saldoLalu.toLocaleString('id-ID')} (Deposit)</span>`;
+        } else if (saldoLalu < 0) {
+            elSaldo.innerHTML = `<span style="color:#dc2626;">(-) Rp ${Math.abs(saldoLalu).toLocaleString('id-ID')} (Utang)</span>`;
+        } else {
+            elSaldo.innerText = "Rp 0";
+        }
+
+        document.getElementById('uiTotalHarusBayar').innerText = "Rp " + totalHarusBayar.toLocaleString('id-ID');
+
+        let elStatus = document.getElementById('uiCashStatus');
+        
+        if (sisaDepositAwal > 0) {
+            let depositAkhir = sisaDepositAwal + cash;
+            elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">Lunas Terpotong Deposit (Sisa Deposit: Rp ${depositAkhir.toLocaleString('id-ID')})</span>`;
+        } else {
+            if (cash === 0) {
+                elStatus.innerHTML = `Keterangan: <span style="color:#64748b;">Belum Ada Cash</span>`;
+            } else if (selisihCash === 0) {
+                elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">Uang Pas (Lunas)</span>`;
+            } else if (selisihCash > 0) {
+                elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">(+) Lebih Rp ${selisihCash.toLocaleString('id-ID')} (Deposit Baru)</span>`;
+            } else {
+                elStatus.innerHTML = `Keterangan: <span style="color:#dc2626;">(-) Kurang Rp ${Math.abs(selisihCash).toLocaleString('id-ID')} (Utang Baru)</span>`;
+            }
+        }
+    }
+
+    async function simpanSudahBayar() {
+        if (selectedIndex === null) return;
+
+        let item = excelData[selectedIndex];
+        let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
+        let mKini = parseFloat(document.getElementById('mKini').value) || 0;
+        let cash = parseFloat(document.getElementById('mCash').value) || 0;
+
+        let pemakaian = (mKini - mLalu) > 0 ? (mKini - mLalu) : 0;
+        let biayaAir = pemakaian * TARIF_PER_M3;
+        let saldoLalu = parseFloat(item.SALDO_LALU) || 0;
+        
+        let tagihanBulanIni = biayaAir + BIAYA_BEBAN_STANDAR;
+        let totalHarusBayar = (tagihanBulanIni - saldoLalu) > 0 ? (tagihanBulanIni - saldoLalu) : 0;
+
+        if (cash < totalHarusBayar) {
+            let selisihKurang = totalHarusBayar - cash;
+            let konfirm = confirm(`Uang cash kurang Rp ${selisihKurang.toLocaleString('id-ID')}.\nKekurangan akan dicatat sebagai utang bulan depan.\nSimpan?`);
+            if (!konfirm) return;
+        }
+
+        let payload = {
+            periode: getPeriodeText(),
+            nama: item.NAMA,
+            meter_awal: mLalu,
+            meter_akhir: mKini,
+            cash: cash,
+            biaya_beban: BIAYA_BEBAN_STANDAR,
+            saldo_lalu: saldoLalu,
+            status: 'Sudah Bayar'
+        };
+
+        try {
+            let res = await fetch(`${API_URL}?action=save_item`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            let result = await res.json();
+
+            if (result.status === 'success') {
+                await loadDataPeriodeIni();
+                tutupModal();
+            } else {
+                alert("❌ Gagal Menyimpan ke Database: " + result.message);
+            }
+        } catch (e) {
+            alert("❌ Gagal terhubung ke Server KSWEB.");
+        }
+    }
+
+    async function simpanBelumBayar() {
+        if (selectedIndex === null) return;
+
+        let item = excelData[selectedIndex];
+        let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
+        let mKini = parseFloat(document.getElementById('mKini').value) || 0;
+
+        let payload = {
+            periode: getPeriodeText(),
+            nama: item.NAMA,
+            meter_awal: mLalu,
+            meter_akhir: mKini,
+            cash: 0,
+            biaya_beban: BIAYA_BEBAN_STANDAR,
+            saldo_lalu: parseFloat(item.SALDO_LALU) || 0,
+            status: 'Belum Bayar'
+        };
+
+        try {
+            let res = await fetch(`${API_URL}?action=save_item`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            let result = await res.json();
+
+            if (result.status === 'success') {
+                await loadDataPeriodeIni();
+                tutupModal();
+            } else {
+                alert("❌ Gagal Menyimpan ke Database: " + result.message);
+            }
+        } catch (e) {
+            alert("❌ Gagal terhubung ke Server KSWEB.");
+        }
+    }
+
+    function generateLaporanPDFDoc() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+        let periodeStr = getPeriodeText();
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("LAPORAN REKAPITULASI PENAGIHAN AIR BPSPAMS TIRTA MAKMUR", 14, 15);
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Wilayah Penagihan: SINDUHARJO 08/04 | Periode: ${periodeStr}`, 14, 21);
+
+        let tableRows = [];
+        let totalM3 = 0;
+        let totalTagihanAll = 0;
+        let totalCashAll = 0;
+
+        excelData.forEach((item, idx) => {
+            let info = hitungDetailPelanggan(item);
+            totalM3 += info.pemakaian;
+            totalTagihanAll += info.totalHarusBayar;
+            totalCashAll += info.cash;
+
+            let ketSaldo = "-";
+            if (info.selisihAset > 0) ketSaldo = `Deposit (+${info.selisihAset.toLocaleString('id-ID')})`;
+            else if (info.selisihAset < 0) ketSaldo = `Utang (-${Math.abs(info.selisihAset).toLocaleString('id-ID')})`;
+
+            tableRows.push([
+                idx + 1,
+                item.NAMA,
+                item.METER_AWAL,
+                item.METER_AKHIR,
+                `${info.pemakaian} m³`,
+                `Rp ${info.beban.toLocaleString('id-ID')}`,
+                `Rp ${info.saldoLalu.toLocaleString('id-ID')}`,
+                `Rp ${info.totalHarusBayar.toLocaleString('id-ID')}`,
+                `Rp ${info.cash.toLocaleString('id-ID')}`,
+                ketSaldo,
+                item.STATUS
+            ]);
+        });
+
+        doc.autoTable({
+            startY: 26,
+            head: [['No', 'Nama Pelanggan', 'Awal', 'Akhir', 'Pakai', 'Beban', 'Saldo Lalu', 'Total Tagihan', 'Uang Cash', 'Saldo/Utang', 'Status']],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8 },
+            columnStyles: {
+                0: { cellWidth: 10, halign: 'center' },
+                1: { cellWidth: 40 },
+                2: { halign: 'right' },
+                3: { halign: 'right' },
+                4: { halign: 'right' },
+                5: { halign: 'right' },
+                6: { halign: 'right' },
+                7: { halign: 'right', fontStyle: 'bold' },
+                8: { halign: 'right', fontStyle: 'bold' },
+                9: { halign: 'center' },
+                10: { halign: 'center' }
+            }
+        });
+
+        let finalY = doc.lastAutoTable.finalY + 8;
+        if (finalY > 180) { doc.addPage(); finalY = 15; }
+
+        let totalUangM3 = totalM3 * TARIF_PER_M3;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.text(`TOTAL PEMAKAIAN AIR : ${totalM3} m³ (Nominal: Rp ${totalUangM3.toLocaleString('id-ID')})`, 14, finalY);
+        doc.text(`TOTAL HARUS DIBAYAR: Rp ${totalTagihanAll.toLocaleString('id-ID')}`, 14, finalY + 5);
+        doc.text(`TOTAL CASH DITERIMA : Rp ${totalCashAll.toLocaleString('id-ID')}`, 14, finalY + 10);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(`Petugas Pemungut: ${NAMA_PETUGAS}`, 220, finalY + 5);
+        doc.text("Tanggal Cetak: " + new Date().toLocaleDateString('id-ID'), 220, finalY + 10);
+
+        return doc;
+    }
+
+    function downloadLaporanPDF() {
+        let doc = generateLaporanPDFDoc();
+        doc.save(`LAPORAN_BPSPAMS_${getPeriodeText().replace(' ', '_')}.pdf`);
+    }
+
+    async function shareLaporanPDF() {
+        let doc = generateLaporanPDFDoc();
+        let periodeStr = getPeriodeText();
+
+        const pdfBlob = doc.output('blob');
+        const fileName = `LAPORAN_BPSPAMS_${periodeStr.replace(' ', '_')}.pdf`;
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: `Laporan BPSPAMS - ${periodeStr}`,
+                    text: `Berikut Laporan Bulanan Rekapitulasi Pembayaran BPSPAMS Tirta Makmur Periode ${periodeStr}.`
+                });
+            } catch (error) {
+                console.log("Share dibatalkan/gagal", error);
+            }
+        } else {
+            let totalPelanggan = excelData.length;
+            let lunasCount = 0;
+            let totalM3 = 0;
+
+            excelData.forEach(item => {
+                let info = hitungDetailPelanggan(item);
+                if (item.STATUS === 'Sudah Bayar') {
+                    lunasCount++;
+                }
+                totalM3 += info.pemakaian;
+            });
+
+            let totalUangM3 = totalM3 * TARIF_PER_M3;
+
+            let pesanWA = `*REKAP LAPORAN BPSPAMS TIRTA MAKMUR*\n` +
+                          `*Periode:* ${periodeStr}\n` +
+                          `-----------------------------------\n` +
+                          `*Total Pelanggan:* ${totalPelanggan}\n` +
+                          `*Sudah Bayar:* ${lunasCount} / ${totalPelanggan}\n` +
+                          `*Jumlah Pemakaian Air:* ${totalM3.toLocaleString('id-ID')} m³\n` +
+                          `*Total Nominal m³:* Rp ${totalUangM3.toLocaleString('id-ID')}\n` +
+                          `-----------------------------------\n` +
+                          `_Silakan unduh file PDF lengkap dari aplikasi jika diperlukan._`;
+
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(pesanWA)}`, '_blank');
+        }
+    }
+
+    function cetakStrukPDF() {
+        if (selectedIndex === null) return;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [95, 160] });
+
+        let item = excelData[selectedIndex];
+        let info = hitungDetailPelanggan(item);
+
+        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.8); doc.rect(4, 4, 152, 87);
+        doc.setFillColor(30, 64, 175); doc.rect(4, 4, 152, 16, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+        doc.text("BUKTI PEMBAYARAN AIR - BPSPAMS TIRTA MAKMUR", 80, 11, { align: 'center' });
+        doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        doc.text("SINDUHARJO 08/04, SOMOPURO, JOGONALAN", 80, 16, { align: 'center' });
+
+        doc.setTextColor(30, 41, 59); doc.setFontSize(8.5);
+        doc.setFont("helvetica", "bold"); doc.text("Nama Pelanggan", 8, 25);
+        doc.setFont("helvetica", "normal"); doc.text(": " + item.NAMA, 36, 25);
+        doc.setFont("helvetica", "bold"); doc.text("Periode / Bulan", 8, 30);
+        doc.setFont("helvetica", "normal"); doc.text(": " + getPeriodeText(), 36, 30);
+
+        doc.setFont("helvetica", "bold"); doc.text("Status Bayar", 100, 25);
+        doc.setFont("helvetica", "normal"); doc.text(": " + item.STATUS, 122, 25);
+        doc.setFont("helvetica", "bold"); doc.text("Angka Meteran", 100, 30);
+        doc.setFont("helvetica", "normal"); doc.text(`: ${item.METER_AWAL} (Awal) - ${item.METER_AKHIR} (Akhir)`, 122, 30);
+
+        doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.4); doc.line(8, 33, 152, 33);
+
+        let startY = 38;
+        doc.text("1. Pemakaian Air (" + info.pemakaian + " m³ x Rp " + TARIF_PER_M3.toLocaleString('id-ID') + ")", 8, startY);
+        doc.text("Rp " + info.biayaAir.toLocaleString('id-ID'), 152, startY, { align: 'right' });
+
+        doc.text("2. Biaya Beban Administrasi", 8, startY + 5);
+        doc.text("Rp " + info.beban.toLocaleString('id-ID'), 152, startY + 5, { align: 'right' });
+
+        doc.text("3. Saldo Bulan Lalu (Deposit / Tunggakan)", 8, startY + 10);
+        let saldoTxt = (info.saldoLalu >= 0 ? "(+) Rp " : "(-) Rp ") + Math.abs(info.saldoLalu).toLocaleString('id-ID');
+        doc.text(saldoTxt, 152, startY + 10, { align: 'right' });
+
+        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.5); doc.line(8, startY + 14, 152, startY + 14);
+
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(30, 64, 175);
+        doc.text("TOTAL HARUS DIBAYAR", 8, startY + 19);
+        doc.text("Rp " + info.totalHarusBayar.toLocaleString('id-ID'), 152, startY + 19, { align: 'right' });
+
+        doc.setFillColor(248, 250, 252); doc.rect(8, startY + 23, 90, 16, 'F');
+        doc.setDrawColor(203, 213, 225); doc.rect(8, startY + 23, 90, 16, 'S');
+
+        doc.setFontSize(8); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
+        doc.text("Uang Diterima (Cash) : Rp " + info.cash.toLocaleString('id-ID'), 10, startY + 28);
+        
+        let ketKelebihan = "";
+        if (info.selisihAset > 0) ketKelebihan = "(+) Deposit: Rp " + info.selisihAset.toLocaleString('id-ID');
+        else if (info.selisihAset < 0) ketKelebihan = "(-) Utang: Rp " + Math.abs(info.selisihAset).toLocaleString('id-ID');
+        else ketKelebihan = "Lunas (Uang Pas)";
+        
+        doc.setFont("helvetica", "bold"); doc.text("Keterangan Saldo    : " + ketKelebihan, 10, startY + 34);
+
+        doc.setTextColor(30, 41, 59); doc.setFont("helvetica", "normal");
+        doc.text("Petugas Pemungut,", 120, startY + 27, { align: 'center' });
+        doc.setFont("helvetica", "bold"); doc.text("( " + NAMA_PETUGAS + " )", 120, startY + 36, { align: 'center' });
+
+        doc.save(`STRUK_${item.NAMA}_${getPeriodeText()}.pdf`);
+    }
+
+    function downloadFileExcel() {
+        const workbook = XLSX.utils.book_new();
+        
+        const formattedData = excelData.map(item => {
+            let info = hitungDetailPelanggan(item);
+            
+            return {
+                "NAMA PELANGGAN": item.NAMA,
+                "METER AWAL": item.METER_AWAL,
+                "METER AKHIR": item.METER_AKHIR,
+                "PEMAKAIAN (m³)": info.pemakaian,
+                "BIAYA AIR (Rp)": info.biayaAir,
+                "BIAYA BEBAN": info.beban,
+                "SALDO LALU (+/-)": info.saldoLalu,
+                "TOTAL HARUS DIBAYAR": info.totalHarusBayar,
+                "UANG CASH DITERIMA": info.cash,
+                "LEBIH (+) / MINUS (-)": info.selisihAset,
+                "STATUS": item.STATUS
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        XLSX.utils.book_append_sheet(workbook, worksheet, getPeriodeText());
+
+        XLSX.writeFile(workbook, `DATABASE_BPSPAMS_${getPeriodeText().replace(' ', '_')}.xlsx`);
+    }
+
+    function cariPelanggan() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let rows = document.querySelectorAll('#tabelBody tr');
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
+        });
+    }
+
+    loadDataPeriodeIni();
+</script>
+
+</body>
+</html>
