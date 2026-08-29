@@ -182,8 +182,9 @@
             transition: box-shadow .15s ease, transform .15s ease;
         }
         .pel-kartu:hover { box-shadow: 0 8px 20px -10px rgba(2,32,71,.25); }
-        .kartu-deposit { border-color: #a7f3d0; background: linear-gradient(180deg, #f0fdf4, #ffffff 70%); }
-        .kartu-tunggakan { border-color: #fecaca; background: linear-gradient(180deg, #fef2f2, #ffffff 70%); }
+        /* kartu ber-status: warna PEKAT penuh + rel warna di kiri agar terlihat jelas di layar HP */
+        .kartu-deposit { border-color: #6ee7b7; border-left: 4px solid #10b981; background: linear-gradient(180deg, #d1fae5, #ecfdf5); }
+        .kartu-tunggakan { border-color: #fca5a5; border-left: 4px solid #ef4444; background: linear-gradient(180deg, #fee2e2, #fff1f2); }
         /* baris 1: nomor + nama + status + tombol */
         .pel-atas { display: flex; align-items: center; gap: 7px; min-width: 0; }
         .pel-nama {
