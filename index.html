@@ -175,10 +175,11 @@
         .kotak-cari input.field { padding-left: 42px; border-radius: 999px; }
 
         /* ===== DAFTAR PELANGGAN (KARTU RINGKAS 2 BARIS) ===== */
-        .daftar-pelanggan { display: flex; flex-direction: column; gap: 7px; }
+        /* tap HANYA di tombol — seluruh kartu tidak aktif agar scroll sambil jalan tidak salah tekan */
+        .daftar-pelanggan { display: flex; flex-direction: column; gap: 8px; }
         .pel-kartu {
-            background: #fff; border: 1.5px solid var(--garis); border-radius: 12px; padding: 8px 11px;
-            cursor: pointer; transition: box-shadow .15s ease, transform .15s ease;
+            background: #fff; border: 1.5px solid var(--garis); border-radius: 12px; padding: 9px 12px;
+            transition: box-shadow .15s ease, transform .15s ease;
         }
         .pel-kartu:hover { box-shadow: 0 8px 20px -10px rgba(2,32,71,.25); }
         .kartu-deposit { border-color: #a7f3d0; background: linear-gradient(180deg, #f0fdf4, #ffffff 70%); }
@@ -186,19 +187,19 @@
         /* baris 1: nomor + nama + status + tombol */
         .pel-atas { display: flex; align-items: center; gap: 7px; min-width: 0; }
         .pel-nama {
-            flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: .88rem; color: var(--teks);
+            flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: .92rem; color: var(--teks);
             letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .pel-mini {
-            display: inline-flex; align-items: center; flex: 0 0 auto; padding: 2px 8px;
-            border-radius: 999px; font-size: .64rem; font-weight: 800; white-space: nowrap;
+            display: inline-flex; align-items: center; flex: 0 0 auto; padding: 3px 9px;
+            border-radius: 999px; font-size: .67rem; font-weight: 800; white-space: nowrap;
         }
         .pel-mini-lunas { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
         .pel-mini-dicatat { background: var(--amber-muda); color: #b45309; border: 1px solid #fde68a; }
         .pel-mini-belum { background: var(--merah-muda); color: #b91c1c; border: 1px solid #fecaca; }
         .btn-aksi {
-            border: none; border-radius: 999px; padding: 5px 12px; font-size: .72rem; font-weight: 800;
-            cursor: pointer; color: #fff; flex: 0 0 auto; min-height: 28px;
+            border: none; border-radius: 999px; padding: 9px 16px; font-size: .78rem; font-weight: 800;
+            cursor: pointer; color: #fff; flex: 0 0 auto; min-width: 70px; min-height: 38px;
             box-shadow: 0 2px 8px -4px rgba(2,32,71,.4); transition: transform .12s ease;
         }
         .btn-aksi:active { transform: scale(.94); }
@@ -210,14 +211,14 @@
             margin-top: 4px; min-width: 0;
         }
         .pel-ringkas {
-            font-size: .74rem; color: var(--teks-samar); font-variant-numeric: tabular-nums;
+            font-size: .77rem; color: var(--teks-samar); font-variant-numeric: tabular-nums;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
         }
         .pel-ringkas b { color: var(--teks); font-weight: 800; }
         .pel-kanan { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
-        .pel-saldo-minus { font-size: .74rem; color: #b91c1c; font-weight: 800; }
-        .pel-saldo-plus { font-size: .74rem; color: #047857; font-weight: 800; }
-        .pel-tagihan { font-size: .82rem; color: var(--biru); font-weight: 800; }
+        .pel-saldo-minus { font-size: .77rem; color: #b91c1c; font-weight: 800; }
+        .pel-saldo-plus { font-size: .77rem; color: #047857; font-weight: 800; }
+        .pel-tagihan { font-size: .86rem; color: var(--biru); font-weight: 800; }
         .kosong-cari { text-align: center; color: var(--teks-samar); font-size: .85rem; padding: 18px 0 6px; }
 
         /* ===== PANEL COLLAPSIBLE ===== */
@@ -248,9 +249,9 @@
         /* nomor urut rumah pada kartu pelanggan */
         .pel-nomor {
             display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
-            min-width: 24px; height: 22px; padding: 0 4px; border-radius: 7px;
+            min-width: 26px; height: 24px; padding: 0 5px; border-radius: 8px;
             background: var(--cyan-muda); color: var(--biru-tua); border: 1px solid #bae6fd;
-            font-size: .68rem; font-weight: 800; font-variant-numeric: tabular-nums;
+            font-size: .7rem; font-weight: 800; font-variant-numeric: tabular-nums;
         }
 
         /* ===== MODAL ===== */
@@ -961,14 +962,13 @@
 
             const kartu = document.createElement('div');
             kartu.className = 'pel-kartu' + (kelasSaldo ? ' ' + kelasSaldo : '');
-            kartu.title = `No. ${index + 1} — ${item.NAMA} (tap untuk buka detail)`;
-            kartu.onclick = () => bukaModal(index);
+            kartu.title = `No. ${index + 1} — ${item.NAMA}`;
             kartu.innerHTML = `
                 <div class="pel-atas">
                     <span class="pel-nomor">${index + 1}</span>
                     <span class="pel-nama" title="${item.NAMA}">${item.NAMA}</span>
                     ${statusMiniHtml}
-                    <button class="btn-aksi ${kelasAksi}" onclick="event.stopPropagation(); bukaModal(${index})">${labelAksi}</button>
+                    <button class="btn-aksi ${kelasAksi}" onclick="bukaModal(${index})">${labelAksi}</button>
                 </div>
                 <div class="pel-bawah">
                     <span class="pel-ringkas"><b>${info.pemakaian} m³</b> · ${meterTeks}</span>
