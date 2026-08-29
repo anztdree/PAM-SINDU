@@ -211,13 +211,27 @@
         <div style="font-weight: bold; margin-bottom: 8px; color: #1e40af; font-size: 0.88rem;">📊 Status Database & Ekspor Data:</div>
         
         <div id="dbStatusBadge" style="background:#f8fafc; border:1px solid #cbd5e1; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:0.82rem; font-weight:600; display:flex; justify-content:space-between; align-items:center;">
-            <span>Status Koneksi MySQL:</span>
+            <span>Status Database:</span>
             <span id="statusKoneksiText" style="color:#eab308;">🟡 Memeriksa Koneksi...</span>
         </div>
 
         <div class="db-action-grid" style="grid-template-columns: 1fr;">
             <button class="btn-excel-export" onclick="downloadFileExcel()">📥 Download Backup Excel</button>
         </div>
+
+        <!-- PANEL ADMIN: IMPORT & RESET DATA -->
+        <details style="margin-top:10px; border:1px dashed #cbd5e1; border-radius:8px; padding:8px 10px;">
+            <summary style="font-weight:700; font-size:0.8rem; color:#64748b; cursor:pointer;">⚙️ Menu Admin (Import / Reset Data)</summary>
+            <p style="font-size:0.75rem; color:#64748b; margin:8px 0; line-height:1.5;">
+                Jika database masih kosong (belum Attach pam.db), letakkan <b>pam.sql</b> di folder yang sama lalu tekan Import: baris baru ditambahkan, baris yang sudah ada diperbarui (aman diulang).<br>
+                Reset mengosongkan SEMUA data transaksi.
+            </p>
+            <div class="db-action-grid">
+                <button style="background:#4f46e5; color:white;" onclick="importDataLama()">📥 Import pam.sql</button>
+                <button style="background:#dc2626; color:white;" onclick="kosongkanData()">🗑️ Kosongkan Data</button>
+            </div>
+            <div id="infoImport" style="font-size:0.75rem; color:#475569; margin-top:8px; line-height:1.5;"></div>
+        </details>
     </div>
 
     <!-- Search Input -->
@@ -296,8 +310,141 @@
     const TARIF_PER_M3 = 2500;
     const BIAYA_BEBAN_STANDAR = 2000;
     const NAMA_PETUGAS = "ANDRI";
-    
-    const API_URL = "api.php"; 
+
+    // ====== LAPISAN DATABASE SHTTPS (API /api/db/* — TANPA PHP) ======
+    const DB_TABLE = "transaksi_pelanggan";
+    const KOLOM = "nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status";
+
+    // Pastikan nilai numerik murni
+    function num(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+    /* ============================================================
+       LAPISAN DATABASE TANPA CUSTOM SQL (cocok untuk SHTTPS GRATIS)
+       Hanya memakai endpoint yang bebas dari fitur PLUS:
+       - GET  /api/db/table  (baca baris + filter)
+       - GET  /api/db/schema (cek database & tabel)
+       - POST /api/db/insert (tulis baris; array = 1 transaksi)
+       - PUT  /api/db/update (ubah baris sesuai filter)
+       - DELETE /api/db/delete (hapus baris sesuai filter)
+       Semua tulis membutuhkan saklar "Enable API to modify
+       tables data" AKTIF (fitur gratis). Pola permintaan mengikuti
+       implementasi resmi web database browser milik SHTTPS.
+       ============================================================ */
+
+    // Permintaan form-encoded (URLSearchParams otomatis set Content-Type)
+    async function dbForm(method, path, params) {
+        const res = await fetch(path, { method: method, body: params });
+        if (res.status === 404) throw new Error("DB_OFF");
+        if (res.status === 403) throw new Error("EDIT_OFF");
+        if (res.status === 401) throw new Error("AUTH");
+        if (res.status === 420) throw new Error("SQL_ERR: " + (await res.text()));
+        if (!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 60));
+        const teks = await res.text();
+        return teks ? JSON.parse(teks) : null;
+    }
+
+    // Baca baris via /api/db/table dengan filter terikat (aman dari injeksi)
+    async function dbBaca(kolom, filters) {
+        const qs = new URLSearchParams({
+            table: DB_TABLE, rowsAsObjects: "true", columns: kolom,
+            filters: JSON.stringify(filters), limit: "500"
+        });
+        const res = await fetch("/api/db/table?" + qs.toString());
+        if (res.status === 404) throw new Error("DB_OFF");
+        if (res.status === 401) throw new Error("AUTH");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const hasil = await res.json();
+        return hasil.data || [];
+    }
+
+    // Baca satu periode (objek lengkap per pelanggan)
+    async function dbBacaPeriode(periode) {
+        return dbBaca(KOLOM, { clauses: ["periode="], args: [periode] });
+    }
+
+    // Sisipkan baris: array dalam SATU transaksi; bila SHTTPS versi lama
+    // belum mendukung array (jawaban 400), sisip satu per satu.
+    async function dbInsertBanyak(daftarBaris) {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        params.append("values", JSON.stringify(daftarBaris));
+        try {
+            return await dbForm("POST", "/api/db/insert", params);
+        } catch (e) {
+            if (String(e.message || e).includes("HTTP 400")) {
+                for (const r of daftarBaris) {
+                    const p = new URLSearchParams();
+                    p.append("table", DB_TABLE);
+                    p.append("values", JSON.stringify(r));
+                    await dbForm("POST", "/api/db/insert", p);
+                }
+                return { generated_ids: null, jumlah: daftarBaris.length, perBaris: true };
+            }
+            throw e;
+        }
+    }
+
+    // Ubah baris yang cocok filter (periode + nama) — PUT /api/db/update
+    async function dbUpdateBaris(periode, nama, nilai) {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        params.append("filters", JSON.stringify({ clauses: ["periode=", "nama="], args: [periode, nama] }));
+        params.append("values", JSON.stringify(nilai));
+        return dbForm("PUT", "/api/db/update", params);
+    }
+
+    // Hapus SELURUH baris tabel ini (tanpa filters = semua baris)
+    async function dbHapusSemua() {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        return dbForm("DELETE", "/api/db/delete", params);
+    }
+
+    // Simpan satu pelanggan: jika baris sudah ada -> UPDATE, kalau belum -> INSERT
+    async function dbSimpan(payload) {
+        const baris = await dbBaca("nama", { clauses: ["periode=", "nama="], args: [payload.periode, payload.nama] });
+        const nilai = {
+            meter_awal: num(payload.meter_awal), meter_akhir: num(payload.meter_akhir),
+            cash: num(payload.cash), biaya_beban: num(payload.biaya_beban),
+            saldo_lalu: num(payload.saldo_lalu), status: payload.status
+        };
+        if (baris.length > 0) return dbUpdateBaris(payload.periode, payload.nama, nilai);
+        return dbInsertBanyak([Object.assign({ periode: payload.periode, nama: payload.nama }, nilai)]);
+    }
+
+    // Upsert banyak baris pada satu periode:
+    // baris baru -> INSERT (array = atomik di SHTTPS versi baru),
+    // baris yang sudah ada -> UPDATE (kolomUpdate: daftar kolom yang ditimpa)
+    async function dbUpsertPeriode(periode, daftarBaris, kolomUpdate) {
+        const ada = new Set((await dbBaca("nama", { clauses: ["periode="], args: [periode] })).map(r => r.nama));
+        const sisip = [], ubah = [];
+        daftarBaris.forEach(r => { (ada.has(r.nama) ? ubah : sisip).push(r); });
+        if (sisip.length > 0) await dbInsertBanyak(sisip);
+        for (const r of ubah) {
+            let nilai;
+            if (kolomUpdate) {
+                nilai = {};
+                kolomUpdate.forEach(k => { nilai[k] = r[k]; });
+            } else {
+                nilai = {
+                    meter_awal: num(r.meter_awal), meter_akhir: num(r.meter_akhir),
+                    cash: num(r.cash), biaya_beban: num(r.biaya_beban),
+                    saldo_lalu: num(r.saldo_lalu), status: r.status
+                };
+            }
+            await dbUpdateBaris(periode, r.nama, nilai);
+        }
+        return { sisip: sisip.length, ubah: ubah.length };
+    }
+
+    // Cek database aktif & tabel ada (baca schema tidak butuh saklar apa pun)
+    async function dbCek() {
+        let res = await fetch("/api/db/schema");
+        if (res.status === 401) return { dbAktif: true, auth: true };
+        if (!res.ok) return { dbAktif: false };
+        res = await fetch("/api/db/schema?table=" + DB_TABLE);
+        return { dbAktif: true, tabelAda: res.ok };
+    }
 
     const daftarBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
     
@@ -339,11 +486,22 @@
         
         if (terhubung) {
             el.style.color = "#16a34a";
-            el.innerHTML = "🟢 Terhubung (Database MySQL)";
+            el.innerHTML = "🟢 Terhubung (SQLite SHTTPS - mode GRATIS)";
         } else {
             el.style.color = "#dc2626";
             el.innerHTML = `🔴 Terputus ${pesan ? '(' + pesan + ')' : ''}`;
         }
+    }
+
+    // Terjemahkan kode error SHTTPS jadi pesan yang bisa ditindaklanjuti
+    function pesanErrorDB(err) {
+        const m = String(err.message || err);
+        if (m.includes("DB_OFF")) return "Database belum aktif - aktifkan 'Enable SQLite database' di Pengaturan SHTTPS lalu pilih 'Attach existing database' dengan file pam.db";
+        if (m.includes("TABEL_TIDAK_ADA")) return "Tabel belum ada di database. Matikan lalu nyalakan lagi 'Enable SQLite database' di SHTTPS, lalu pilih ATTACH EXISTING DATABASE dengan file pam.db (jangan Create new - versi gratis tidak bisa membuat tabel dari aplikasi ini)";
+        if (m.includes("EDIT_OFF")) return "Aktifkan toggle 'Enable API to modify tables data' di Pengaturan > Database SHTTPS (fitur GRATIS, bukan PLUS)";
+        if (m.includes("AUTH")) return "Perlu login - masuk dulu ke SHTTPS (username & password)";
+        if (m.includes("SQL_ERR")) return "Kesalahan SQL: " + m.replace("SQL_ERR: ", "").slice(0, 100);
+        return "Server tidak merespons - pastikan server START dan halaman dibuka lewat http://";
     }
 
     async function loadDataPeriodeIni() {
@@ -353,59 +511,73 @@
         document.getElementById('labelPeriodeAktif').innerText = key;
 
         try {
-            let response = await fetch(`${API_URL}?action=get_data&periode=${encodeURIComponent(key)}`);
-            let result = await response.json();
+            // Pastikan database aktif & tabel tersedia (sekali saja per sesi)
+            if (!window._dbSiap) {
+                const cek = await dbCek();
+                if (!cek.dbAktif) throw new Error("DB_OFF");
+                if (cek.auth) throw new Error("AUTH");
+                if (!cek.tabelAda) throw new Error("TABEL_TIDAK_ADA");
+                window._dbSiap = true;
+            }
 
-            if (result.status === 'success') {
-                updateStatusKoneksi(true);
+            let baris = await dbBacaPeriode(key);
+            updateStatusKoneksi(true);
 
-                if (result.data.length > 0) {
-                    // Mengurutkan data dari database MySQL agar selalu sesuai dengan urutan defaultNames
-                    let dataMap = new Map();
-                    result.data.forEach(item => dataMap.set(item.NAMA, item));
+            if (baris.length > 0) {
+                // Mengurutkan data dari database agar selalu sesuai dengan urutan defaultNames
+                let dataMap = new Map();
+                baris.forEach(item => dataMap.set(item.nama, item));
 
-                    excelData = defaultNames.map(nama => {
-                        if (dataMap.has(nama)) {
-                            let item = dataMap.get(nama);
-                            return {
-                                NAMA: item.NAMA,
-                                METER_AWAL: parseFloat(item.METER_AWAL) || 0,
-                                METER_AKHIR: parseFloat(item.METER_AKHIR) || 0,
-                                CASH: parseFloat(item.CASH) || 0,
-                                BIAYA_BEBAN: parseFloat(item.BIAYA_BEBAN) || BIAYA_BEBAN_STANDAR,
-                                SALDO_LALU: parseFloat(item.SALDO_LALU) || 0,
-                                STATUS: item.STATUS || 'Belum Bayar'
-                            };
-                        } else {
-                            return {
-                                NAMA: nama,
-                                METER_AWAL: 0,
-                                METER_AKHIR: 0,
-                                CASH: 0,
-                                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
-                                SALDO_LALU: 0,
-                                STATUS: 'Belum Bayar'
-                            };
-                        }
-                    });
-                } else {
-                    excelData = defaultNames.map(nama => ({
-                        NAMA: nama,
-                        METER_AWAL: 0,
-                        METER_AKHIR: 0,
-                        CASH: 0,
-                        BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
-                        SALDO_LALU: 0,
-                        STATUS: 'Belum Bayar'
-                    }));
-                }
+                excelData = defaultNames.map(nama => {
+                    if (dataMap.has(nama)) {
+                        let item = dataMap.get(nama);
+                        return {
+                            NAMA: item.nama,
+                            METER_AWAL: parseFloat(item.meter_awal) || 0,
+                            METER_AKHIR: parseFloat(item.meter_akhir) || 0,
+                            CASH: parseFloat(item.cash) || 0,
+                            BIAYA_BEBAN: parseFloat(item.biaya_beban) || BIAYA_BEBAN_STANDAR,
+                            SALDO_LALU: parseFloat(item.saldo_lalu) || 0,
+                            STATUS: item.status || 'Belum Bayar'
+                        };
+                    } else {
+                        return {
+                            NAMA: nama,
+                            METER_AWAL: 0,
+                            METER_AKHIR: 0,
+                            CASH: 0,
+                            BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                            SALDO_LALU: 0,
+                            STATUS: 'Belum Bayar'
+                        };
+                    }
+                });
             } else {
-                updateStatusKoneksi(false, "Respon Error");
+                excelData = defaultNames.map(nama => ({
+                    NAMA: nama,
+                    METER_AWAL: 0,
+                    METER_AKHIR: 0,
+                    CASH: 0,
+                    BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                    SALDO_LALU: 0,
+                    STATUS: 'Belum Bayar'
+                }));
             }
             renderTabel();
         } catch (err) {
-            console.error("Gagal mengambil data dari MySQL KSWEB:", err);
-            updateStatusKoneksi(false, "Offline/KSWEB Mati");
+            console.error("Gagal mengambil data dari database SHTTPS:", err);
+            updateStatusKoneksi(false, pesanErrorDB(err));
+            // Tetap tampilkan daftar pelanggan (mode offline) agar UI tidak kosong
+            excelData = defaultNames.map(nama => ({
+                NAMA: nama,
+                METER_AWAL: 0,
+                METER_AKHIR: 0,
+                CASH: 0,
+                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                SALDO_LALU: 0,
+                STATUS: 'Belum Bayar'
+            }));
+            renderTabel();
         }
     }
 
@@ -578,27 +750,27 @@
         });
 
         try {
-            let res = await fetch(`${API_URL}?action=tutup_buku`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    periode_baru: periodeBaruKey,
-                    items: itemsBaru
-                })
-            });
-            let result = await res.json();
-            
-            if (result.status === 'success') {
-                simpanPeriodeAktif();
-                await loadDataPeriodeIni();
-                alert(`🎉 BERHASIL!\nTutup Buku Selesai. Selamat Bekerja di Periode Baru: ${periodeBaruKey}`);
-            } else {
-                alert("❌ Gagal Tutup Buku di Database: " + result.message);
-                currentBulanIndex = bulanSekarang;
-                currentTahun = tahunSekarang;
-            }
+            // Upsert 45 baris periode baru: baris baru disisipkan dalam SATU
+            // permintaan array (= satu transaksi di SHTTPS versi baru), baris
+            // yang sudah ada hanya diperbarui meter_awal & saldo_lalu
+            // (input bulan baru yang sudah ada dipertahankan).
+            const barisBaru = itemsBaru.map(it => ({
+                periode: periodeBaruKey,
+                nama: it.NAMA,
+                meter_awal: num(it.METER_AWAL),
+                meter_akhir: 0,
+                cash: 0,
+                biaya_beban: num(it.BIAYA_BEBAN),
+                saldo_lalu: num(it.SALDO_LALU),
+                status: "Belum Bayar"
+            }));
+            await dbUpsertPeriode(periodeBaruKey, barisBaru, ["meter_awal", "saldo_lalu"]);
+
+            simpanPeriodeAktif();
+            await loadDataPeriodeIni();
+            alert(`🎉 BERHASIL!\nTutup Buku Selesai. Selamat Bekerja di Periode Baru: ${periodeBaruKey}`);
         } catch (e) {
-            alert("❌ Kesalahan Server KSWEB saat Tutup Buku.");
+            alert("❌ Gagal Tutup Buku: " + pesanErrorDB(e));
             currentBulanIndex = bulanSekarang;
             currentTahun = tahunSekarang;
         }
@@ -702,21 +874,11 @@
         };
 
         try {
-            let res = await fetch(`${API_URL}?action=save_item`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            let result = await res.json();
-
-            if (result.status === 'success') {
-                await loadDataPeriodeIni();
-                tutupModal();
-            } else {
-                alert("❌ Gagal Menyimpan ke Database: " + result.message);
-            }
+            await dbSimpan(payload);
+            await loadDataPeriodeIni();
+            tutupModal();
         } catch (e) {
-            alert("❌ Gagal terhubung ke Server KSWEB.");
+            alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
         }
     }
 
@@ -739,21 +901,11 @@
         };
 
         try {
-            let res = await fetch(`${API_URL}?action=save_item`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            let result = await res.json();
-
-            if (result.status === 'success') {
-                await loadDataPeriodeIni();
-                tutupModal();
-            } else {
-                alert("❌ Gagal Menyimpan ke Database: " + result.message);
-            }
+            await dbSimpan(payload);
+            await loadDataPeriodeIni();
+            tutupModal();
         } catch (e) {
-            alert("❌ Gagal terhubung ke Server KSWEB.");
+            alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
         }
     }
 
@@ -990,6 +1142,172 @@
         rows.forEach(row => {
             row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
         });
+    }
+
+    // ============ IMPORT DATA LAMA DARI pam.sql (client-side) ============
+
+    // Scanner sadar-kutip: ambil statement INSERT utk tabel transaksi_pelanggan
+    function ekstrakInserts(sqlText) {
+        const hasil = [];
+        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan`?\s*\(/gi;
+        let m;
+        while ((m = re.exec(sqlText)) !== null) {
+            let i = m.index, stmt = "", inStr = false;
+            while (i < sqlText.length) {
+                const ch = sqlText[i];
+                if (inStr) {
+                    if (ch === "\\" && i + 1 < sqlText.length) { stmt += ch + sqlText[i + 1]; i += 2; continue; }
+                    if (ch === "'") inStr = false;
+                    stmt += ch; i++; continue;
+                }
+                if (ch === "'") { inStr = true; stmt += ch; i++; continue; }
+                if (ch === ";") break;
+                stmt += ch; i++;
+            }
+            hasil.push(stmt.trim());
+            re.lastIndex = i;
+        }
+        return hasil;
+    }
+
+    // Parse statement INSERT (termasuk multi-baris VALUES (...),(...))
+    // menjadi daftar objek {kolom: nilai}. Menangani string berkutip,
+    // escape MySQL \' \" \\, angka, dan NULL.
+    function parseInsertBaris(stmt) {
+        const mVal = stmt.toUpperCase().indexOf("VALUES");
+        if (mVal < 0) return [];
+        const mOpen = stmt.indexOf("(");
+        if (mOpen < 0 || mOpen > mVal) return [];
+        const kolom = stmt.slice(mOpen + 1, stmt.indexOf(")", mOpen))
+            .split(",").map(s => s.trim().replace(/`/g, ""));
+        const sisa = stmt.slice(stmt.indexOf("(", mVal));
+
+        // pecah menjadi tuple-tuple sadar-kutip: (..),(..),...
+        const tupleTeks = [];
+        let cur = "", depth = 0, inStr = false, i = 0;
+        while (i < sisa.length) {
+            const ch = sisa[i];
+            if (inStr) {
+                if (ch === "\\" && i + 1 < sisa.length) { cur += ch + sisa[i + 1]; i += 2; continue; }
+                if (ch === "'") inStr = false;
+                cur += ch; i++; continue;
+            }
+            if (ch === "'") { inStr = true; cur += ch; i++; continue; }
+            if (ch === "(") {
+                depth++;
+                if (depth === 1) { cur = ""; i++; continue; }
+            } else if (ch === ")") {
+                depth--;
+                if (depth === 0) { tupleTeks.push(cur); cur = ""; i++; continue; }
+            }
+            if (depth > 0) cur += ch;
+            i++;
+        }
+
+        // parse nilai tiap tuple
+        const hasil = [];
+        for (const t of tupleTeks) {
+            const nilai = [];
+            let v = "", str = false, j = 0;
+            while (j < t.length) {
+                const ch = t[j];
+                if (str) {
+                    if (ch === "\\" && j + 1 < t.length) { v += t[j + 1]; j += 2; continue; }
+                    if (ch === "'") { str = false; j++; continue; }
+                    v += ch; j++; continue;
+                }
+                if (ch === "'") { str = true; j++; continue; }
+                if (ch === ",") { nilai.push(v.trim()); v = ""; j++; continue; }
+                v += ch; j++;
+            }
+            if (v.trim() !== "") nilai.push(v.trim());
+            if (kolom.length === 0 || nilai.length === 0) continue;
+            const row = {};
+            kolom.forEach((k, idx) => { if (idx < nilai.length) row[k] = nilai[idx]; });
+            hasil.push(row);
+        }
+        return hasil;
+    }
+
+    // Ubah hasil parse menjadi baris siap tulis ke database
+    function barisDariSql(r) {
+        if (!r || !r.periode || !r.nama) return null;
+        return {
+            periode: r.periode,
+            nama: r.nama,
+            meter_awal: num(r.meter_awal),
+            meter_akhir: num(r.meter_akhir),
+            cash: num(r.cash),
+            biaya_beban: num(r.biaya_beban),
+            saldo_lalu: num(r.saldo_lalu),
+            status: (r.status === "Sudah Bayar") ? "Sudah Bayar" : "Belum Bayar"
+        };
+    }
+
+    async function importDataLama() {
+        const info = document.getElementById('infoImport');
+        if (!confirm("Import data dari pam.sql?\n\nBaris yang belum ada akan DITAMBAHKAN, baris yang sudah ada akan DIPERBARUI (data periode lain tetap aman).")) return;
+
+        info.innerText = "⏳ Membaca pam.sql...";
+        try {
+            // parameter acak agar browser tidak memakai pam.sql versi lama dari cache
+            const res = await fetch("pam.sql?v=" + Date.now());
+            if (!res.ok) throw new Error("FILE_SQL_TIDAK_ADA");
+            const raw = await res.text();
+
+            info.innerText = "⏳ Memproses " + raw.length.toLocaleString('id-ID') + " byte...";
+            const stmts = ekstrakInserts(raw);
+            if (stmts.length === 0) throw new Error("TIDAK_ADA_INSERT");
+
+            const barisSemua = stmts.flatMap(s => parseInsertBaris(s)).map(barisDariSql).filter(Boolean);
+            if (barisSemua.length === 0) throw new Error("TIDAK_ADA_INSERT");
+
+            // Pastikan database aktif & tabel ada
+            if (!window._dbSiap) {
+                const cek = await dbCek();
+                if (!cek.dbAktif) throw new Error("DB_OFF");
+                if (cek.auth) throw new Error("AUTH");
+                if (!cek.tabelAda) throw new Error("TABEL_TIDAK_ADA");
+                window._dbSiap = true;
+            }
+
+            // Kelompokkan per periode lalu upsert per periode
+            const perPeriode = {};
+            barisSemua.forEach(r => { (perPeriode[r.periode] = perPeriode[r.periode] || []).push(r); });
+            let totalSisip = 0, totalUbah = 0;
+            for (const periode of Object.keys(perPeriode)) {
+                info.innerText = "⏳ Mengimpor " + periode + "...";
+                const hasil = await dbUpsertPeriode(periode, perPeriode[periode], null);
+                totalSisip += hasil.sisip; totalUbah += hasil.ubah;
+            }
+
+            info.innerHTML = "✅ <b>Import BERHASIL</b> — " + totalSisip + " baris baru, " + totalUbah + " diperbarui. Memuat ulang...";
+            await loadDataPeriodeIni();
+            alert("🎉 Import selesai!\n" + totalSisip + " baris baru ditambahkan, " + totalUbah + " baris diperbarui.");
+        } catch (e) {
+            const m = String(e.message || e);
+            let pesan = m;
+            if (m.includes("FILE_SQL_TIDAK_ADA")) pesan = "File pam.sql tidak ditemukan. Letakkan pam.sql di folder yang sama dengan index.html, lalu coba lagi.";
+            else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk transaksi_pelanggan.";
+            else if (m.includes("SQL_ERR")) pesan = "Database menolak: " + m.replace("SQL_ERR: ", "").slice(0, 150);
+            else pesan = pesanErrorDB(e);
+            info.innerHTML = "❌ <b>Import gagal:</b> " + pesan;
+            alert("❌ Import gagal: " + pesan);
+        }
+    }
+
+    async function kosongkanData() {
+        const info = document.getElementById('infoImport');
+        if (!confirm("⚠️ PERINGATAN!\n\nSemua data transaksi (semua periode) akan DIHAPUS PERMANEN dari database.\nLanjutkan?")) return;
+        if (!confirm("🔴 KONFIRMASI TERAKHIR\n\nYakin 100%? Ada baiknya Download Backup Excel dulu sekarang.")) return;
+        try {
+            info.innerText = "⏳ Mengosongkan...";
+            await dbHapusSemua();
+            info.innerHTML = "✅ <b>Data dikosongkan.</b>";
+            await loadDataPeriodeIni();
+        } catch (e) {
+            info.innerHTML = "❌ Gagal: " + pesanErrorDB(e);
+        }
     }
 
     loadDataPeriodeIni();
