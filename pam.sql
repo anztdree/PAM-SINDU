@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Waktu pembuatan: 28 Agu 2026 pada 12.42
+-- Waktu pembuatan: 29 Agu 2026 pada 05.19
 -- Versi server: 10.4.34-MariaDB
 -- Versi PHP: 8.2.29
 
@@ -139,13 +139,13 @@ INSERT INTO `transaksi_pelanggan` (`id`, `periode`, `nama`, `meter_awal`, `meter
 (92, 'Agustus 2026', 'SUPOYO', 10, 10, 0, 2000, -2000, 'Belum Bayar', '2026-08-27 11:35:50'),
 (93, 'Agustus 2026', 'HERU', 1, 1, 0, 2000, -2000, 'Belum Bayar', '2026-08-26 11:24:25'),
 (94, 'Agustus 2026', 'LEGIMAN / TINAH', 161, 187, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:36:51'),
-(95, 'Agustus 2026', 'SUWARNI', 211, 215, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:37:03'),
+(95, 'Agustus 2026', 'SUWARNI', 211, 215, 12000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:47:44'),
 (96, 'Agustus 2026', 'TRIYANTO', 76, 76, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:37:11'),
 (97, 'Agustus 2026', 'BU SITI', 1, 1, 2000, 2000, 0, 'Sudah Bayar', '2026-08-27 11:37:31'),
 (98, 'Agustus 2026', 'KISWANTO', 70, 71, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:38:03'),
 (99, 'Agustus 2026', 'MARNI SATE', 85, 85, 2000, 2000, 0, 'Sudah Bayar', '2026-08-27 11:38:12'),
-(100, 'Agustus 2026', 'ENI ( OUTLET)', 295, 306, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:39:33'),
-(101, 'Agustus 2026', 'ERTA', 12, 12, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:39:12'),
+(100, 'Agustus 2026', 'ENI ( OUTLET)', 295, 306, 29500, 2000, 0, 'Sudah Bayar', '2026-08-28 12:00:08'),
+(101, 'Agustus 2026', 'ERTA', 12, 12, 2000, 2000, 0, 'Sudah Bayar', '2026-08-28 12:02:35'),
 (102, 'Agustus 2026', 'SUTOPO', 0, 0, 2000, 2000, 0, 'Sudah Bayar', '2026-08-27 11:38:55'),
 (103, 'Agustus 2026', 'SUPRAPTI', 5, 5, 2000, 2000, 0, 'Sudah Bayar', '2026-08-27 11:38:41'),
 (104, 'Agustus 2026', 'SUMARNO', 85, 87, 0, 2000, -2000, 'Belum Bayar', '2026-08-27 11:35:13'),
@@ -155,31 +155,31 @@ INSERT INTO `transaksi_pelanggan` (`id`, `periode`, `nama`, `meter_awal`, `meter
 (108, 'Agustus 2026', 'SUGINO', 116, 116, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:33:35'),
 (109, 'Agustus 2026', 'MADRIM', 585, 627, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:33:03'),
 (110, 'Agustus 2026', 'GALIH (LAMPU)', 883, 883, 0, 2000, -22000, 'Belum Bayar', '2026-08-28 05:55:24'),
-(111, 'Agustus 2026', 'GAGAN (BENGKEL)', 171, 192, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:29:01'),
+(111, 'Agustus 2026', 'GAGAN (BENGKEL)', 171, 192, 54500, 2000, 0, 'Sudah Bayar', '2026-08-28 12:04:30'),
 (112, 'Agustus 2026', 'SUCI ( PIJAT)', 460, 465, 0, 2000, 42500, 'Sudah Bayar', '2026-08-27 11:28:20'),
 (113, 'Agustus 2026', 'ATIK', 22, 22, 2000, 2000, 0, 'Sudah Bayar', '2026-08-27 11:28:00'),
 (114, 'Agustus 2026', 'RINI', 693, 706, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:27:21'),
 (115, 'Agustus 2026', 'SUKINO', 100, 101, 0, 2000, -2000, 'Belum Bayar', '2026-08-27 11:53:38'),
 (116, 'Agustus 2026', 'AGUS', 57, 57, 2000, 2000, 0, 'Sudah Bayar', '2026-08-27 11:52:51'),
 (117, 'Agustus 2026', 'TRI W', 720, 729, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:52:22'),
-(118, 'Agustus 2026', 'DAKIMAH', 789, 802, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:52:39'),
-(119, 'Agustus 2026', 'NARTI', 214, 234, 0, 2000, -42000, 'Belum Bayar', '2026-08-27 11:52:03'),
+(118, 'Agustus 2026', 'DAKIMAH', 789, 802, 34500, 2000, 0, 'Sudah Bayar', '2026-08-28 12:08:14'),
+(119, 'Agustus 2026', 'NARTI', 214, 234, 94000, 2000, -42000, 'Sudah Bayar', '2026-08-28 12:12:20'),
 (120, 'Agustus 2026', 'WAGIYO', 25, 25, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:50:15'),
-(121, 'Agustus 2026', 'KATIYO', 495, 513, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:50:00'),
+(121, 'Agustus 2026', 'KATIYO', 495, 513, 47000, 2000, 0, 'Sudah Bayar', '2026-08-28 12:50:28'),
 (122, 'Agustus 2026', 'ANI', 598, 617, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:48:56'),
 (123, 'Agustus 2026', 'ABDULLAH', 46, 46, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:46:24'),
-(124, 'Agustus 2026', 'ISKAK KISNO', 278, 284, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:43:03'),
-(125, 'Agustus 2026', 'BAMBANG PARLIS', 175, 181, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:42:43'),
+(124, 'Agustus 2026', 'ISKAK KISNO', 278, 284, 17000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:50:08'),
+(125, 'Agustus 2026', 'BAMBANG PARLIS', 175, 181, 17000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:46:18'),
 (126, 'Agustus 2026', 'MULYONO', 150, 157, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:42:24'),
-(127, 'Agustus 2026', 'SUTARNO', 385, 397, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:41:50'),
-(128, 'Agustus 2026', 'SARPAN', 282, 288, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:40:51'),
-(129, 'Agustus 2026', 'SUHAR (ADEK)', 1883, 1925, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:40:13'),
-(130, 'Agustus 2026', 'SUPRIYONO (TAMBAL BAN)', 170, 170, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:40:33'),
+(127, 'Agustus 2026', 'SUTARNO', 385, 397, 32000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:54:31'),
+(128, 'Agustus 2026', 'SARPAN', 282, 288, 17000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:44:11'),
+(129, 'Agustus 2026', 'SUHAR (ADEK)', 1883, 1925, 107000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:56:33'),
+(130, 'Agustus 2026', 'SUPRIYONO (TAMBAL BAN)', 170, 170, 2000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:40:22'),
 (131, 'Agustus 2026', 'GITO', 255, 277, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:44:09'),
 (132, 'Agustus 2026', 'NGATIRAN', 96, 100, 0, 2000, -12000, 'Belum Bayar', '2026-08-27 11:44:52'),
-(133, 'Agustus 2026', 'CANDRA', 1326, 1350, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:45:36'),
-(134, 'Agustus 2026', 'ISBAROH', 261, 265, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:46:03'),
-(135, 'Agustus 2026', 'BU IS (TOL)', 2395, 2454, 0, 2000, 0, 'Belum Bayar', '2026-08-27 11:51:22');
+(133, 'Agustus 2026', 'CANDRA', 1326, 1350, 62000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:33:07'),
+(134, 'Agustus 2026', 'ISBAROH', 261, 265, 12000, 2000, 0, 'Sudah Bayar', '2026-08-28 11:38:20'),
+(135, 'Agustus 2026', 'BU IS (TOL)', 2395, 2454, 149500, 2000, 0, 'Sudah Bayar', '2026-08-28 12:13:13');
 
 --
 -- Indeks untuk tabel yang dibuang
