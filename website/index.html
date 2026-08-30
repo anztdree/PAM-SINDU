@@ -99,6 +99,23 @@
         .popup-tutup:hover { background: var(--merah-muda); color: var(--merah); }
         .popup-impor .dropzone { padding: 13px 10px; font-size: .72rem; }
 
+        /* Menu & panel Setting (import + export laporan PDF) */
+        .set-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 11px;
+            padding: 10px 12px; margin-top: 8px; cursor: pointer;
+            transition: background .12s ease, transform .12s ease; }
+        .set-item:hover { background: #eff6ff; }
+        .set-item:active { transform: scale(.98); }
+        .set-ik { flex: 0 0 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+            background: #e0f2fe; border-radius: 9px; }
+        .set-teks { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .set-teks b { font-size: .78rem; color: #0c4a6e; }
+        .set-teks small { font-size: .66rem; color: #64748b; }
+        .set-chevron { flex: 0 0 auto; color: #94a3b8; font-weight: 800; font-size: 1.05rem; }
+        .btn-kembali { background: none; border: none; color: #0369a1; font-weight: 800;
+            font-size: .72rem; padding: 0 0 6px; cursor: pointer; }
+        .btn-kembali:hover { text-decoration: underline; }
+
         /* Gerbang password menu import */
         .baris-kunci { display: flex; gap: 8px; }
         .baris-kunci .field { flex: 1; min-width: 0; }
@@ -391,51 +408,88 @@
                 <h2>BPSPAMS TIRTA MAKMUR</h2>
                 <p>Penagihan Air &bull; Sinduharjo 08/04 &bull; Mode Lihat</p>
             </div>
-            <button class="btn-impor" id="btnImpor" onclick="togglePopupImpor(event)" aria-expanded="false" title="Impor file .sql hasil export aplikasi utama ke database">
+            <button class="btn-impor" id="btnImpor" onclick="togglePopupImpor(event)" aria-expanded="false" title="Setting — Import data & Export Laporan PDF">
                 <span class="ik" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#0c4a6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <ellipse cx="12" cy="5.5" rx="8" ry="3"/>
-                        <path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
-                        <path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
-                        <path d="M12 16.5v-7"/>
-                        <path d="m9.3 11.5 2.7-2.7 2.7 2.7"/>
+                        <circle cx="12" cy="12" r="3.2"/>
+                        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/>
                     </svg>
                 </span>
-                <b>IMPORT</b>
+                <b>SETTING</b>
             </button>
-            <div class="popup-impor" id="popupImpor" role="dialog" aria-label="Impor file .sql ke database">
+            <div class="popup-impor" id="popupImpor" role="dialog" aria-label="Setting">
                 <div class="popup-kepala">
                     <b style="display:inline-flex; align-items:center; gap:6px;">
                         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#0c4a6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <ellipse cx="12" cy="5.5" rx="8" ry="3"/>
-                            <path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
-                            <path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
-                            <path d="M12 16.5v-7"/>
-                            <path d="m9.3 11.5 2.7-2.7 2.7 2.7"/>
+                            <circle cx="12" cy="12" r="3.2"/>
+                            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/>
                         </svg>
-                        Import .sql ke Database
+                        Setting
                     </b>
                     <button class="popup-tutup" onclick="tutupPopupImpor()" aria-label="Tutup">✕</button>
                 </div>
-                <div id="kunciImpor">
-                    <p class="catatan" style="margin:4px 0 8px;">Menu khusus pengelola. Masukkan password untuk membuka import database.</p>
+
+                <!-- GERBANG PASSWORD (muncul duluan saat klik SETTING) -->
+                <div id="gerbangKunci" style="display:none;">
+                    <p class="catatan" style="margin:4px 0 8px;">Menu khusus pengelola. Masukkan password untuk membuka Setting.</p>
                     <div class="baris-kunci">
-                        <input type="password" id="passImpor" class="field" placeholder="Password import..." autocomplete="off">
+                        <input type="password" id="passImpor" class="field" placeholder="Password..." autocomplete="off">
                         <button class="btn btn-primer" onclick="cobaBukaImpor()">Buka</button>
                     </div>
                 </div>
-                <div id="isiImpor" style="display:none;">
-                    <p class="catatan" style="margin:4px 0 8px;">Ambil file dari aplikasi utama (<b>Export .sql</b>). Periode di file mengganti periode yang sama di database — periode lain tetap aman.</p>
-                    <div class="dropzone" id="dropZone">⬇️ Seret &amp; letakkan file .sql di sini</div>
-                    <button class="btn btn-ungu btn-blok" onclick="document.getElementById('fileSql').click()">📁 Pilih File .sql</button>
-                    <input type="file" id="fileSql" accept=".sql,.txt" style="display:none;">
-                    <div id="infoMuat" class="info-inline"></div>
+
+                <!-- DAFTAR MENU SETTING (muncul setelah password benar) -->
+                <div id="menuSetting" style="display:none;">
+                    <button class="set-item" onclick="bukaPanelImpor()">
+                        <span class="set-ik" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0c4a6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5.5" rx="8" ry="3"/>
+                                <path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
+                                <path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
+                                <path d="M12 16.5v-7"/>
+                                <path d="m9.3 11.5 2.7-2.7 2.7 2.7"/>
+                            </svg>
+                        </span>
+                        <span class="set-teks"><b>Import .sql ke Database</b><small>Ambil data dari aplikasi Petugas</small></span>
+                        <span class="set-chevron">&rsaquo;</span>
+                    </button>
+                    <button class="set-item" onclick="bukaPanelLaporan()">
+                        <span class="set-ik" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0c4a6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                        </span>
+                        <span class="set-teks"><b>Export Laporan PDF</b><small>Laporan bulan ini • gaya buku catatan</small></span>
+                        <span class="set-chevron">&rsaquo;</span>
+                    </button>
+                </div>
+
+                <!-- PANEL IMPORT (password sudah lewat gerbang depan) -->
+                <div id="panelImpor" style="display:none;">
+                    <button class="btn-kembali" onclick="kembaliMenuSetting()">&lsaquo; Menu Setting</button>
+                    <div id="isiImpor">
+                        <p class="catatan" style="margin:4px 0 8px;">Ambil file dari aplikasi utama (<b>Export .sql</b>). Periode di file mengganti periode yang sama di database — periode lain tetap aman.</p>
+                        <div class="dropzone" id="dropZone">⬇️ Seret &amp; letakkan file .sql di sini</div>
+                        <button class="btn btn-ungu btn-blok" onclick="document.getElementById('fileSql').click()">📁 Pilih File .sql</button>
+                        <input type="file" id="fileSql" accept=".sql,.txt" style="display:none;">
+                        <div id="infoMuat" class="info-inline"></div>
+                    </div>
+                </div>
+
+                <!-- PANEL LAPORAN PDF -->
+                <div id="panelLaporan" style="display:none;">
+                    <button class="btn-kembali" onclick="kembaliMenuSetting()">&lsaquo; Menu Setting</button>
+                    <p class="catatan" style="margin:4px 0 8px;">Laporan PDF untuk <b>bulan ini saja</b>: <b id="lblPeriodeLaporan">—</b>. Isi seperti buku catatan: nomor, nama pelanggan, meteran awal–akhir, pemakaian air, dan iuran air. <b>Beban tidak dicantumkan</b> — yang hanya bayar beban ditulis kosong; yang belum bayar (meteran berjalan) diblok kuning <b>tanpa angka rupiah</b>.</p>
+                    <button class="btn btn-primer btn-blok" onclick="exportLaporanPDF()">📄 Buat Laporan PDF</button>
                 </div>
             </div>
         </div>
         <div class="header-status">
             <span class="status-pill">
-                <span class="lbl">Data Tersedia:</span>
+                <span class="lbl">Status :</span>
                 <span id="statusSumber" style="color:#d97706;">⏳ Memuat data...</span>
             </span>
         </div>
@@ -719,7 +773,7 @@
         // default tampil: periode TERBARU yang ada datanya
         idxPeriode = daftarPeriode.length ? daftarPeriode.length - 1 : 0;
         renderSemua();
-        setStatusSumber((dariDb ? "🟢 " : "🟡 ") + teksRentangPeriode(), dariDb ? "#059669" : "#d97706");
+        setStatusSumber(dariDb ? "🟢 Terhubung" : "🟡 Terhubung (cadangan)", dariDb ? "#059669" : "#d97706");
         const info = document.getElementById("infoMuat");
         if (info) info.innerHTML = "Sumber aktif: <b>" + namaSumber + "</b> — <b>" + semuaBaris.length +
             "</b> baris, " + daftarPeriode.length + " periode: " + (daftarPeriode.join(" • ") || "-");
@@ -767,7 +821,7 @@
         modeSumber = "db";
         semuaBaris = []; daftarPeriode = []; excelData = [];
         renderSemua();
-        setStatusSumber("🔴 Data tidak tersedia", "#dc2626");
+        setStatusSumber("🔴 Terputus", "#dc2626");
         showToast("Database tidak terjangkau dan pam.sql tidak ditemukan", "gagal");
     }
 
@@ -1155,28 +1209,50 @@
         }, 3200);
     }
 
-    /* ---------- POPUP IMPORT (pojok kanan atas, kotak kecil + password) ---------- */
+    /* ---------- GERBANG PASSWORD SETTING (klik SETTING → password dulu → baru menu) ---------- */
     const popupImpor = document.getElementById('popupImpor');
     const btnImpor = document.getElementById('btnImpor');
-    const PASS_IMPOR = "root"; // password menu import (harus sama dengan di api.php)
+    const PASS_IMPOR = "root"; // password menu setting (harus sama dengan di api.php)
     let imporTerbuka = false;  // sekali benar, tetap terbuka sampai halaman dimuat ulang
 
-    function tampilIsiImpor() {
-        document.getElementById('kunciImpor').style.display = imporTerbuka ? 'none' : 'block';
-        document.getElementById('isiImpor').style.display = imporTerbuka ? 'block' : 'none';
+    function tampilGerbangKunci() {
+        document.getElementById('gerbangKunci').style.display = 'block';
+        document.getElementById('menuSetting').style.display = 'none';
+        document.getElementById('panelImpor').style.display = 'none';
+        document.getElementById('panelLaporan').style.display = 'none';
     }
     function cobaBukaImpor() {
         const el = document.getElementById('passImpor');
         if ((el.value || "").trim() === PASS_IMPOR) {
             imporTerbuka = true;
-            showToast("Menu import terbuka", "");
+            showToast("Menu setting terbuka", "");
+            tampilMenuSetting();
         } else {
             showToast("Password salah — coba lagi", "gagal");
+            el.value = "";
+            el.focus();
         }
-        el.value = "";
-        tampilIsiImpor();
-        if (!imporTerbuka) el.focus();
     }
+
+    /* ---------- PANEL DALAM MENU SETTING ---------- */
+    function tampilMenuSetting() {
+        document.getElementById('gerbangKunci').style.display = 'none';
+        document.getElementById('menuSetting').style.display = 'block';
+        document.getElementById('panelImpor').style.display = 'none';
+        document.getElementById('panelLaporan').style.display = 'none';
+    }
+    function bukaPanelImpor() {
+        document.getElementById('menuSetting').style.display = 'none';
+        document.getElementById('panelLaporan').style.display = 'none';
+        document.getElementById('panelImpor').style.display = 'block';
+    }
+    function bukaPanelLaporan() {
+        document.getElementById('menuSetting').style.display = 'none';
+        document.getElementById('panelImpor').style.display = 'none';
+        document.getElementById('panelLaporan').style.display = 'block';
+        document.getElementById('lblPeriodeLaporan').innerText = daftarPeriode[idxPeriode] || '-';
+    }
+    function kembaliMenuSetting() { tampilMenuSetting(); }
 
     function posisikanPopupImpor() {
         const r = btnImpor.getBoundingClientRect();
@@ -1185,7 +1261,7 @@
     }
     function bukaPopupImpor() {
         posisikanPopupImpor();
-        tampilIsiImpor();
+        if (imporTerbuka) tampilMenuSetting(); else tampilGerbangKunci(); // password dulu baru menu
         popupImpor.classList.add('buka');
         btnImpor.classList.add('aktif');
         btnImpor.setAttribute('aria-expanded', 'true');
@@ -1200,6 +1276,192 @@
     function togglePopupImpor(e) {
         if (e) e.stopPropagation();
         if (popupImporTerbuka()) tutupPopupImpor(); else bukaPopupImpor();
+    }
+
+    /* ---------- EXPORT LAPORAN PDF (v5 — elegan biru: tipografi berjenjang, garis halus, napas luas) ---------- */
+    function buatDokumenLaporanPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const W = 210, M = 10, LK = W - M * 2; // margin 10mm — napas lebih lega, konten 190mm
+
+        const periode = daftarPeriode[idxPeriode] || '-';
+
+        // jsPDF TIDAK menghitung charSpace utk align right/center — teks meluber melewati
+        // anchor (dulu: "P E R I O D E" terpotong di tepi kertas, label strip geser kanan).
+        // Helper: geser anchor sebesar kelebihan lebar agar rata kanan/tengah benar-benar pas.
+        const teks = (str, x, y, opt) => {
+            const cs = (opt && opt.charSpace) || 0;
+            let ox = x;
+            if (opt && opt.align === 'right') ox = x - cs * (str.length - 1);
+            else if (opt && opt.align === 'center') ox = x - (cs * (str.length - 1)) / 2;
+            doc.text(str, ox, y, opt);
+        };
+
+        // ===== KEPALA DOKUMEN (latar putih, hierarki tipografi, aksen biru) =====
+        // logo: tetes air — garis luar biru + inti biru muda
+        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.65); doc.circle(15, 13.9, 6.4, 'S');
+        doc.setFillColor(96, 141, 234);
+        doc.triangle(15, 9.3, 12.1, 15.1, 17.9, 15.1, 'F');
+        doc.circle(15, 16.6, 3, 'F');
+
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14.5);
+        doc.setTextColor(23, 37, 84);
+        doc.text('BPSPAMS TIRTA MAKMUR', 24.3, 12.4, { charSpace: 0.55 });
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8);
+        doc.setTextColor(100, 116, 139);
+        doc.text('Penagihan Air • Sinduharjo 08/04, Somopuro, Jogonalan', 24.4, 17.4, { charSpace: 0.15 });
+
+        // blok periode kanan-atas: label mikro berjarak + nilai tebal biru
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6.6);
+        doc.setTextColor(148, 163, 184);
+        teks('PERIODE', 200, 10.2, { align: 'right', charSpace: 1.6 });
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5);
+        doc.setTextColor(30, 64, 175);
+        doc.text(String(periode).toUpperCase(), 200, 16.2, { align: 'right' });
+
+        // garis editorial: segmen biru tebal pendek + hairline panjang dalam satu poros
+        doc.setFillColor(30, 64, 175); doc.rect(M, 22, 30, 0.9, 'F');
+        doc.setDrawColor(203, 213, 225); doc.setLineWidth(0.3); doc.line(M + 33, 22.45, 200, 22.45);
+
+        // judul dokumen kiri + keterangan kanan (satu baseline, hierarki jelas)
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+        doc.setTextColor(15, 23, 42);
+        doc.text('LAPORAN IURAN AIR', M, 29.2, { charSpace: 1.9 });
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.9);
+        doc.setTextColor(100, 116, 139);
+        teks('Rekap bulanan iuran air pelanggan — disusun dari catatan petugas', 200, 29.2, { align: 'right', charSpace: 0.15 });
+
+        // ===== HITUNG RINGKASAN =====
+        let totPakai = 0;
+        excelData.forEach(it => {
+            const i = hitungDetailPelanggan(it);
+            totPakai += i.pemakaian;
+        });
+        const rp = n => "Rp " + n.toLocaleString('id-ID');
+
+        // ===== STRIP RINGKASAN (dua angka utama saja — besar & mencolok) =====
+        // bingkai biru tegas (0.55mm) — garis atas/bawah harus JELAS terlihat
+        const yStrip = 36, tStrip = 20;
+        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.55); doc.setFillColor(255, 255, 255);
+        doc.roundedRect(M, yStrip, LK, tStrip, 1.8, 1.8, 'FD');
+        const stat = [
+            ['TOTAL PELANGGAN', String(excelData.length), [15, 23, 42]],
+            ['PEMAKAIAN AIR', totPakai.toLocaleString('id-ID') + ' m³', [30, 64, 175]]
+        ];
+        stat.forEach((s, k) => {
+            const cx = M + LK / 4 * (2 * k + 1); // pusat seksi ke-k (dua seksi sama lebar)
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6);
+            doc.setTextColor(100, 116, 139);
+            teks(s[0], cx, yStrip + 7.2, { align: 'center', charSpace: 1.3 });
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(16.5);
+            doc.setTextColor(s[2][0], s[2][1], s[2][2]);
+            doc.text(s[1], cx, yStrip + 15.2, { align: 'center' });
+            if (k < 1) { // sekat vertikal di tengah (cukup terlihat)
+                doc.setDrawColor(148, 163, 184); doc.setLineWidth(0.35);
+                doc.line(M + LK / 2, yStrip + 4, M + LK / 2, yStrip + tStrip - 4);
+            }
+        });
+
+        // ===== TABEL GAYA BUKU — iuran = biaya air SAJA (beban tidak dicantumkan).
+        // Aturan (permintaan pengelola): hanya bayar beban → kosong tanpa blok;
+        // meteran berjalan tapi belum bayar → blok kuning & rupiah DISEMBUNYIKAN;
+        // sudah bayar → iuran tampil. TOTAL hanya menjumlah iuran yang tampil (terbayar). =====
+        let totalIuran = 0;
+        const belumIdx = new Set();
+        const body = excelData.map((it, i) => {
+            const info = hitungDetailPelanggan(it);
+            const tercatat = it.meter_akhir > 0 && it.meter_akhir >= it.meter_awal;
+            const sudah = it.status === 'Sudah Bayar';
+            const tampilIuran = sudah && info.biayaAir > 0; // hanya yang sudah bayar yang tunjukkan rupiah
+            if (tampilIuran) totalIuran += info.biayaAir;
+            if (!sudah && info.pemakaian > 0) belumIdx.add(i); // blok kuning hanya utk meteran berjalan
+            return [i + 1, it.nama,
+                it.meter_awal,
+                tercatat ? it.meter_akhir : "",
+                tercatat ? info.pemakaian : "",
+                tampilIuran ? rp(info.biayaAir) : ""];
+        });
+        // Baris total iuran air di bawah tabel (biru muda lembut, teks biru tua — penutup yang tenang)
+        body.push([
+            { content: "TOTAL IURAN AIR", colSpan: 5, styles: { halign: "right", fontStyle: "bold", fillColor: [219, 234, 254], textColor: [30, 58, 138] } },
+            { content: rp(totalIuran), styles: { halign: "right", fontStyle: "bold", fillColor: [219, 234, 254], textColor: [30, 58, 138] } }
+        ]);
+
+        doc.autoTable({
+            startY: 61,
+            head: [
+                [
+                    { content: 'NO', rowSpan: 2 },
+                    { content: 'NAMA PELANGGAN', rowSpan: 2 },
+                    { content: 'ANGKA', colSpan: 3 },
+                    { content: 'IURAN (Rp)', rowSpan: 2 }
+                ],
+                ['METERAN AWAL', 'METERAN AKHIR', 'PEMAKAIAN AIR']
+            ],
+            body,
+            theme: 'grid', // garis penuh: horizontal + vertikal — jelas terbaca seperti tabel
+            styles: { font: "helvetica", fontSize: 8.3, cellPadding: 2.25, minCellHeight: 7.2, textColor: [51, 65, 85], lineColor: [113, 130, 156], lineWidth: 0.25 },
+            headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontStyle: "bold", halign: "center", fontSize: 7.5, cellPadding: 2.1, lineColor: [255, 255, 255], lineWidth: 0.3 },
+            columnStyles: {
+                0: { cellWidth: 11, halign: "center", textColor: [148, 163, 184], fontSize: 7.6 },
+                1: { cellWidth: 62, textColor: [15, 23, 42] },
+                2: { cellWidth: 29, halign: "center" },
+                3: { cellWidth: 29, halign: "center" },
+                4: { cellWidth: 27, halign: "center" },
+                5: { cellWidth: 32, halign: "right", textColor: [23, 37, 84] }
+            }, // 11+62+29+29+27+32 = 190mm persis (A4 - margin 10+10)
+            didParseCell: data => {
+                // (kedua baris kepala kini satu biru seragam — blok biru utuh penuh, tanpa "tangga" warna)
+                // blok kuning lembut utk pelanggan belum bayar (meteran berjalan)
+                if (data.section === 'body' && data.row.index < excelData.length && belumIdx.has(data.row.index)) {
+                    data.cell.styles.fillColor = [254, 240, 138];
+                }
+            },
+            margin: { left: M, right: M, top: 13, bottom: 15 }
+        });
+
+        // ===== (legenda dihapus — permintaan pengelola) =====
+
+        // ===== TANDA TANGAN (halaman terakhir, digambar hanya kalau muat) =====
+        const yTtd = doc.lastAutoTable.finalY + 10;
+        if (yTtd + 28 <= 284) {
+            const tglCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8.6); doc.setTextColor(71, 85, 105);
+            doc.text('Somopuro, ' + tglCetak, 165, yTtd, { align: 'center' });
+            const y1 = yTtd + 6.5;
+            doc.setTextColor(51, 65, 85);
+            doc.text('Dibuat oleh,', 45, y1, { align: 'center' });
+            doc.text('Mengetahui,', 165, y1, { align: 'center' });
+            doc.setDrawColor(51, 65, 85); doc.setLineWidth(0.22);
+            const y2 = y1 + 17;
+            doc.line(25, y2, 65, y2);
+            doc.line(145, y2, 185, y2);
+            doc.setFontSize(7.8); doc.setTextColor(100, 116, 139);
+            doc.text('Petugas PAM', 45, y2 + 4.2, { align: 'center' });
+            doc.text('Pengurus', 165, y2 + 4.2, { align: 'center' });
+        }
+
+        // Kaki halus semua halaman + pita biru mungil di puncak halaman lanjutan
+        const jmlHal = doc.getNumberOfPages();
+        for (let p = 1; p <= jmlHal; p++) {
+            doc.setPage(p);
+            if (p > 1) { doc.setFillColor(30, 64, 175); doc.rect(0, 0, W, 2.4, 'F'); }
+            doc.setDrawColor(203, 213, 225); doc.setLineWidth(0.3); doc.line(M, 285.5, 200, 285.5);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.9); doc.setTextColor(148, 163, 184);
+            doc.text('BPSPAMS TIRTA MAKMUR • Dicetak: ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), M, 290, { charSpace: 0.2 });
+            doc.text('Halaman ' + p + ' dari ' + jmlHal, 200, 290, { align: 'right' });
+        }
+        return doc;
+    }
+
+    function exportLaporanPDF() {
+        if (!window.jspdf || !window.jspdf.jsPDF) { showToast("Pustaka PDF belum termuat - cek koneksi internet", "gagal"); return; }
+        if (!excelData.length) { showToast("Belum ada data pada periode ini", "gagal"); return; }
+        const doc = buatDokumenLaporanPDF();
+        const periode = daftarPeriode[idxPeriode] || 'laporan';
+        tutupPopupImpor();
+        doc.save("Laporan-" + periode.replace(/\s+/g, "-") + ".pdf");
+        showToast("Laporan PDF " + periode + " dibuat", "");
     }
 
     /* ---------- WIRING ---------- */
@@ -1243,5 +1505,7 @@
     /* ---------- MULAI ---------- */
     muatData();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>
