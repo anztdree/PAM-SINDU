@@ -1,1 +1,1247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0369a1">
+    <title>BPSPAMS TIRTA MAKMUR - SINDUHARJO 08/04 (Mode Lihat)</title>
 
+    <style>
+        :root {
+            --biru-tua: #0c4a6e;
+            --biru: #0369a1;
+            --biru-terang: #0284c7;
+            --cyan: #0891b2;
+            --cyan-muda: #e0f2fe;
+            --hijau: #059669;
+            --hijau-muda: #d1fae5;
+            --merah: #dc2626;
+            --merah-muda: #fee2e2;
+            --amber: #d97706;
+            --amber-muda: #fef3c7;
+            --ungu: #4f46e5;
+            --teks: #0f172a;
+            --teks-samar: #64748b;
+            --garis: #e2e8f0;
+            --bg-kartu: #ffffff;
+            --bayang-kartu: 0 1px 2px rgba(2,32,71,.06), 0 8px 24px -12px rgba(2,32,71,.12);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            margin: 0;
+            padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(180deg, #e6f1fa 0%, #f1f5f9 260px, #f1f5f9 100%);
+            color: var(--teks);
+        }
+        .container { max-width: 640px; margin: auto; }
+
+        /* ===== HEADER ===== */
+        .header-app {
+            position: relative; overflow: hidden;
+            background: linear-gradient(150deg, var(--biru-tua) 0%, var(--biru) 55%, var(--cyan) 115%);
+            color: #fff; border-radius: 20px; padding: 18px 16px 40px;
+            box-shadow: 0 14px 30px -14px rgba(3,105,161,.6);
+            margin-bottom: 14px;
+        }
+        .header-baris { display: flex; align-items: center; gap: 12px; position: relative; z-index: 30; }
+        .logo-app {
+            width: 46px; height: 46px; flex: 0 0 46px; border-radius: 14px;
+            background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .header-teks { min-width: 0; }
+        .header-teks h2 { margin: 0; font-size: 1.12rem; font-weight: 800; letter-spacing: .3px; }
+        .header-teks p { margin: 3px 0 0; font-size: .78rem; opacity: .88; }
+        .header-status { margin-top: 13px; display: flex; position: relative; z-index: 2; }
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,.96); color: var(--teks);
+            border-radius: 999px; padding: 6px 14px; font-size: .78rem; font-weight: 800;
+            box-shadow: 0 3px 10px rgba(2,32,71,.28);
+        }
+        .status-pill .lbl { color: var(--teks-samar); font-weight: 700; }
+        .ombak { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 30px; display: block; z-index: 1; }
+        .btn-impor {
+            margin-left: auto; flex: 0 0 auto;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            min-width: 58px; min-height: 46px;
+            background: rgba(255,255,255,.95); color: var(--biru-tua);
+            border: 1px solid rgba(255,255,255,.65); border-radius: 13px;
+            padding: 6px 10px; cursor: pointer; font-family: inherit; line-height: 1.15;
+            box-shadow: 0 4px 12px rgba(2,32,71,.22);
+            transition: transform .12s ease, background .12s ease;
+        }
+        .btn-impor:active { transform: scale(.95); }
+        .btn-impor .ik { display: flex; align-items: center; line-height: 1; }
+        .btn-impor b { font-size: .64rem; font-weight: 800; letter-spacing: .4px; }
+        .btn-impor.aktif { background: var(--cyan-muda); border-color: #bae6fd; }
+
+        /* Kotak kecil popup Import (muncul saat tombol diklik) */
+        .popup-impor {
+            position: fixed; z-index: 220; display: none;
+            width: min(320px, calc(100vw - 24px));
+            background: #fff; border: 1px solid rgba(226,232,240,.9);
+            border-radius: 14px; padding: 12px;
+            box-shadow: 0 18px 44px -12px rgba(2,32,71,.45);
+        }
+        .popup-impor.buka { display: block; animation: popImpor .18s ease; }
+        @keyframes popImpor { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        .popup-kepala { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+        .popup-kepala b { flex: 1; font-size: .8rem; color: var(--biru-tua); }
+        .popup-tutup {
+            background: #f1f5f9; border: none; color: var(--teks-samar);
+            width: 26px; height: 26px; border-radius: 999px; font-size: .78rem;
+            cursor: pointer; line-height: 1; flex: 0 0 26px;
+        }
+        .popup-tutup:hover { background: var(--merah-muda); color: var(--merah); }
+        .popup-impor .dropzone { padding: 13px 10px; font-size: .72rem; }
+
+        /* Gerbang password menu import */
+        .baris-kunci { display: flex; gap: 8px; }
+        .baris-kunci .field { flex: 1; min-width: 0; }
+        .baris-kunci .btn { flex: 0 0 auto; padding: 10px 16px; }
+
+        .ombak { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 30px; display: block; z-index: 1; }
+
+        /* ===== KARTU UMUM ===== */
+        .card {
+            background: var(--bg-kartu); border: 1px solid rgba(226,232,240,.9);
+            border-radius: var(--radius); box-shadow: var(--bayang-kartu);
+            padding: 14px; margin-bottom: 12px;
+        }
+        .judul-kartu { font-weight: 800; font-size: .9rem; color: var(--biru-tua); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+        /* ===== PERIODE ===== */
+        .periode-baris {
+            display: flex; align-items: stretch; gap: 10px;
+            background: linear-gradient(180deg, #f0f9ff, #e8f4fd);
+            border: 1px solid #d3ecfb; border-radius: 14px; padding: 10px;
+        }
+        .tombol-chevron {
+            flex: 0 0 46px; border-radius: 12px; border: 1px solid #cfe8f8;
+            background: #fff; color: var(--biru); font-size: 1.7rem; font-weight: 700; line-height: 1;
+            cursor: pointer; box-shadow: 0 1px 3px rgba(2,32,71,.1);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform .12s ease, background .12s ease;
+        }
+        .tombol-chevron:active { transform: scale(.94); background: var(--cyan-muda); }
+        .tombol-chevron:disabled { opacity: .3; cursor: default; transform: none; background: #fff; }
+        .periode-tengah { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+        .periode-label { font-size: .66rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--teks-samar); }
+        .periode-nilai { font-size: 1.32rem; font-weight: 800; color: var(--biru-tua); line-height: 1.3; }
+        .chips-periode { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+        .chip-periode {
+            display: inline-flex; align-items: center; cursor: pointer; padding: 4px 11px;
+            border-radius: 999px; font-size: .68rem; font-weight: 800; white-space: nowrap;
+            background: var(--cyan-muda); color: var(--biru-tua); border: 1px solid #bae6fd;
+            font-family: inherit; transition: transform .12s ease;
+        }
+        .chip-periode:active { transform: scale(.94); }
+        .chip-periode.aktif { background: var(--biru); color: #fff; border-color: var(--biru); box-shadow: 0 2px 8px -3px rgba(3,105,161,.5); }
+
+        /* ===== TOMBOL ===== */
+        .btn {
+            border: none; border-radius: 12px; padding: 11px 14px;
+            font-size: .85rem; font-weight: 800; cursor: pointer; color: #fff;
+            transition: transform .12s ease, filter .12s ease;
+            box-shadow: 0 3px 10px -3px rgba(2,32,71,.3);
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            min-height: 44px; line-height: 1.2;
+        }
+        .btn:active { transform: scale(.97); }
+        .btn:disabled { opacity: .6; cursor: wait; }
+        .btn-blok { width: 100%; }
+        .btn-primer { background: linear-gradient(135deg, var(--biru), var(--biru-terang)); }
+        .btn-ungu { background: linear-gradient(135deg, #4338ca, #4f46e5); }
+        .btn-abu { background: #64748b; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        /* ===== KPI & PROGRES ===== */
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .kpi-penuh { grid-column: 1 / -1; }
+        .kpi {
+            background: #fff; border: 1px solid rgba(226,232,240,.9); border-radius: 14px;
+            box-shadow: var(--bayang-kartu); padding: 12px; display: flex; align-items: center; gap: 10px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(15,23,42,.10); }
+        .kpi-ikon { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .kpi-ikon svg { width: 20px; height: 20px; display: block; }
+        .kpi-biru { background: #dbeafe; color: #2563eb; }
+        .kpi-hijau { background: #d1fae5; color: #059669; }
+        .kpi-cyan { background: #cffafe; color: #0e7490; }
+        .kpi-amber { background: #fef3c7; color: #b45309; }
+        .kpi-isi { min-width: 0; }
+        .kpi-isi span { display: block; font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--teks-samar); }
+        .kpi-isi b { display: block; font-size: 1rem; font-weight: 800; color: var(--teks); font-variant-numeric: tabular-nums; line-height: 1.25; }
+        .kpi-penuh .kpi-isi b { font-size: 1.15rem; }
+        .kpi-cap { display: block; font-size: .6rem; font-weight: 600; font-style: normal; color: var(--teks-samar); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .teks-hijau { color: var(--hijau) !important; }
+        .teks-cyan { color: var(--cyan) !important; }
+
+        .progres-bungkus {
+            background: #fff; border: 1px solid rgba(226,232,240,.9); border-radius: 14px;
+            box-shadow: var(--bayang-kartu); padding: 12px 14px; margin-bottom: 12px;
+        }
+        .progres-label { display: flex; justify-content: space-between; align-items: baseline; font-size: .73rem; font-weight: 800; color: var(--teks-samar); margin-bottom: 7px; }
+        .progres-label b { color: var(--hijau); font-size: .8rem; }
+        .progres { height: 9px; border-radius: 999px; background: #e2e8f0; overflow: hidden; box-shadow: inset 0 1px 2px rgba(2,32,71,.1); }
+        .progres-isi { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #34d399, #059669); transition: width .5s ease; }
+
+        /* ===== INPUT & CARI ===== */
+        input.field, select.field {
+            width: 100%; padding: 11px 13px; border: 1.5px solid var(--garis); border-radius: 12px;
+            font-size: .9rem; outline: none; background: #fff; color: var(--teks);
+            transition: border-color .15s ease, box-shadow .15s ease; min-height: 44px;
+        }
+        input.field:focus, select.field:focus { border-color: var(--biru-terang); box-shadow: 0 0 0 3px rgba(2,132,199,.14); }
+        .kotak-cari { position: relative; }
+        .ikon-cari { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: .95rem; opacity: .55; }
+        .kotak-cari input.field { padding-left: 42px; border-radius: 999px; }
+
+        /* ===== DAFTAR PELANGGAN (REFERENSI B — nama & tagihan besar, tanpa label kapital kecil) ===== */
+        .daftar-pelanggan { display: flex; flex-direction: column; gap: 10px; }
+        .pel-kartu {
+            background: #fff; border: 1.5px solid var(--garis); border-radius: 14px; padding: 12px 14px;
+            transition: box-shadow .15s ease, transform .15s ease;
+        }
+        .pel-kartu:hover { box-shadow: 0 8px 20px -10px rgba(2,32,71,.25); }
+        .pel-atas { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .pel-nama {
+            flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: 1.05rem; color: var(--teks); letter-spacing: .2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .pel-info {
+            display: block; margin-top: 3px; padding-left: 38px;
+            font-size: .84rem; font-weight: 600; color: #64748b;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .pel-info b { color: var(--teks); font-weight: 800; font-variant-numeric: tabular-nums; }
+        .pel-mini {
+            display: inline-flex; align-items: center; flex: 0 0 auto; padding: 6px 14px;
+            border-radius: 999px; font-size: .9rem; font-weight: 800; white-space: nowrap;
+        }
+        .pel-mini-lunas { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
+        .pel-bawah {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            margin-top: 9px; padding-top: 9px; border-top: 2px solid #eef2f7;
+        }
+        .pel-tagihan { min-width: 0; }
+        .pel-tagihan-label { display: block; font-size: .72rem; font-weight: 700; color: #64748b; margin-bottom: 1px; }
+        .pel-tagihan b {
+            display: block; font-size: 1.15rem; font-weight: 900; line-height: 1.2;
+            color: var(--biru); font-variant-numeric: tabular-nums; white-space: nowrap;
+        }
+        .pel-tagihan b.pel-tagihan-kosong { font-size: 1rem; color: var(--teks-samar); font-weight: 700; }
+        .pel-nomor {
+            display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+            min-width: 28px; height: 26px; padding: 0 6px; border-radius: 8px; margin-top: 1px;
+            background: var(--cyan-muda); color: var(--biru-tua); border: 1px solid #bae6fd;
+            font-size: .78rem; font-weight: 800; font-variant-numeric: tabular-nums;
+        }
+        /* Tombol LIHAT — satu-satunya cara membuka rincian pelanggan */
+        .btn-lihat {
+            flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px;
+            border: none; cursor: pointer; font-family: inherit;
+            background: var(--biru); color: #fff; border-radius: 999px;
+            padding: 7px 14px; font-size: .78rem; font-weight: 800; letter-spacing: .3px;
+            box-shadow: 0 2px 6px -2px rgba(3,105,161,.5);
+            transition: transform .12s ease, background .12s ease;
+        }
+        .btn-lihat:active { transform: scale(.94); background: var(--biru-tua); }
+        .btn-lihat:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+        /* ---------- NOTA PEMBAYARAN (modal LIHAT) ---------- */
+        .nota { border: 2.5px solid #1e40af; border-radius: 10px; overflow: hidden; background: #fff; }
+        .nota-atas { background: #1e40af; color: #fff; text-align: center; padding: 10px 12px; }
+        .nota-judul { font-weight: 900; font-size: .93rem; letter-spacing: .4px; }
+        .nota-sub { font-size: .7rem; opacity: .92; margin-top: 2px; }
+        .nota-badan { padding: 12px 14px; }
+        .nota-identitas { display: flex; flex-direction: column; gap: 3px; font-size: .85rem; margin-bottom: 10px; }
+        .nota-identitas b { font-weight: 800; }
+        .nota-banner { border-radius: 9px; text-align: center; padding: 10px 12px; margin-bottom: 10px; }
+        .nota-banner-merah { background: #fef2f2; border: 1.5px solid #fecaca; color: #b91c1c; }
+        .nota-banner-hijau { background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #047857; }
+        .nota-banner .banner-utama { font-size: .8rem; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+        .nota-banner .banner-angka { font-size: 1.5rem; font-weight: 900; line-height: 1.25; font-variant-numeric: tabular-nums; }
+        .nota-banner .banner-sub { font-size: .74rem; font-weight: 700; opacity: .9; margin-top: 2px; }
+        .nota-bulan { padding: 8px 10px; border: 1px dashed #cbd5e1; border-radius: 9px; margin-bottom: 8px; background: #fbfdff; }
+        .nota-bulan-judul { font-weight: 900; font-size: .82rem; color: #b91c1c; letter-spacing: .2px; }
+        .nota-baris { display: flex; justify-content: space-between; gap: 10px; font-size: .84rem; padding: 2px 0 0 12px; }
+        .nota-baris b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .nota-jumlah { border-top: 1px dashed #cbd5e1; margin-top: 4px; padding-top: 4px; font-weight: 800; }
+        .nota-total { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #1e40af; margin-top: 10px; padding-top: 8px; color: #1e40af; font-weight: 900; font-size: .93rem; }
+        .nota-total b { font-size: 1.06rem; font-variant-numeric: tabular-nums; }
+        .nota-bayar { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 10px; font-size: .82rem; display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-top: 10px; }
+        .nota-bayar b { font-variant-numeric: tabular-nums; }
+        .nota-petugas { text-align: center; font-size: .76rem; color: #334155; margin-top: 10px; }
+        .nota-petugas b { font-size: .88rem; letter-spacing: .5px; color: #0f172a; white-space: nowrap; }
+        /* stempel status di nota (kayak cap karet di kuitansi) */
+        .nota-stempel-baris { text-align: right; margin: 0 0 8px; }
+        .nota-stempel {
+            display: inline-block; padding: 6px 16px;
+            border: 3px solid currentColor; border-radius: 10px;
+            font-weight: 900; font-size: 1rem; letter-spacing: 3px; text-transform: uppercase;
+            transform: rotate(-8deg);
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,.9), inset 0 0 0 3.5px currentColor;
+            opacity: .95;
+        }
+        .nota-stempel-lunas { color: #16a34a; background: #f0fdf4; }
+        .nota-stempel-belum { color: #dc2626; background: #fef2f2; }
+        @media (max-width: 560px) {
+            .nota-bayar { flex-direction: column; gap: 4px; text-align: center; }
+        }
+        .kosong-cari { text-align: center; color: var(--teks-samar); font-size: .85rem; padding: 18px 0 6px; }
+
+        /* ===== PANEL COLLAPSIBLE ===== */
+        .panel { border: 1.5px dashed #cbd5e1; border-radius: 12px; margin-top: 10px; background: #fbfdff; }
+        .panel-summary {
+            list-style: none; cursor: pointer; padding: 11px 12px; font-weight: 800; font-size: .8rem;
+            color: var(--biru-tua); display: flex; align-items: center; gap: 8px; user-select: none;
+        }
+        .panel-summary::-webkit-details-marker { display: none; }
+        .panel-chevron { display: inline-flex; transition: transform .2s ease; font-size: .68rem; color: var(--teks-samar); }
+        details[open] > .panel-summary .panel-chevron { transform: rotate(90deg); }
+        .panel-isi { padding: 2px 12px 12px; }
+        .mj-sub { margin-left: auto; font-size: .66rem; font-weight: 700; color: var(--teks-samar); letter-spacing: .2px; }
+        .catatan { font-size: .74rem; color: var(--teks-samar); line-height: 1.55; margin: 8px 0; }
+        .info-inline { font-size: .74rem; color: #334155; line-height: 1.55; margin-top: 8px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 8px 10px; }
+        .info-inline:empty { display: none; }
+        .dropzone {
+            border: 1.5px dashed #cbd5e1; border-radius: 12px; background: #fbfdff;
+            padding: 16px 12px; text-align: center; font-size: .78rem; font-weight: 700; color: var(--teks-samar);
+            transition: border-color .15s ease, background .15s ease; margin-bottom: 8px;
+        }
+        .dropzone.dragover { border-color: var(--biru-terang); background: var(--cyan-muda); color: var(--biru-tua); }
+
+        /* ===== MODAL ===== */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8,47,73,.55); z-index: 100; overflow-y: auto; backdrop-filter: blur(3px); }
+        .modal-content-wrapper { padding: 16px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        .form-box {
+            background: #fff; border-radius: 18px; width: 100%; max-width: 430px; overflow: hidden;
+            box-shadow: 0 24px 60px -12px rgba(2,32,71,.45); animation: naikModal .25s ease; margin: auto;
+        }
+        @keyframes naikModal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+        .modal-kepala {
+            background: linear-gradient(135deg, var(--biru-tua), var(--biru-terang));
+            color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-kepala h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+        .tombol-tutup {
+            background: rgba(255,255,255,.2); border: none; color: #fff; width: 30px; height: 30px;
+            border-radius: 999px; font-size: .85rem; cursor: pointer; line-height: 1; flex: 0 0 30px;
+        }
+        .modal-isi { padding: 14px 16px 16px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: .72rem; font-weight: 800; margin-bottom: 5px; color: var(--biru-tua); text-transform: uppercase; letter-spacing: .5px; }
+        input.form-input {
+            width: 100%; padding: 11px 12px; border: 1.5px solid var(--garis); border-radius: 11px;
+            font-size: .92rem; outline: none; transition: border-color .15s ease, box-shadow .15s ease;
+            font-variant-numeric: tabular-nums; min-height: 44px;
+        }
+        input.form-input:focus { border-color: var(--biru-terang); box-shadow: 0 0 0 3px rgba(2,132,199,.14); }
+        input.form-input[readonly] { background: #f1f5f9; font-weight: 800; color: var(--biru-tua); }
+        .ringkasan {
+            background: linear-gradient(180deg, #f0f9ff, #f8fcff); border: 1px solid #d3ecfb;
+            padding: 11px 13px; border-radius: 12px; margin: 12px 0; font-size: .82rem; line-height: 1.65;
+        }
+        .baris-ringkas { display: flex; justify-content: space-between; gap: 8px; }
+        .pemisah-ringkas { border: 0; border-top: 1px dashed #bae6fd; margin: 7px 0; }
+        .total-baris { font-size: .95rem; color: var(--biru-tua); font-weight: 800; }
+        .baris-tombol { display: flex; gap: 6px; margin-bottom: 8px; }
+        .baris-tombol .btn { flex: 1; font-size: .78rem; padding: 10px 6px; }
+
+        /* ===== TOAST ===== */
+        .toast-wrap {
+            position: fixed; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+            display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 300;
+            pointer-events: none; padding: 0 16px;
+        }
+        .toast {
+            background: #fff; border-radius: 12px; padding: 10px 16px; font-size: .82rem; font-weight: 700;
+            color: var(--teks); box-shadow: 0 10px 30px -8px rgba(2,32,71,.38);
+            border-left: 4px solid var(--hijau); opacity: 0; transform: translateY(14px);
+            transition: opacity .28s ease, transform .28s ease; max-width: 100%;
+        }
+        .toast.muncul { opacity: 1; transform: none; }
+        .toast-gagal { border-left-color: var(--merah); }
+        .toast-info { border-left-color: var(--biru-terang); }
+
+        .kaki-app { text-align: center; font-size: .72rem; color: #94a3b8; line-height: 1.7; padding: 8px 0 2px; }
+
+        button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--biru-terang); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HEADER -->
+    <div class="header-app">
+        <div class="header-baris">
+            <div class="logo-app" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+                    <path d="M12 2.8c3.3 4.1 6.2 7.4 6.2 10.7a6.2 6.2 0 1 1-12.4 0C5.8 10.2 8.7 6.9 12 2.8z" fill="#ffffff"/>
+                    <path d="M9.1 13.6a2.9 2.9 0 0 0 2 4.3" stroke="#0369a1" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="header-teks">
+                <h2>BPSPAMS TIRTA MAKMUR</h2>
+                <p>Penagihan Air &bull; Sinduharjo 08/04 &bull; Mode Lihat</p>
+            </div>
+            <button class="btn-impor" id="btnImpor" onclick="togglePopupImpor(event)" aria-expanded="false" title="Impor file .sql hasil export aplikasi utama ke database">
+                <span class="ik" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#0c4a6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5.5" rx="8" ry="3"/>
+                        <path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
+                        <path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
+                        <path d="M12 16.5v-7"/>
+                        <path d="m9.3 11.5 2.7-2.7 2.7 2.7"/>
+                    </svg>
+                </span>
+                <b>IMPORT</b>
+            </button>
+            <div class="popup-impor" id="popupImpor" role="dialog" aria-label="Impor file .sql ke database">
+                <div class="popup-kepala">
+                    <b style="display:inline-flex; align-items:center; gap:6px;">
+                        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#0c4a6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <ellipse cx="12" cy="5.5" rx="8" ry="3"/>
+                            <path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
+                            <path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>
+                            <path d="M12 16.5v-7"/>
+                            <path d="m9.3 11.5 2.7-2.7 2.7 2.7"/>
+                        </svg>
+                        Import .sql ke Database
+                    </b>
+                    <button class="popup-tutup" onclick="tutupPopupImpor()" aria-label="Tutup">✕</button>
+                </div>
+                <div id="kunciImpor">
+                    <p class="catatan" style="margin:4px 0 8px;">Menu khusus pengelola. Masukkan password untuk membuka import database.</p>
+                    <div class="baris-kunci">
+                        <input type="password" id="passImpor" class="field" placeholder="Password import..." autocomplete="off">
+                        <button class="btn btn-primer" onclick="cobaBukaImpor()">Buka</button>
+                    </div>
+                </div>
+                <div id="isiImpor" style="display:none;">
+                    <p class="catatan" style="margin:4px 0 8px;">Ambil file dari aplikasi utama (<b>Export .sql</b>). Periode di file mengganti periode yang sama di database — periode lain tetap aman.</p>
+                    <div class="dropzone" id="dropZone">⬇️ Seret &amp; letakkan file .sql di sini</div>
+                    <button class="btn btn-ungu btn-blok" onclick="document.getElementById('fileSql').click()">📁 Pilih File .sql</button>
+                    <input type="file" id="fileSql" accept=".sql,.txt" style="display:none;">
+                    <div id="infoMuat" class="info-inline"></div>
+                </div>
+            </div>
+        </div>
+        <div class="header-status">
+            <span class="status-pill">
+                <span class="lbl">Data Tersedia:</span>
+                <span id="statusSumber" style="color:#d97706;">⏳ Memuat data...</span>
+            </span>
+        </div>
+        <svg class="ombak" viewBox="0 0 1440 44" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,26 C180,44 360,4 560,16 C760,28 900,8 1100,18 C1260,26 1360,14 1440,22 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.14)"/>
+            <path d="M0,34 C220,20 420,40 640,30 C860,20 1040,38 1240,30 C1340,26 1400,32 1440,30 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.20)"/>
+        </svg>
+    </div>
+
+    <!-- PANEL PERIODE (navigasi antar bulan yang ada datanya) -->
+    <div class="card">
+        <div class="periode-baris">
+            <button class="tombol-chevron" id="btnPrev" onclick="bulanLalu()" aria-label="Periode sebelumnya">&#8249;</button>
+            <div class="periode-tengah">
+                <span class="periode-label">Periode Aktif</span>
+                <span class="periode-nilai" id="labelPeriodeAktif">&mdash;</span>
+            </div>
+            <button class="tombol-chevron" id="btnNext" onclick="bulanBerikutnya()" aria-label="Periode berikutnya">&#8250;</button>
+        </div>
+        <div class="chips-periode" id="chipsPeriode" style="display:none;"></div>
+    </div>
+
+    <!-- REKAP / KPI -->
+    <div class="kpi-grid">
+        <div class="kpi kpi-penuh">
+            <div class="kpi-ikon kpi-biru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="kpi-isi"><span>Total Pelanggan</span><b id="recTotalPelanggan">0</b><i class="kpi-cap">terdaftar bulan ini</i></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-ikon kpi-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+            <div class="kpi-isi"><span>Pemakaian Air</span><b id="recTotalM3" class="teks-cyan">0 m&sup3;</b><i class="kpi-cap" id="capPemakaian">&nbsp;</i></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-ikon kpi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
+            <div class="kpi-isi"><span>Total Uang</span><b id="recTotalUangM3" class="teks-hijau">Rp 0</b></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-ikon kpi-biru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div>
+            <div class="kpi-isi"><span>Air Terbayar</span><b id="recAirLunas" class="teks-cyan">0 m&sup3;</b><i class="kpi-cap" id="capAirLunas">&nbsp;</i></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-ikon kpi-hijau"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div>
+            <div class="kpi-isi"><span>Uang Masuk</span><b id="recUangMasuk" class="teks-hijau">Rp 0</b></div>
+        </div>
+    </div>
+
+    <div class="progres-bungkus">
+        <div class="progres-label">
+            <span>Progres Pembayaran (pemakai air)</span>
+            <b id="persenLunas">0%</b>
+        </div>
+        <div class="progres"><div id="barLunas" class="progres-isi" style="width:0%"></div></div>
+    </div>
+
+    <!-- PENCARIAN -->
+    <div class="card">
+        <div class="kotak-cari">
+            <span class="ikon-cari">🔍</span>
+            <input type="text" id="searchInput" class="field" oninput="cariPelanggan()" placeholder="Cari nama pelanggan...">
+        </div>
+    </div>
+
+    <!-- DAFTAR PELANGGAN -->
+    <div class="card">
+        <div class="judul-kartu">🏠 Daftar Pelanggan<span class="mj-sub" id="hitungDaftar"></span></div>
+        <div id="tabelBody" class="daftar-pelanggan"></div>
+        <div id="kosongPencarian" class="kosong-cari" style="display:none;">😕 Tidak ada pelanggan yang cocok dengan pencarian.</div>
+        <div id="kosongData" style="display:none;">
+            <div class="catatan" style="text-align:center;">Belum ada data yang bisa ditampilkan.</div>
+            <div class="info-inline">
+                <b>Cara menghubungkan database:</b><br>
+                1. Unggah <b>index.html</b> dan <b>api.php</b> ke folder yang sama di hosting PHP (contoh: htdocs InfinityFree).<br>
+                2. Pastikan konfigurasi database di dalam api.php sudah sesuai.<br>
+                3. Buka halaman ini — data otomatis dibaca dari database MySQL.<br>
+                4. Mengisi data: <b>Export .sql</b> dari aplikasi utama &rarr; tombol <b>Import</b> di pojok kanan atas.
+            </div>
+        </div>
+    </div>
+
+    <footer class="kaki-app">
+        BPSPAMS TIRTA MAKMUR &bull; SINDUHARJO 08/04<br>
+        <span>Mode lihat saja &mdash; data tersimpan di database MySQL (api.php). Untuk mencatat / mengedit, gunakan aplikasi utama.</span>
+    </footer>
+</div>
+
+<!-- MODAL RINCIAN (BACA SAJA) -->
+<div id="modalRincian" class="modal">
+    <div class="modal-content-wrapper">
+        <div class="form-box">
+            <div class="modal-kepala">
+                <h3>🧾 Nota Pelanggan</h3>
+                <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup">✕</button>
+            </div>
+            <div class="modal-isi">
+                <div id="notaIsi"><!-- nota digenerate oleh JS --></div>
+                <div class="baris-tombol">
+                    <button class="btn btn-abu" onclick="tutupModal()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WADAH TOAST NOTIFIKASI -->
+<div id="toastWrap" class="toast-wrap"></div>
+<script>
+    /* ============================================================
+       PAM SINDU — MODE LIHAT (view-only)
+       Tampilan & rumus diambil persis dari aplikasi utama.
+       Sumber data: DATABASE MySQL via api.php (letakkan index.html
+       dan api.php satu folder di hosting PHP). Import .sql mengirim
+       baris ke database sehingga semua pengunjung melihat data sama.
+       Fallback pam.sql hanya untuk demo tanpa hosting PHP.
+       ============================================================ */
+
+    const TARIF_PER_M3 = 2500;        // sama seperti aplikasi utama
+    const BIAYA_BEBAN_STANDAR = 2000; // sama seperti aplikasi utama
+
+    let semuaBaris = [];    // seluruh baris hasil parse (urutan sesuai file)
+    let daftarPeriode = []; // teks periode unik, urut kronologis
+    let idxPeriode = 0;     // indeks periode aktif di daftarPeriode
+    let excelData = [];     // baris periode aktif (nama variabel sama seperti aplikasi utama)
+
+    function num(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+    /* ---------- PARSER .SQL (identik dengan aplikasi utama) ---------- */
+    function ekstrakInserts(sqlText) {
+        const hasil = [];
+        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan`?\s*\(/gi;
+        let m;
+        while ((m = re.exec(sqlText)) !== null) {
+            let i = m.index, stmt = "", inStr = false;
+            while (i < sqlText.length) {
+                const ch = sqlText[i];
+                if (inStr) {
+                    if (ch === "\\" && i + 1 < sqlText.length) { stmt += ch + sqlText[i + 1]; i += 2; continue; }
+                    if (ch === "'") inStr = false;
+                    stmt += ch; i++; continue;
+                }
+                if (ch === "'") { inStr = true; stmt += ch; i++; continue; }
+                if (ch === ";") break;
+                stmt += ch; i++;
+            }
+            hasil.push(stmt.trim());
+            re.lastIndex = i;
+        }
+        return hasil;
+    }
+
+    function parseInsertBaris(stmt) {
+        const mVal = stmt.toUpperCase().indexOf("VALUES");
+        if (mVal < 0) return [];
+        const mOpen = stmt.indexOf("(");
+        if (mOpen < 0 || mOpen > mVal) return [];
+        const kolom = stmt.slice(mOpen + 1, stmt.indexOf(")", mOpen))
+            .split(",").map(s => s.trim().replace(/`/g, ""));
+        const sisa = stmt.slice(stmt.indexOf("(", mVal));
+
+        const tupleTeks = [];
+        let cur = "", depth = 0, inStr = false, i = 0;
+        while (i < sisa.length) {
+            const ch = sisa[i];
+            if (inStr) {
+                if (ch === "\\" && i + 1 < sisa.length) { cur += ch + sisa[i + 1]; i += 2; continue; }
+                if (ch === "'") inStr = false;
+                cur += ch; i++; continue;
+            }
+            if (ch === "'") { inStr = true; cur += ch; i++; continue; }
+            if (ch === "(") {
+                depth++;
+                if (depth === 1) { cur = ""; i++; continue; }
+            } else if (ch === ")") {
+                depth--;
+                if (depth === 0) { tupleTeks.push(cur); cur = ""; i++; continue; }
+            }
+            if (depth > 0) cur += ch;
+            i++;
+        }
+
+        const hasil = [];
+        for (const t of tupleTeks) {
+            const nilai = [];
+            let v = "", str = false, j = 0;
+            while (j < t.length) {
+                const ch = t[j];
+                if (str) {
+                    if (ch === "\\" && j + 1 < t.length) { v += t[j + 1]; j += 2; continue; }
+                    if (ch === "'") { str = false; j++; continue; }
+                    v += ch; j++; continue;
+                }
+                if (ch === "'") { str = true; j++; continue; }
+                if (ch === ",") { nilai.push(v.trim()); v = ""; j++; continue; }
+                v += ch; j++;
+            }
+            if (v.trim() !== "") nilai.push(v.trim());
+            if (kolom.length === 0 || nilai.length === 0) continue;
+            const row = {};
+            kolom.forEach((k, idx) => { if (idx < nilai.length) row[k] = nilai[idx]; });
+            hasil.push(row);
+        }
+        return hasil;
+    }
+
+    function barisDariSql(r) {
+        if (!r || !r.periode || !r.nama) return null;
+        return {
+            periode: r.periode,
+            nama: r.nama,
+            meter_awal: num(r.meter_awal),
+            meter_akhir: num(r.meter_akhir),
+            cash: num(r.cash),
+            biaya_beban: num(r.biaya_beban),
+            saldo_lalu: num(r.saldo_lalu),
+            status: (r.status === "Sudah Bayar") ? "Sudah Bayar" : "Belum Bayar"
+        };
+    }
+
+    /* ---------- URUTAN PERIODE KRONOLOGIS (tanpa hardcode nama bulan) ---------- */
+    const NAMA_BULAN = {
+        januari: 1, februari: 2, maret: 3, april: 4, mei: 5, juni: 6, juli: 7,
+        agustus: 8, september: 9, oktober: 10, november: 11, desember: 12,
+        january: 1, february: 2, march: 3, may: 5, june: 6, july: 7,
+        august: 8, october: 10, december: 12
+    };
+
+    function kunciPeriode(teks) {
+        const s = String(teks || "").toLowerCase();
+        let tahun = 0, bulan = 0;
+        const mTahun = s.match(/(20\d{2}|19\d{2})/);
+        if (mTahun) tahun = parseInt(mTahun[1], 10);
+        for (const nm in NAMA_BULAN) {
+            if (s.indexOf(nm) >= 0) { bulan = NAMA_BULAN[nm]; break; }
+        }
+        if (!bulan && mTahun) {
+            // format angka: 2026-06 / 2026/06 (tahun dulu), atau 06-2026 / 06/2026
+            let m = s.match(/20\d{2}\D(\d{1,2})\b/);
+            if (m) bulan = parseInt(m[1], 10);
+            else { m = s.match(/\b(\d{1,2})\D+20\d{2}/); if (m) bulan = parseInt(m[1], 10); }
+        }
+        if (bulan < 1 || bulan > 12) bulan = 0;
+        return { kunci: (tahun || 0) * 12 + (bulan || 0) };
+    }
+
+    function susunPeriode(baris) {
+        const teksUnik = [];
+        const posisi = {};
+        baris.forEach(r => {
+            if (!(r.periode in posisi)) { posisi[r.periode] = teksUnik.length; teksUnik.push(r.periode); }
+        });
+        teksUnik.sort((a, b) => {
+            const ka = kunciPeriode(a), kb = kunciPeriode(b);
+            if (ka.kunci !== kb.kunci) return ka.kunci - kb.kunci;
+            return posisi[a] - posisi[b];
+        });
+        return teksUnik;
+    }
+
+    /* ---------- STATUS SUMBER DATA ---------- */
+    function setStatusSumber(teks, warna) {
+        const el = document.getElementById("statusSumber");
+        if (el) { el.innerText = teks; el.style.color = warna; }
+    }
+
+    /* ---------- MUAT DATA (utama: DATABASE via api.php) ---------- */
+    let modeSumber = "db"; // "db" = MySQL via api.php | "lokal" = pam.sql / file manual (tanpa database)
+
+    /* ---------- TEKS RENTANG PERIODE (ramah pengunjung) ---------- */
+    function teksRentangPeriode() {
+        if (!daftarPeriode.length) return "belum ada data";
+        if (daftarPeriode.length === 1) return daftarPeriode[0];
+        const awal = daftarPeriode[0], akhir = daftarPeriode[daftarPeriode.length - 1];
+        // tahun sama -> "Juni – Agustus 2026", beda tahun -> "Desember 2025 – Februari 2026"
+        const thAkhir = akhir.split(" ").pop();
+        const awalSingkat = awal.endsWith(" " + thAkhir) ? awal.slice(0, awal.length - thAkhir.length - 1) : awal;
+        return awalSingkat + " – " + akhir;
+    }
+
+    function terapkanBaris(baris, namaSumber, dariDb) {
+        semuaBaris = baris;
+        daftarPeriode = susunPeriode(semuaBaris);
+        // default tampil: periode TERBARU yang ada datanya
+        idxPeriode = daftarPeriode.length ? daftarPeriode.length - 1 : 0;
+        renderSemua();
+        setStatusSumber((dariDb ? "🟢 " : "🟡 ") + teksRentangPeriode(), dariDb ? "#059669" : "#d97706");
+        const info = document.getElementById("infoMuat");
+        if (info) info.innerHTML = "Sumber aktif: <b>" + namaSumber + "</b> — <b>" + semuaBaris.length +
+            "</b> baris, " + daftarPeriode.length + " periode: " + (daftarPeriode.join(" • ") || "-");
+    }
+
+    // baris dari api.php (MySQL) → bentuk yang sama dengan hasil parse .sql
+    function barisDariDb(r) {
+        return barisDariSql({
+            periode: r.periode, nama: r.nama,
+            meter_awal: r.meter_awal, meter_akhir: r.meter_akhir,
+            cash: r.cash, biaya_beban: r.biaya_beban,
+            saldo_lalu: r.saldo_lalu, status: r.status
+        });
+    }
+
+    async function muatData() {
+        setStatusSumber("⏳ Memuat data...", "#d97706");
+
+        // 1) UTAMA: database MySQL via api.php
+        try {
+            const res = await fetch("api.php?action=get_data&v=" + Date.now());
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const json = await res.json();
+            if (!json || json.status !== "success" || !Array.isArray(json.data)) throw new Error("jawaban api tidak dikenali");
+            modeSumber = "db";
+            const baris = json.data.map(barisDariDb).filter(Boolean);
+            terapkanBaris(baris, "Database (MySQL)", true);
+            showToast("Data " + teksRentangPeriode() + " siap ditampilkan", "");
+            return;
+        } catch (err) { /* lanjut ke fallback di bawah */ }
+
+        // 2) FALLBACK: pam.sql di folder (misal preview/demo tanpa hosting PHP)
+        try {
+            const res = await fetch("pam.sql?v=" + Date.now());
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const teks = await res.text();
+            if (teks.indexOf("INSERT INTO") < 0) throw new Error("format");
+            modeSumber = "lokal";
+            terapkanSql(teks, "pam.sql (lokal)", false);
+            showToast("Database tidak terjangkau — menampilkan pam.sql lokal", "info");
+            return;
+        } catch (err) { /* lanjut ke keadaan kosong */ }
+
+        // 3) KOSONG: database tidak terjangkau & tidak ada pam.sql
+        modeSumber = "db";
+        semuaBaris = []; daftarPeriode = []; excelData = [];
+        renderSemua();
+        setStatusSumber("🔴 Data tidak tersedia", "#dc2626");
+        showToast("Database tidak terjangkau dan pam.sql tidak ditemukan", "gagal");
+    }
+
+    function barisMentahDariSql(teksSql) {
+        const hasil = [];
+        ekstrakInserts(teksSql).forEach(st => {
+            parseInsertBaris(st).forEach(r => hasil.push(r));
+        });
+        return hasil;
+    }
+
+    function terapkanSql(teksSql, namaSumber, dariDb) {
+        const hasil = barisMentahDariSql(teksSql).map(barisDariSql).filter(Boolean);
+        terapkanBaris(hasil, namaSumber, dariDb);
+    }
+
+    /* ---------- IMPORT .SQL → KIRIM KE DATABASE ---------- */
+    function muatFileManual(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const teks = String(e.target.result || "");
+            if (teks.indexOf("INSERT INTO") < 0) {
+                showToast("File tidak berisi INSERT INTO transaksi_pelanggan yang dikenali", "gagal");
+                return;
+            }
+
+            // database tidak tersedia → tampilkan lokal saja (tidak mengubah apa pun)
+            if (modeSumber !== "db") {
+                terapkanSql(teks, file.name + " (lokal)", false);
+                showToast("Database tidak terjangkau — file hanya ditampilkan lokal", "info");
+                return;
+            }
+
+            if (!confirm("Kirim isi file \"" + file.name + "\" ke DATABASE?\n\n" +
+                "Periode yang ada di file akan DIGANTI dengan isi file (tidak dobel).\n" +
+                "Periode lain di database tetap aman.")) return;
+
+            setStatusSumber("⏳ Mengirim ke database...", "#d97706");
+            fetch("api.php?action=import_rows", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: PASS_IMPOR, rows: barisMentahDariSql(teks) })
+            })
+            .then(r => r.json())
+            .then(json => {
+                if (!json || json.status !== "success") throw new Error((json && json.message) || "gagal tanpa keterangan");
+                showToast("Tersimpan ke database: " + json.tersimpan + " baris (" + (json.periode || []).join(", ") + ")", "");
+                tutupPopupImpor(); // kotak kecil ditutup, daftar segar terlihat
+                muatData(); // baca ulang isi database terbaru
+            })
+            .catch(err => {
+                setStatusSumber("🔴 Data tidak tersimpan", "#dc2626");
+                showToast("Gagal kirim ke database: " + err.message, "gagal");
+            });
+        };
+        reader.readAsText(file);
+    }
+
+    /* ---------- RENDER ---------- */
+    function renderSemua() {
+        renderPeriode();
+        muatDataPeriodeAktif();
+        renderDaftar();
+    }
+
+    function renderPeriode() {
+        const label = document.getElementById("labelPeriodeAktif");
+        const btnPrev = document.getElementById("btnPrev");
+        const btnNext = document.getElementById("btnNext");
+        const chips = document.getElementById("chipsPeriode");
+        if (!daftarPeriode.length) {
+            label.innerText = "—";
+            btnPrev.disabled = true; btnNext.disabled = true;
+            chips.style.display = "none";
+            return;
+        }
+        label.innerText = daftarPeriode[idxPeriode];
+        btnPrev.disabled = idxPeriode <= 0;
+        btnNext.disabled = idxPeriode >= daftarPeriode.length - 1;
+        if (daftarPeriode.length > 1) {
+            chips.style.display = "flex";
+            chips.innerHTML = "";
+            daftarPeriode.forEach((p, i) => {
+                const b = document.createElement("button");
+                b.type = "button";
+                b.className = "chip-periode" + (i === idxPeriode ? " aktif" : "");
+                b.innerText = p;
+                b.onclick = () => pilihPeriode(i);
+                chips.appendChild(b);
+            });
+        } else {
+            chips.style.display = "none";
+        }
+    }
+
+    function muatDataPeriodeAktif() {
+        const teks = daftarPeriode[idxPeriode] || "";
+        excelData = semuaBaris.filter(b => b.periode === teks);
+    }
+
+    // navigasi mundur/maju — hanya antar periode yang ada datanya
+    function bulanLalu() { if (idxPeriode > 0) { idxPeriode--; renderSemua(); } }
+    function bulanBerikutnya() { if (idxPeriode < daftarPeriode.length - 1) { idxPeriode++; renderSemua(); } }
+    function pilihPeriode(i) { idxPeriode = i; renderSemua(); }
+
+    function cariPelanggan() { renderDaftar(); }
+
+    /* ---------- HITUNGAN (rumus sama persis dengan aplikasi utama) ---------- */
+    function hitungDetailPelanggan(item) {
+        let mLalu = parseFloat(item.meter_awal) || 0;
+        let mKini = parseFloat(item.meter_akhir) || 0;
+        let pemakaian = (mKini - mLalu) > 0 ? (mKini - mLalu) : 0;
+
+        let biayaAir = pemakaian * TARIF_PER_M3;
+        let beban = BIAYA_BEBAN_STANDAR;
+        let saldoLalu = parseFloat(item.saldo_lalu) || 0;
+
+        let tagihanBulanIni = biayaAir + beban;
+        let sisaTagihanNet = tagihanBulanIni - saldoLalu;
+
+        let totalHarusBayar = sisaTagihanNet > 0 ? sisaTagihanNet : 0;
+        let cash = parseFloat(item.cash) || 0;
+        let selisihAset = cash - sisaTagihanNet;
+
+        return { pemakaian, biayaAir, beban, saldoLalu, tagihanBulanIni, totalHarusBayar, cash, selisihAset };
+    }
+
+    /* ---------- DAFTAR PELANGGAN (kartu 2 baris, tanpa tombol aksi) ---------- */
+    function renderDaftar() {
+        const wadah = document.getElementById('tabelBody');
+        if (!wadah) return;
+        wadah.innerHTML = '';
+
+        const q = (document.getElementById('searchInput').value || "").trim().toLowerCase();
+        let jumlahTampil = 0;
+
+        excelData.forEach((item, index) => {
+            if (q && String(item.nama).toLowerCase().indexOf(q) < 0) return;
+            jumlahTampil++;
+            let info = hitungDetailPelanggan(item);
+
+            // Kartu dashboard SELALU putih bersih — deposit/utang TIDAK ditampilkan di sini,
+            // semua info uang lebih / utang baru muncul lewat tombol LIHAT (modal rincian).
+            let statusMiniHtml = '';
+            let isMeterEntered = item.meter_akhir > 0 && item.meter_akhir >= item.meter_awal;
+
+            if (item.status === 'Sudah Bayar') {
+                statusMiniHtml = `<span class="pel-mini pel-mini-lunas">✅ Lunas</span>`;
+            } else {
+                // Yang belum bayar TIDAK diberi badge apapun — hanya yang lunas yang bertanda (keputusan user)
+                statusMiniHtml = '';
+            }
+
+            let meterTeks = isMeterEntered
+                ? `${item.meter_awal} ➔ ${item.meter_akhir}`
+                : `${item.meter_awal} ➔ ?`;
+
+            // Biaya beban (pelanggan tanpa pemakaian air) TIDAK ditampilkan di dashboard —
+            // lengkapnya baru muncul lewat tombol LIHAT (modal rincian).
+            const tagihanHtml = info.pemakaian > 0
+                ? `<b>Rp ${info.totalHarusBayar.toLocaleString('id-ID')}</b>`
+                : `<b class="pel-tagihan-kosong" title="Hanya biaya beban — cek lewat tombol Lihat">—</b>`;
+
+            const kartu = document.createElement('div');
+            kartu.className = 'pel-kartu';
+            kartu.title = 'No. ' + jumlahTampil + ' — ' + item.nama;
+            kartu.innerHTML = `
+                <div class="pel-atas">
+                    <span class="pel-nomor">${jumlahTampil}</span>
+                    <span class="pel-nama" title="${item.nama}">${item.nama}</span>
+                    ${statusMiniHtml}
+                </div>
+                <span class="pel-info">Meter <b>${meterTeks}</b> &nbsp;·&nbsp; Pakai <b>${info.pemakaian} m³</b></span>
+                <div class="pel-bawah">
+                    <div class="pel-tagihan">
+                        <span class="pel-tagihan-label">Tagihan bulan ini</span>
+                        ${tagihanHtml}
+                    </div>
+                </div>
+            `;
+            // satu-satunya cara membuka nota: tombol LIHAT (kartu tidak bisa diklik)
+            // LIHAT hanya aktif di bulan terbaru (belum tutup buku); bulan lama disabled
+            const btnLihat = document.createElement('button');
+            btnLihat.type = 'button';
+            btnLihat.className = 'btn-lihat';
+            btnLihat.innerText = 'Lihat';
+            const bulanAktif = idxPeriode === daftarPeriode.length - 1;
+            btnLihat.disabled = !bulanAktif;
+            btnLihat.title = bulanAktif
+                ? 'Buka nota ' + item.nama
+                : 'Detail hanya untuk bulan terbaru — bulan ini sudah tutup buku';
+            btnLihat.addEventListener('click', e => { e.stopPropagation(); bukaRincian(item); });
+            kartu.querySelector('.pel-bawah').appendChild(btnLihat);
+            wadah.appendChild(kartu);
+        });
+
+        const adaData = excelData.length > 0;
+        document.getElementById('kosongPencarian').style.display = (adaData && jumlahTampil === 0) ? 'block' : 'none';
+        document.getElementById('kosongData').style.display = adaData ? 'none' : 'block';
+        const totalBulan = excelData.length;
+        document.getElementById('hitungDaftar').innerText =
+            q ? (jumlahTampil + ' dari ' + totalBulan + ' orang') : (totalBulan + ' orang');
+
+        hitungRekap();
+    }
+
+    function hitungRekap() {
+        let totalPelanggan = excelData.length;
+        let totalM3BulanIni = 0;
+        let pemakaiBulanIni = 0; // pelanggan yang benar-benar memakai air bulan ini
+        let lunasPemakai = 0;    // di antara pemakai air itu, yang sudah bayar
+        let airLunasM3 = 0;      // m³ dari pelanggan yang sudah bayar (Air Terbayar)
+
+        excelData.forEach(item => {
+            let info = hitungDetailPelanggan(item);
+            totalM3BulanIni += info.pemakaian;
+            if (item.status === 'Sudah Bayar') {
+                airLunasM3 += info.pemakaian;
+                if (info.pemakaian > 0) lunasPemakai++;
+            }
+            if (info.pemakaian > 0) pemakaiBulanIni++;
+        });
+
+        let totalUangM3 = totalM3BulanIni * TARIF_PER_M3;
+        // Uang Masuk SINKRON dengan Air Terbayar: m³ terbayar × tarif per m³
+        let uangMasuk = airLunasM3 * TARIF_PER_M3;
+
+        document.getElementById('recTotalPelanggan').innerText = totalPelanggan;
+        document.getElementById('recTotalM3').innerText = totalM3BulanIni.toLocaleString('id-ID') + ' m³';
+        document.getElementById('recTotalUangM3').innerText = 'Rp ' + totalUangM3.toLocaleString('id-ID');
+        document.getElementById('recAirLunas').innerText = airLunasM3.toLocaleString('id-ID') + ' m³';
+        document.getElementById('recUangMasuk').innerText = 'Rp ' + uangMasuk.toLocaleString('id-ID');
+
+        // Keterangan kecil di bawah angka KPI: hanya info jumlah orang.
+        // Keterangan rumus "m³ × Rp" TIDAK ditampilkan (permintaan user).
+        document.getElementById('capPemakaian').innerText = totalPelanggan > 0 ? (pemakaiBulanIni + ' orang pakai air') : '';
+        document.getElementById('capAirLunas').innerText = totalPelanggan > 0 ? (lunasPemakai + ' orang lunas') : '';
+
+        // Progres pembayaran dihitung dari PEMAKAI AIR saja.
+        // Contoh: 45 pelanggan tapi hanya 30 yang memakai air -> patokannya 30, bukan 45.
+        const persen = pemakaiBulanIni > 0 ? Math.round((lunasPemakai / pemakaiBulanIni) * 100) : 0;
+        const bar = document.getElementById('barLunas');
+        if (bar) bar.style.width = persen + '%';
+        const elPersen = document.getElementById('persenLunas');
+        if (elPersen) {
+            elPersen.innerText = persen + '% (' + lunasPemakai + '/' + pemakaiBulanIni + ')';
+            elPersen.title = 'Dihitung dari ' + pemakaiBulanIni + ' pelanggan yang memakai air bulan ini (total pelanggan ' + totalPelanggan + ')';
+        }
+    }
+
+    /* ---------- MODAL RINCIAN (baca saja) ---------- */
+    /* ---------- NOTA PEMBAYARAN (modal LIHAT) ---------- */
+    const NAMA_PETUGAS = "ANDRI"; // petugas pemungut di nota — ubah di sini kalau berganti petugas
+
+    // Rantai tunggakan: bulan aktif + bulan-bulan sebelumnya yang BELUM BAYAR menyambung
+    // (berhenti kalau ketemu bulan Sudah Bayar / data bulan itu tidak ada)
+    function kumpulkanTunggakan(item) {
+        const rantai = [item];
+        for (let i = idxPeriode - 1; i >= 0; i--) {
+            const p = daftarPeriode[i];
+            const baris = semuaBaris.find(b => b.periode === p && String(b.nama) === String(item.nama));
+            if (!baris || baris.status !== 'Belum Bayar') break;
+            rantai.unshift(baris);
+        }
+        return rantai;
+    }
+
+    // "Juni 2026" + "Agustus 2026" -> "Juni – Agustus 2026" (tahun sama tidak diulang)
+    function singkatRentang(a, b) {
+        if (a === b) return a;
+        const ta = String(a).trim().split(' '), tb = String(b).trim().split(' ');
+        if (ta.length > 1 && tb.length > 1 && ta[ta.length - 1] === tb[tb.length - 1]) {
+            return ta.slice(0, -1).join(' ') + ' \u2013 ' + b;
+        }
+        return a + ' \u2013 ' + b;
+    }
+
+    function bukaRincian(item) {
+        const info = hitungDetailPelanggan(item);
+        const rp = n => 'Rp ' + Math.abs(n).toLocaleString('id-ID');
+        const namaBulan = p => String(p).trim().split(' ')[0];
+        const kepala = `
+            <div class="nota-atas">
+                <div class="nota-judul">BUKTI PEMBAYARAN AIR - BPSPAMS TIRTA MAKMUR</div>
+                <div class="nota-sub">SINDUHARJO 08/04, SOMOPURO, JOGONALAN</div>
+            </div>`;
+        let html = '';
+
+        if (item.status === 'Sudah Bayar') {
+            /* ===== SUDAH BAYAR — banner hijau "PEMBAYARAN DITERIMA" ===== */
+            const ketSaldo = info.saldoLalu < 0 ? 'Kurang bayar bulan lalu (ditambahkan)'
+                          : info.saldoLalu > 0 ? 'Deposit bulan lalu (dikurangkan)'
+                          : 'Tagihan bulan lalu';
+            html = `
+            <div class="nota">
+                ${kepala}
+                <div class="nota-badan">
+                    <div class="nota-stempel-baris"><span class="nota-stempel nota-stempel-lunas">LUNAS</span></div>
+                    <div class="nota-identitas">
+                        <div><b>Periode</b> : ${item.periode}</div>
+                        <div><b>Nama Pelanggan</b> : ${item.nama}</div>
+                    </div>
+                    <div class="nota-banner nota-banner-hijau">
+                        <div class="banner-utama">✅ Pembayaran Diterima</div>
+                        <div class="banner-angka">${rp(info.totalHarusBayar)}</div>
+                        <div class="banner-sub">Terima kasih sudah membayar!</div>
+                    </div>
+                    <div class="nota-baris"><span>Meteran</span><b>${item.meter_awal} ➔ ${item.meter_akhir} (pakai ${info.pemakaian} m&sup3;)</b></div>
+                    <div class="nota-baris"><span>Pemakaian air (${info.pemakaian} m&sup3; &times; Rp ${TARIF_PER_M3.toLocaleString('id-ID')})</span><b>${rp(info.biayaAir)}</b></div>
+                    <div class="nota-baris"><span>Biaya beban</span><b>${rp(info.beban)}</b></div>
+                    <div class="nota-baris"><span>${ketSaldo}</span><b>${info.saldoLalu < 0 ? '' : info.saldoLalu > 0 ? '\u2212 ' : ''}${rp(info.saldoLalu)}</b></div>
+                    <div class="nota-total"><span>TOTAL DIBAYAR</span><b>${rp(info.totalHarusBayar)}</b></div>
+                    <div class="nota-bayar">
+                        <span>Uang diterima (cash)</span><b>${rp(info.cash)}</b>
+                    </div>
+                    <div class="nota-petugas">
+                        Petugas pemungut yang bertanggung jawab: <b>( ${NAMA_PETUGAS} )</b>
+                    </div>
+                </div>
+            </div>`;
+        } else {
+            /* ===== BELUM BAYAR — Referensi B: blok per bulan + jumlah tiap bulan ===== */
+            const rantai = kumpulkanTunggakan(item);
+            let total = 0, totalM3 = 0, blokBulan = '';
+
+            rantai.forEach(b => {
+                const i = hitungDetailPelanggan(b);
+                const jumlahBulan = i.biayaAir + i.beban;
+                total += jumlahBulan;
+                totalM3 += i.pemakaian;
+                blokBulan += `
+                <div class="nota-bulan">
+                    <div class="nota-bulan-judul">&#9656; ${b.periode} &mdash; belum dibayar</div>
+                    <div class="nota-baris"><span>Meteran</span><b>${b.meter_awal} ➔ ${b.meter_akhir}</b></div>
+                    <div class="nota-baris"><span>Pemakaian ${i.pemakaian} m&sup3; &times; Rp ${TARIF_PER_M3.toLocaleString('id-ID')}</span><b>${rp(i.biayaAir)}</b></div>
+                    <div class="nota-baris"><span>Biaya beban</span><b>${rp(i.beban)}</b></div>
+                    <div class="nota-baris nota-jumlah"><span>Jumlah ${namaBulan(b.periode)}</span><b>${rp(jumlahBulan)}</b></div>
+                </div>`;
+            });
+
+            const rentang = rantai.length > 1
+                ? singkatRentang(rantai[0].periode, rantai[rantai.length - 1].periode)
+                : rantai[0].periode;
+
+            html = `
+            <div class="nota">
+                ${kepala}
+                <div class="nota-badan">
+                    <div class="nota-stempel-baris"><span class="nota-stempel nota-stempel-belum">BELUM LUNAS</span></div>
+                    <div class="nota-identitas">
+                        <div><b>Periode</b> : ${item.periode}</div>
+                        <div><b>Nama Pelanggan</b> : ${item.nama}</div>
+                    </div>
+                    <div class="nota-banner nota-banner-merah">
+                        <div class="banner-utama">🔴 Total Harus Dibayar Sekarang</div>
+                        <div class="banner-angka">${rp(total)}</div>
+                        <div class="banner-sub">${rantai.length} bulan belum dibayar: ${rentang} (${totalM3} m&sup3;)</div>
+                    </div>
+                    ${blokBulan}
+                    <div class="nota-total"><span>TOTAL SEMUA (${totalM3} m&sup3;)</span><b>${rp(total)}</b></div>
+                    <div class="nota-petugas">
+                        Petugas pemungut yang bertanggung jawab: <b>( ${NAMA_PETUGAS} )</b>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        document.getElementById('notaIsi').innerHTML = html;
+        document.getElementById('modalRincian').style.display = 'block';
+    }
+
+    function tutupModal() { document.getElementById('modalRincian').style.display = 'none'; }
+
+    /* ---------- TOAST ---------- */
+    function showToast(pesan, tipe) {
+        const wrap = document.getElementById('toastWrap');
+        const el = document.createElement('div');
+        el.className = 'toast' + (tipe === 'gagal' ? ' toast-gagal' : tipe === 'info' ? ' toast-info' : '');
+        el.innerText = pesan;
+        wrap.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('muncul'));
+        setTimeout(() => {
+            el.classList.remove('muncul');
+            setTimeout(() => el.remove(), 300);
+        }, 3200);
+    }
+
+    /* ---------- POPUP IMPORT (pojok kanan atas, kotak kecil + password) ---------- */
+    const popupImpor = document.getElementById('popupImpor');
+    const btnImpor = document.getElementById('btnImpor');
+    const PASS_IMPOR = "root"; // password menu import (harus sama dengan di api.php)
+    let imporTerbuka = false;  // sekali benar, tetap terbuka sampai halaman dimuat ulang
+
+    function tampilIsiImpor() {
+        document.getElementById('kunciImpor').style.display = imporTerbuka ? 'none' : 'block';
+        document.getElementById('isiImpor').style.display = imporTerbuka ? 'block' : 'none';
+    }
+    function cobaBukaImpor() {
+        const el = document.getElementById('passImpor');
+        if ((el.value || "").trim() === PASS_IMPOR) {
+            imporTerbuka = true;
+            showToast("Menu import terbuka", "");
+        } else {
+            showToast("Password salah — coba lagi", "gagal");
+        }
+        el.value = "";
+        tampilIsiImpor();
+        if (!imporTerbuka) el.focus();
+    }
+
+    function posisikanPopupImpor() {
+        const r = btnImpor.getBoundingClientRect();
+        popupImpor.style.top = Math.round(r.bottom + 8) + 'px';
+        popupImpor.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
+    }
+    function bukaPopupImpor() {
+        posisikanPopupImpor();
+        tampilIsiImpor();
+        popupImpor.classList.add('buka');
+        btnImpor.classList.add('aktif');
+        btnImpor.setAttribute('aria-expanded', 'true');
+        if (!imporTerbuka) setTimeout(() => document.getElementById('passImpor').focus(), 60);
+    }
+    function tutupPopupImpor() {
+        popupImpor.classList.remove('buka');
+        btnImpor.classList.remove('aktif');
+        btnImpor.setAttribute('aria-expanded', 'false');
+    }
+    function popupImporTerbuka() { return popupImpor.classList.contains('buka'); }
+    function togglePopupImpor(e) {
+        if (e) e.stopPropagation();
+        if (popupImporTerbuka()) tutupPopupImpor(); else bukaPopupImpor();
+    }
+
+    /* ---------- WIRING ---------- */
+    document.getElementById('fileSql').addEventListener('change', e => {
+        if (e.target.files && e.target.files[0]) muatFileManual(e.target.files[0]);
+        e.target.value = '';
+    });
+
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault(); dropZone.classList.remove('dragover');
+        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) muatFileManual(f);
+    });
+
+    document.getElementById('passImpor').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); cobaBukaImpor(); }
+    });
+
+    document.getElementById('modalRincian').addEventListener('click', e => {
+        if (e.target.id === 'modalRincian') tutupModal();
+    });
+
+    // klik di luar kotak kecil → tutup popup import
+    document.addEventListener('click', e => {
+        if (!popupImporTerbuka()) return;
+        if (e.target.closest('#popupImpor') || e.target.closest('#btnImpor')) return;
+        tutupPopupImpor();
+    });
+    // jaga posisi popup tetap nempel di tombol saat scroll / ukuran layar berubah
+    window.addEventListener('scroll', () => { if (popupImporTerbuka()) posisikanPopupImpor(); }, { passive: true });
+    window.addEventListener('resize', () => { if (popupImporTerbuka()) posisikanPopupImpor(); });
+
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        if (popupImporTerbuka()) tutupPopupImpor(); else tutupModal();
+    });
+
+    /* ---------- MULAI ---------- */
+    muatData();
+</script>
+</body>
+</html>
