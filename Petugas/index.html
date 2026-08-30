@@ -212,12 +212,12 @@
         /* baris 1: nomor + nama + status + tombol */
         .pel-atas { display: flex; align-items: center; gap: 7px; min-width: 0; }
         .pel-nama {
-            flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: .92rem; color: var(--teks);
+            flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: 1.15rem; color: var(--teks);
             letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .pel-mini {
             display: inline-flex; align-items: center; flex: 0 0 auto; padding: 3px 9px;
-            border-radius: 999px; font-size: .67rem; font-weight: 800; white-space: nowrap;
+            border-radius: 999px; font-size: .82rem; font-weight: 800; white-space: nowrap;
         }
         .pel-mini-lunas { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
         .pel-mini-dicatat { background: var(--amber-muda); color: #b45309; border: 1px solid #fde68a; }
@@ -240,7 +240,7 @@
         .v2-no   { color: #dc2626; }
         .v2-info { color: #64748b; }
         .btn-aksi {
-            border: none; border-radius: 999px; padding: 9px 16px; font-size: .78rem; font-weight: 800;
+            border: none; border-radius: 999px; padding: 9px 16px; font-size: .95rem; font-weight: 800;
             cursor: pointer; color: #fff; flex: 0 0 auto; min-width: 70px; min-height: 38px;
             box-shadow: 0 2px 8px -4px rgba(2,32,71,.4); transition: transform .12s ease;
         }
@@ -253,14 +253,14 @@
             margin-top: 4px; min-width: 0;
         }
         .pel-ringkas {
-            font-size: .77rem; color: var(--teks-samar); font-variant-numeric: tabular-nums;
+            font-size: .95rem; color: var(--teks-samar); font-variant-numeric: tabular-nums;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
         }
         .pel-ringkas b { color: var(--teks); font-weight: 800; }
         .pel-kanan { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
-        .pel-saldo-minus { font-size: .77rem; color: #b91c1c; font-weight: 800; }
-        .pel-saldo-plus { font-size: .77rem; color: #047857; font-weight: 800; }
-        .pel-tagihan { font-size: .86rem; color: var(--biru); font-weight: 800; }
+        .pel-saldo-minus { font-size: .95rem; color: #b91c1c; font-weight: 800; }
+        .pel-saldo-plus { font-size: .95rem; color: #047857; font-weight: 800; }
+        .pel-tagihan { font-size: 1.08rem; color: var(--biru); font-weight: 800; }
         .kosong-cari { text-align: center; color: var(--teks-samar); font-size: .85rem; padding: 18px 0 6px; }
 
         /* ===== PANEL COLLAPSIBLE ===== */
@@ -293,7 +293,7 @@
             display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
             min-width: 26px; height: 24px; padding: 0 5px; border-radius: 8px;
             background: var(--cyan-muda); color: var(--biru-tua); border: 1px solid #bae6fd;
-            font-size: .7rem; font-weight: 800; font-variant-numeric: tabular-nums;
+            font-size: .85rem; font-weight: 800; font-variant-numeric: tabular-nums;
         }
 
         /* ===== MODAL ===== */
@@ -1472,9 +1472,9 @@
        ============================================================ */
     function namaFileBackup(ext) {
         const d = new Date();
-        const dua = n => String(n).padStart(2, "0");
-        return "pam-backup-" + d.getFullYear() + "-" + dua(d.getMonth() + 1) + "-" + dua(d.getDate()) +
-            "_" + dua(d.getHours()) + dua(d.getMinutes()) + "." + ext;
+        // Format: pam-backup-[tahun]-[bulan].ext — contoh: pam-backup-2026-agustus.sql
+        // Nama bulan memakai daftarBulan (Indonesia), dijadikan huruf kecil agar rapi di nama file
+        return "pam-backup-" + d.getFullYear() + "-" + daftarBulan[d.getMonth()].toLowerCase() + "." + ext;
     }
 
     function unduhBlob(blob, namaFile) {
