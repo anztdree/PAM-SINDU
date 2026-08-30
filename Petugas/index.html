@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0369a1">
     <title>BPSPAMS TIRTA MAKMUR - SINDUHARJO 08/04</title>
-    <!-- Library jsPDF & jsPDF AutoTable (struk + laporan PDF) -->
+    <!-- Library jsPDF (struk pembayaran individu) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root {
@@ -72,10 +71,6 @@
             100% { box-shadow: 0 3px 10px rgba(2,32,71,.28), 0 0 0 0 rgba(5,150,105,0); }
         }
         .status-pill.status-ok { animation: denyutStatus 2.6s ease-out infinite; }
-        .header-export {
-            margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-            position: relative; z-index: 2;
-        }
         .btn-export {
             display: flex; align-items: center; gap: 9px; text-align: left;
             background: rgba(255,255,255,.95); color: var(--biru-tua);
@@ -94,6 +89,26 @@
         .btn-export .tx b { font-size: .8rem; font-weight: 800; line-height: 1.3; letter-spacing: .2px; }
         .btn-export .tx small { font-size: .62rem; font-weight: 700; color: var(--teks-samar); line-height: 1.35; }
         .ombak { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 30px; display: block; z-index: 1; }
+
+        /* ===== TOMBOL BACKUP (pojok kanan atas) + MODAL BACKUP ===== */
+        .tombol-backup {
+            margin-left: auto; flex: 0 0 auto;
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(255,255,255,.95); color: var(--biru-tua);
+            border: 1px solid rgba(255,255,255,.65); border-radius: 999px;
+            padding: 8px 14px; font-family: inherit; font-size: .78rem; font-weight: 800;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(2,32,71,.22);
+            transition: transform .12s ease; white-space: nowrap;
+        }
+        .tombol-backup:active { transform: scale(.96); }
+        .tombol-backup svg { width: 16px; height: 16px; display: block; }
+        .modal-isi .btn-export { background: #f8fafc; border-color: #e2e8f0; box-shadow: none; }
+        .isi-backup { display: grid; gap: 10px; }
+        .isi-backup-tombol { display: grid; gap: 8px; }
+        @media (max-width: 430px) {
+            .header-teks h2 { font-size: .98rem; }
+            .tombol-backup { padding: 7px 11px; font-size: .72rem; }
+        }
 
         /* ===== KARTU UMUM ===== */
         .card {
@@ -207,6 +222,23 @@
         .pel-mini-lunas { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
         .pel-mini-dicatat { background: var(--amber-muda); color: #b45309; border: 1px solid #fde68a; }
         .pel-mini-belum { background: var(--merah-muda); color: #b91c1c; border: 1px solid #fecaca; }
+        .pel-mini-meter { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        /* Task 26: pill keterangan uang cash di modal (gaya A — bahasa lapangan hangat) */
+        .ket-pill {
+            display: inline-flex; align-items: center; max-width: 100%;
+            padding: 5px 12px; border-radius: 999px; font-size: .78rem; font-weight: 800;
+            line-height: 1.35; white-space: normal; text-align: left;
+        }
+        .ket-lunas  { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
+        .ket-kurang { background: var(--merah-muda); color: #b91c1c; border: 1px solid #fecaca; }
+        .ket-netral { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        /* Task 26b: rincian penyelesaian cash per komponen (Varian 2) */
+        .v2-detail { margin-top: 7px; border-top: 1px dashed #bae6fd; padding-top: 5px; }
+        .v2-detail .baris-ringkas { font-size: .78rem; line-height: 1.75; }
+        .v2-ok   { color: #059669; }
+        .v2-wait { color: #b45309; }
+        .v2-no   { color: #dc2626; }
+        .v2-info { color: #64748b; }
         .btn-aksi {
             border: none; border-radius: 999px; padding: 9px 16px; font-size: .78rem; font-weight: 800;
             cursor: pointer; color: #fff; flex: 0 0 auto; min-width: 70px; min-height: 38px;
@@ -340,6 +372,10 @@
                 <h2>BPSPAMS TIRTA MAKMUR</h2>
                 <p>Penagihan Air &bull; Sinduharjo 08/04 &bull; Petugas: ANDRI</p>
             </div>
+            <button class="tombol-backup" id="btnBukaBackup" onclick="bukaModalBackup()" title="Backup & Export — file .db / .sql, Import, Reset (tanpa password)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Backup
+            </button>
         </div>
         <div class="header-status">
             <span class="status-pill">
@@ -347,43 +383,10 @@
                 <span id="statusKoneksiText" style="color:#d97706;">🟡 Memeriksa Koneksi...</span>
             </span>
         </div>
-        <div class="header-export">
-            <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')" title="Backup file database SQLite (.db) — selalu terbaru dari data live">
-                <span class="ik ik-biru" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
-                <span class="tx"><b>Export .db</b><small>Data utuh — selalu terbaru</small></span>
-            </button>
-            <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')" title="Backup file teks .sql untuk diupload ke website">
-                <span class="ik ik-amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-                <span class="tx"><b>Export .sql</b><small>File teks — untuk Website</small></span>
-            </button>
-        </div>
         <svg class="ombak" viewBox="0 0 1440 44" preserveAspectRatio="none" aria-hidden="true">
             <path d="M0,26 C180,44 360,4 560,16 C760,28 900,8 1100,18 C1260,26 1360,14 1440,22 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.14)"/>
             <path d="M0,34 C220,20 420,40 640,30 C860,20 1040,38 1240,30 C1340,26 1400,32 1440,30 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.20)"/>
         </svg>
-    </div>
-
-    <!-- DATA & BACKUP (tepat di bawah tombol Export) -->
-    <div class="card">
-        <div class="judul-kartu">💾 Data &amp; Backup</div>
-        <div id="infoExport" class="info-inline">Belum ada backup — tekan <b>Export .db</b> / <b>Export .sql</b> di atas.</div>
-
-        <details class="panel">
-            <summary class="panel-summary"><span class="panel-chevron">▶</span>⚙️ Menu Admin (Import / Reset Data)</summary>
-            <div class="panel-isi">
-                <p class="catatan">
-                    Letakkan <b>pam.sql</b> di folder aplikasi lalu tekan Import
-                    (baris baru ditambah, lama diperbarui — aman diulang).
-                    Reset mengosongkan seluruh transaksi.
-                </p>
-                <div class="grid-2">
-                    <button class="btn btn-ungu" onclick="importDataLama()">📥 Import pam.sql</button>
-                    <button class="btn btn-merah" onclick="kosongkanData()">🗑️ Kosongkan Data</button>
-                </div>
-                <div id="infoImport" class="info-inline"></div>
-            </div>
-        </details>
-
     </div>
 
     <!-- PANEL PERIODE -->
@@ -482,12 +485,6 @@
         <div id="kosongPencarian" class="kosong-cari" style="display:none;">😕 Tidak ada pelanggan yang cocok dengan pencarian.</div>
     </div>
 
-    <!-- LAPORAN BULANAN (paling bawah) -->
-    <div class="card">
-        <div class="judul-kartu">📄 Laporan Bulanan</div>
-        <button class="btn btn-primer btn-blok" onclick="downloadLaporanPDF()">📄 Download PDF</button>
-    </div>
-
     <footer class="kaki-app">
         BPSPAMS TIRTA MAKMUR &bull; SINDUHARJO 08/04<br>
         <span>Data tersimpan di database SQLite perangkat ini — jangan lupa rutin Export Database.</span>
@@ -526,11 +523,11 @@
                 <div class="ringkasan">
                     <div class="baris-ringkas"><span>Pemakaian Air:</span><b id="uiPemakaian">0 m&sup3;</b></div>
                     <div class="baris-ringkas"><span>Biaya Air (x Rp 2.500):</span><b id="uiBiayaAir">Rp 0</b></div>
-                    <div class="baris-ringkas"><span>Biaya Beban Bulan Ini:</span><b id="uiBiayaBeban">Rp 2.000</b></div>
+                    <div class="baris-ringkas"><span>Beban per bulan:</span><b id="uiBiayaBeban">Rp 2.000</b></div>
                     <div class="baris-ringkas"><span>Saldo Bulan Lalu (+/-):</span><b id="uiSaldoLalu">Rp 0</b></div>
                     <hr class="pemisah-ringkas">
-                    <div class="baris-ringkas total-baris"><span>Total Harus Dibayar:</span><b id="uiTotalHarusBayar">Rp 0</b></div>
-                    <div style="font-size:.86rem; margin-top:6px; font-weight:800;" id="uiCashStatus">Keterangan: Rp 0</div>
+                    <div class="baris-ringkas total-baris"><span>Total Bulan Ini:</span><b id="uiTotalHarusBayar">Rp 0</b></div>
+                    <div style="margin-top:6px;" id="uiCashStatus"></div>
                 </div>
 
                 <div class="baris-tombol">
@@ -540,6 +537,51 @@
                 </div>
 
                 <button class="btn btn-ungu btn-blok" onclick="cetakStrukPDF()">📄 Cetak Struk Individu PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DATA & BACKUP — dibuka dari pojok kanan atas header, TANPA PASSWORD -->
+<div id="modalBackup" class="modal" onclick="if(event.target===this) tutupModalBackup()">
+    <div class="modal-content-wrapper">
+        <div class="form-box">
+            <div class="modal-kepala">
+                <h3>💾 Data &amp; Backup</h3>
+                <button class="tombol-tutup" onclick="tutupModalBackup()" aria-label="Tutup">✕</button>
+            </div>
+            <div class="modal-isi isi-backup">
+                <p class="catatan" style="margin:0;">
+                    Simpan salinan data kapan saja — <b>tanpa password</b>.
+                    <b>.db</b> = database utuh untuk aplikasi Petugas,
+                    <b>.sql</b> = file teks untuk diupload ke Website.
+                </p>
+                <div class="isi-backup-tombol">
+                    <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')" title="Backup file database SQLite (.db) — selalu terbaru dari data live">
+                        <span class="ik ik-biru" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+                        <span class="tx"><b>Export .db</b><small>Data utuh — selalu terbaru</small></span>
+                    </button>
+                    <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')" title="Backup file teks .sql untuk diupload ke website">
+                        <span class="ik ik-amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                        <span class="tx"><b>Export .sql</b><small>File teks — untuk Website</small></span>
+                    </button>
+                </div>
+                <div id="infoExport" class="info-inline" style="margin-top:0;">Belum ada backup — tekan tombol Export di panel ini.</div>
+                <details class="panel" style="margin-top:0;">
+                    <summary class="panel-summary"><span class="panel-chevron">▶</span>⚙️ Menu Admin (Import / Reset Data)</summary>
+                    <div class="panel-isi">
+                        <p class="catatan">
+                            Letakkan <b>pam.sql</b> di folder aplikasi lalu tekan Import
+                            (baris baru ditambah, lama diperbarui — aman diulang).
+                            Reset mengosongkan seluruh transaksi.
+                        </p>
+                        <div class="grid-2">
+                            <button class="btn btn-ungu" onclick="importDataLama()">📥 Import pam.sql</button>
+                            <button class="btn btn-merah" onclick="kosongkanData()">🗑️ Kosongkan Data</button>
+                        </div>
+                        <div id="infoImport" class="info-inline"></div>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -941,15 +983,34 @@
 
             let saldoAktif = item.STATUS === 'Sudah Bayar' ? info.selisihAset : info.saldoLalu;
 
+            // Aturan tampilan: kalau satu-satunya yang belum dibayar HANYA biaya beban
+            // (maks. sebesar beban sebulan), kartu diperlakukan seperti pelanggan biasa —
+            // tanpa badge merah "Belum", tanpa background merah, tanpa teks "Utang Rp".
+            let bebanItem = parseFloat(item.BIAYA_BEBAN) || BIAYA_BEBAN_STANDAR;
+            let hanyaBeban;
+            if (item.STATUS === 'Sudah Bayar') {
+                // ditandai lunas tapi cash kurang — selisihnya cuma sebesar beban
+                hanyaBeban = saldoAktif < 0 && (-saldoAktif) <= bebanItem;
+            } else {
+                // belum ditandai lunas: belum ada pemakaian dan utangnya cuma beban
+                hanyaBeban = (info.pemakaian === 0) && (info.saldoLalu >= -bebanItem);
+            }
+
             let kelasSaldo = '';
             if (saldoAktif > 0) kelasSaldo = 'kartu-deposit';
-            else if (saldoAktif < 0) kelasSaldo = 'kartu-tunggakan';
+            else if (saldoAktif < 0 && !hanyaBeban) kelasSaldo = 'kartu-tunggakan';
 
             let statusMiniHtml = '';
             let isMeterEntered = item.METER_AKHIR > 0 && item.METER_AKHIR >= item.METER_AWAL;
 
             if (item.STATUS === 'Sudah Bayar') {
                 statusMiniHtml = `<span class="pel-mini pel-mini-lunas">✅ Lunas</span>`;
+            } else if (hanyaBeban) {
+                // kekurangan cuma beban (komisi petugas) — bukan "belum bayar";
+                // badge cukup menunjukkan status PENCATATAN METER supaya tidak ada yang kelewatan
+                statusMiniHtml = isMeterEntered
+                    ? `<span class="pel-mini pel-mini-dicatat">📝 Dicatat</span>`
+                    : `<span class="pel-mini pel-mini-meter">⏳ Belum Dicatat</span>`;
             } else if (isMeterEntered) {
                 statusMiniHtml = `<span class="pel-mini pel-mini-dicatat">📝 Dicatat</span>`;
             } else {
@@ -970,7 +1031,7 @@
             let saldoTeks = '';
             if (saldoAktif > 0) {
                 saldoTeks = `<span class="pel-saldo-plus">Deposit Rp ${saldoAktif.toLocaleString('id-ID')}</span><span>·</span>`;
-            } else if (saldoAktif < 0) {
+            } else if (saldoAktif < 0 && !hanyaBeban) {
                 saldoTeks = `<span class="pel-saldo-minus">Utang Rp ${Math.abs(saldoAktif).toLocaleString('id-ID')}</span><span>·</span>`;
             }
 
@@ -1143,6 +1204,9 @@
 
     function tutupModal() { document.getElementById('modalInput').style.display = 'none'; }
 
+    function bukaModalBackup() { document.getElementById('modalBackup').style.display = 'block'; }
+    function tutupModalBackup() { document.getElementById('modalBackup').style.display = 'none'; }
+
     function hitungTagihanModal() {
         let item = excelData[selectedIndex];
         let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
@@ -1177,22 +1241,62 @@
 
         document.getElementById('uiTotalHarusBayar').innerText = "Rp " + totalHarusBayar.toLocaleString('id-ID');
 
+        // Task 26: keterangan uang cash jadi pill berwarna (gaya A — bahasa lapangan)
+        // Task 26b: + rincian penyelesaian per komponen (Varian 2 — pilihan user)
         let elStatus = document.getElementById('uiCashStatus');
-        
+        let ketPill = (warna, teks) => `<span class="ket-pill ket-${warna}">${teks}</span>`;
+
+        let pillHtml = '';
+
         if (sisaDepositAwal > 0) {
             let depositAkhir = sisaDepositAwal + cash;
-            elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">Lunas Terpotong Deposit (Sisa Deposit: Rp ${depositAkhir.toLocaleString('id-ID')})</span>`;
+            pillHtml = ketPill('lunas', `🏦 Lunas — potong deposit, sisa Rp ${depositAkhir.toLocaleString('id-ID')}`);
+        } else if (cash === 0) {
+            pillHtml = ketPill('netral', '🕒 Belum ada cash');
+        } else if (selisihCash === 0) {
+            pillHtml = ketPill('lunas', '✅ Pas — Lunas');
+        } else if (selisihCash > 0) {
+            pillHtml = ketPill('lunas', `💰 Lebih Rp ${selisihCash.toLocaleString('id-ID')} — masuk deposit`);
+        } else if (Math.abs(selisihCash) <= beban) {
+            // kekurangan masih di area biaya beban (komisi petugas) — bukan utang air
+            pillHtml = ketPill('netral', `📝 Air lunas — kurang beban Rp ${Math.abs(selisihCash).toLocaleString('id-ID')}`);
         } else {
-            if (cash === 0) {
-                elStatus.innerHTML = `Keterangan: <span style="color:#64748b;">Belum Ada Cash</span>`;
-            } else if (selisihCash === 0) {
-                elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">Uang Pas (Lunas)</span>`;
-            } else if (selisihCash > 0) {
-                elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">(+) Lebih Rp ${selisihCash.toLocaleString('id-ID')} (Deposit Baru)</span>`;
-            } else {
-                elStatus.innerHTML = `Keterangan: <span style="color:#dc2626;">(-) Kurang Rp ${Math.abs(selisihCash).toLocaleString('id-ID')} (Utang Baru)</span>`;
-            }
+            pillHtml = ketPill('kurang', `🙏 Kurang Rp ${Math.abs(selisihCash).toLocaleString('id-ID')} — boleh nyusul`);
         }
+
+        // urutan penyelesaian dana: air dulu -> utang lalu -> beban/komisi terakhir
+        let utangLalu = saldoLalu < 0 ? Math.abs(saldoLalu) : 0;
+        let pot = cash + Math.max(saldoLalu, 0);
+        let rp = n => 'Rp ' + Math.abs(n).toLocaleString('id-ID');
+        let barisKomponen = (label, tagih) => {
+            let tertutup = Math.min(pot, tagih);
+            pot -= tertutup;
+            let sisa = tagih - tertutup;
+            let kanan, cls, ikon;
+            if (sisa === 0)      { kanan = 'Lunas';                  cls = 'v2-ok';   ikon = '✔'; }
+            else if (tertutup > 0) { kanan = `Tertutup ${rp(tertutup)}`; cls = 'v2-wait'; ikon = '⏳'; }
+            else                 { kanan = 'Belum';                  cls = 'v2-no';   ikon = '⏳'; }
+            return `<div class="baris-ringkas"><span>${ikon} ${label} <span style="color:#94a3b8;">(${rp(tagih)})</span></span><b class="${cls}">${kanan}</b></div>`;
+        };
+
+        let rincian = `<div class="v2-detail">`
+            + `<div class="baris-ringkas"><span>Cash diterima:</span><b>${rp(cash)}</b></div>`
+            + barisKomponen('Biaya air', biayaAir);
+        if (utangLalu > 0) rincian += barisKomponen('Utang lalu', utangLalu);
+        rincian += barisKomponen('Beban per bulan', beban);
+
+        if (sisaDepositAwal > 0) {
+            rincian += `<div class="baris-ringkas"><span><b>Deposit akhir:</b></span><b class="v2-ok">${rp(sisaDepositAwal + cash)}</b></div>`;
+        } else if (selisihCash > 0) {
+            rincian += `<div class="baris-ringkas"><span><b>Sisa cash → deposit baru:</b></span><b class="v2-ok">${rp(selisihCash)}</b></div>`;
+        } else if (selisihCash === 0) {
+            rincian += `<div class="baris-ringkas"><span><b>Sisa cash:</b></span><b class="v2-info">Rp 0</b></div>`;
+        } else {
+            rincian += `<div class="baris-ringkas"><span><b>Kurang (nyusul):</b></span><b class="v2-no">${rp(selisihCash)}</b></div>`;
+        }
+        rincian += `</div>`;
+
+        elStatus.innerHTML = pillHtml + rincian;
     }
 
     async function simpanSudahBayar() {
@@ -1262,141 +1366,6 @@
             showToast("📝 " + item.NAMA + " tersimpan — Belum Bayar");
         } catch (e) {
             alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
-        }
-    }
-
-    function generateLaporanPDFDoc() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-        let periodeStr = getPeriodeText();
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.text("LAPORAN REKAPITULASI PENAGIHAN AIR BPSPAMS TIRTA MAKMUR", 14, 15);
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Wilayah Penagihan: SINDUHARJO 08/04 | Periode: ${periodeStr}`, 14, 21);
-
-        let tableRows = [];
-        let totalM3 = 0;
-        let totalTagihanAll = 0;
-        let totalCashAll = 0;
-
-        excelData.forEach((item, idx) => {
-            let info = hitungDetailPelanggan(item);
-            totalM3 += info.pemakaian;
-            totalTagihanAll += info.totalHarusBayar;
-            totalCashAll += info.cash;
-
-            let ketSaldo = "-";
-            if (info.selisihAset > 0) ketSaldo = `Deposit (+${info.selisihAset.toLocaleString('id-ID')})`;
-            else if (info.selisihAset < 0) ketSaldo = `Utang (-${Math.abs(info.selisihAset).toLocaleString('id-ID')})`;
-
-            tableRows.push([
-                idx + 1,
-                item.NAMA,
-                item.METER_AWAL,
-                item.METER_AKHIR,
-                `${info.pemakaian} m³`,
-                `Rp ${info.beban.toLocaleString('id-ID')}`,
-                `Rp ${info.saldoLalu.toLocaleString('id-ID')}`,
-                `Rp ${info.totalHarusBayar.toLocaleString('id-ID')}`,
-                `Rp ${info.cash.toLocaleString('id-ID')}`,
-                ketSaldo,
-                item.STATUS
-            ]);
-        });
-
-        doc.autoTable({
-            startY: 26,
-            head: [['No', 'Nama Pelanggan', 'Awal', 'Akhir', 'Pakai', 'Beban', 'Saldo Lalu', 'Total Tagihan', 'Uang Cash', 'Saldo/Utang', 'Status']],
-            body: tableRows,
-            theme: 'grid',
-            headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-            bodyStyles: { fontSize: 8 },
-            columnStyles: {
-                0: { cellWidth: 10, halign: 'center' },
-                1: { cellWidth: 40 },
-                2: { halign: 'right' },
-                3: { halign: 'right' },
-                4: { halign: 'right' },
-                5: { halign: 'right' },
-                6: { halign: 'right' },
-                7: { halign: 'right', fontStyle: 'bold' },
-                8: { halign: 'right', fontStyle: 'bold' },
-                9: { halign: 'center' },
-                10: { halign: 'center' }
-            }
-        });
-
-        let finalY = doc.lastAutoTable.finalY + 8;
-        if (finalY > 180) { doc.addPage(); finalY = 15; }
-
-        let totalUangM3 = totalM3 * TARIF_PER_M3;
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.text(`TOTAL PEMAKAIAN AIR : ${totalM3} m³ (Nominal: Rp ${totalUangM3.toLocaleString('id-ID')})`, 14, finalY);
-        doc.text(`TOTAL HARUS DIBAYAR: Rp ${totalTagihanAll.toLocaleString('id-ID')}`, 14, finalY + 5);
-        doc.text(`TOTAL CASH DITERIMA : Rp ${totalCashAll.toLocaleString('id-ID')}`, 14, finalY + 10);
-
-        doc.setFont("helvetica", "normal");
-        doc.text(`Petugas Pemungut: ${NAMA_PETUGAS}`, 220, finalY + 5);
-        doc.text("Tanggal Cetak: " + new Date().toLocaleDateString('id-ID'), 220, finalY + 10);
-
-        return doc;
-    }
-
-    function downloadLaporanPDF() {
-        let doc = generateLaporanPDFDoc();
-        doc.save(`LAPORAN_BPSPAMS_${getPeriodeText().replace(' ', '_')}.pdf`);
-    }
-
-    async function shareLaporanPDF() {
-        let doc = generateLaporanPDFDoc();
-        let periodeStr = getPeriodeText();
-
-        const pdfBlob = doc.output('blob');
-        const fileName = `LAPORAN_BPSPAMS_${periodeStr.replace(' ', '_')}.pdf`;
-        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-                await navigator.share({
-                    files: [file],
-                    title: `Laporan BPSPAMS - ${periodeStr}`,
-                    text: `Berikut Laporan Bulanan Rekapitulasi Pembayaran BPSPAMS Tirta Makmur Periode ${periodeStr}.`
-                });
-            } catch (error) {
-                console.log("Share dibatalkan/gagal", error);
-            }
-        } else {
-            let totalPelanggan = excelData.length;
-            let lunasCount = 0;
-            let totalM3 = 0;
-
-            excelData.forEach(item => {
-                let info = hitungDetailPelanggan(item);
-                if (item.STATUS === 'Sudah Bayar') {
-                    lunasCount++;
-                }
-                totalM3 += info.pemakaian;
-            });
-
-            let totalUangM3 = totalM3 * TARIF_PER_M3;
-
-            let pesanWA = `*REKAP LAPORAN BPSPAMS TIRTA MAKMUR*\n` +
-                          `*Periode:* ${periodeStr}\n` +
-                          `-----------------------------------\n` +
-                          `*Total Pelanggan:* ${totalPelanggan}\n` +
-                          `*Sudah Bayar:* ${lunasCount} / ${totalPelanggan}\n` +
-                          `*Jumlah Pemakaian Air:* ${totalM3.toLocaleString('id-ID')} m³\n` +
-                          `*Total Nominal m³:* Rp ${totalUangM3.toLocaleString('id-ID')}\n` +
-                          `-----------------------------------\n` +
-                          `_Silakan unduh file PDF lengkap dari aplikasi jika diperlukan._`;
-
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(pesanWA)}`, '_blank');
         }
     }
 
