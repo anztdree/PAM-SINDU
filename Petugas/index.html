@@ -213,14 +213,24 @@
             flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: 1.15rem; color: var(--teks);
             letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        /* Task 31: badge Premium Duo (Varian F) — gradient gelap + medali putih, senada tombol modal */
         .pel-mini {
-            display: inline-flex; align-items: center; flex: 0 0 auto; padding: 3px 9px;
-            border-radius: 999px; font-size: .82rem; font-weight: 800; white-space: nowrap;
+            display: inline-flex; align-items: center; flex: 0 0 auto; padding: 2.5px 11px 2.5px 4px;
+            border-radius: 999px; font-size: .82rem; font-weight: 800; white-space: nowrap; color: #fff;
         }
-        .pel-mini-lunas { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
-        .pel-mini-dicatat { background: var(--amber-muda); color: #b45309; border: 1px solid #fde68a; }
-        .pel-mini-belum { background: var(--merah-muda); color: #b91c1c; border: 1px solid #fecaca; }
-        .pel-mini-meter { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .pel-mini-medal {
+            display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+            width: 16px; height: 16px; border-radius: 50%; background: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,.18);
+        }
+        .pel-mini-lunas .pel-mini-medal { color: #059669; }
+        .pel-mini-dicatat .pel-mini-medal { color: #d97706; }
+        .pel-mini-belum .pel-mini-medal { color: #dc2626; }
+        .pel-mini-meter .pel-mini-medal { color: #475569; }
+        .pel-mini-lunas { background: linear-gradient(135deg, #065f46, #059669); border: 1px solid rgba(255,255,255,.22); box-shadow: 0 4px 10px -4px rgba(6,95,70,.6); }
+        .pel-mini-dicatat { background: linear-gradient(135deg, #92400e, #d97706); border: 1px solid rgba(255,255,255,.25); box-shadow: 0 4px 10px -4px rgba(146,64,14,.55); }
+        .pel-mini-belum { background: linear-gradient(135deg, #991b1b, #dc2626); border: 1px solid rgba(255,255,255,.25); box-shadow: 0 4px 10px -4px rgba(153,27,27,.55); }
+        .pel-mini-meter { background: linear-gradient(135deg, #334155, #64748b); border: 1px solid rgba(255,255,255,.25); box-shadow: 0 4px 10px -4px rgba(51,65,85,.5); }
         /* Task 26: pill keterangan uang cash di modal (gaya A — bahasa lapangan hangat) */
         .ket-pill {
             display: inline-flex; align-items: center; max-width: 100%;
@@ -378,7 +388,7 @@
         /* Ikon SVG pengganti emoji (Task 30) — seragam, ikut warna teks */
         .svgi { width: 1.12em; height: 1.12em; flex: 0 0 auto; vertical-align: -0.2em; }
         .pel-mini { gap: 5px; }
-        .pel-mini .svgi { width: .92em; height: .92em; }
+        .pel-mini .svgi { width: 10px; height: 10px; stroke-width: 2.9; }
         .baris-tombol .svgi { width: 1.2em; height: 1.2em; }
         .struk-baris .svgi { color: var(--biru); }
         .struk-hasil .svgi { width: 1.15em; height: 1.15em; }
@@ -1093,17 +1103,17 @@
             let isMeterEntered = item.METER_AKHIR > 0 && item.METER_AKHIR >= item.METER_AWAL;
 
             if (item.STATUS === 'Sudah Bayar') {
-                statusMiniHtml = `<span class="pel-mini pel-mini-lunas">${IK.check}Lunas</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-lunas"><span class="pel-mini-medal">${IK.check}</span>Lunas</span>`;
             } else if (hanyaBeban) {
                 // kekurangan cuma beban (komisi petugas) — bukan "belum bayar";
                 // badge cukup menunjukkan status PENCATATAN METER supaya tidak ada yang kelewatan
                 statusMiniHtml = isMeterEntered
-                    ? `<span class="pel-mini pel-mini-dicatat">${IK.pencil}Dicatat</span>`
-                    : `<span class="pel-mini pel-mini-meter">${IK.clock}Belum Dicatat</span>`;
+                    ? `<span class="pel-mini pel-mini-dicatat"><span class="pel-mini-medal">${IK.pencil}</span>Dicatat</span>`
+                    : `<span class="pel-mini pel-mini-meter"><span class="pel-mini-medal">${IK.clock}</span>Belum Dicatat</span>`;
             } else if (isMeterEntered) {
-                statusMiniHtml = `<span class="pel-mini pel-mini-dicatat">${IK.pencil}Dicatat</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-dicatat"><span class="pel-mini-medal">${IK.pencil}</span>Dicatat</span>`;
             } else {
-                statusMiniHtml = `<span class="pel-mini pel-mini-belum">${IK.alert}Belum</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-belum"><span class="pel-mini-medal">${IK.alert}</span>Belum</span>`;
             }
 
             let labelAksi = 'Catat';
