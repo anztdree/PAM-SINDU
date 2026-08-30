@@ -1,1 +1,2000 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0369a1">
+    <title>BPSPAMS TIRTA MAKMUR - SINDUHARJO 08/04</title>
+    <!-- Library jsPDF & jsPDF AutoTable (struk + laporan PDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
+    <style>
+        :root {
+            --biru-tua: #0c4a6e;
+            --biru: #0369a1;
+            --biru-terang: #0284c7;
+            --cyan: #0891b2;
+            --cyan-muda: #e0f2fe;
+            --hijau: #059669;
+            --hijau-muda: #d1fae5;
+            --merah: #dc2626;
+            --merah-muda: #fee2e2;
+            --amber: #d97706;
+            --amber-muda: #fef3c7;
+            --ungu: #4f46e5;
+            --teks: #0f172a;
+            --teks-samar: #64748b;
+            --garis: #e2e8f0;
+            --bg-kartu: #ffffff;
+            --bayang-kartu: 0 1px 2px rgba(2,32,71,.06), 0 8px 24px -12px rgba(2,32,71,.12);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            margin: 0;
+            padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(180deg, #e6f1fa 0%, #f1f5f9 260px, #f1f5f9 100%);
+            color: var(--teks);
+        }
+        .container { max-width: 640px; margin: auto; }
+
+        /* ===== HEADER ===== */
+        .header-app {
+            position: relative; overflow: hidden;
+            background: linear-gradient(150deg, var(--biru-tua) 0%, var(--biru) 55%, var(--cyan) 115%);
+            color: #fff; border-radius: 20px; padding: 18px 16px 40px;
+            box-shadow: 0 14px 30px -14px rgba(3,105,161,.6);
+            margin-bottom: 14px;
+        }
+        .header-baris { display: flex; align-items: center; gap: 12px; position: relative; z-index: 2; }
+        .logo-app {
+            width: 46px; height: 46px; flex: 0 0 46px; border-radius: 14px;
+            background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .header-teks { min-width: 0; }
+        .header-teks h2 { margin: 0; font-size: 1.12rem; font-weight: 800; letter-spacing: .3px; }
+        .header-teks p { margin: 3px 0 0; font-size: .78rem; opacity: .88; }
+        .header-status { margin-top: 13px; display: flex; position: relative; z-index: 2; }
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,.96); color: var(--teks);
+            border-radius: 999px; padding: 6px 14px; font-size: .78rem; font-weight: 800;
+            box-shadow: 0 3px 10px rgba(2,32,71,.28);
+        }
+        .status-pill .lbl { color: var(--teks-samar); font-weight: 700; }
+        @keyframes denyutStatus {
+            0% { box-shadow: 0 3px 10px rgba(2,32,71,.28), 0 0 0 0 rgba(5,150,105,.45); }
+            70% { box-shadow: 0 3px 10px rgba(2,32,71,.28), 0 0 0 8px rgba(5,150,105,0); }
+            100% { box-shadow: 0 3px 10px rgba(2,32,71,.28), 0 0 0 0 rgba(5,150,105,0); }
+        }
+        .status-pill.status-ok { animation: denyutStatus 2.6s ease-out infinite; }
+        .header-export {
+            margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+            position: relative; z-index: 2;
+        }
+        .btn-export {
+            display: flex; align-items: center; gap: 9px; text-align: left;
+            background: rgba(255,255,255,.95); color: var(--biru-tua);
+            border: 1px solid rgba(255,255,255,.65); border-radius: 13px;
+            padding: 8px 12px; cursor: pointer; font-family: inherit;
+            box-shadow: 0 4px 12px rgba(2,32,71,.22);
+            transition: transform .12s ease;
+        }
+        .btn-export:active { transform: scale(.97); }
+        .btn-export:disabled { opacity: .6; cursor: wait; }
+        .btn-export .ik { font-size: 1.18rem; line-height: 1; flex: 0 0 auto; }
+        .btn-export .tx { display: flex; flex-direction: column; min-width: 0; }
+        .btn-export .tx b { font-size: .8rem; font-weight: 800; line-height: 1.3; letter-spacing: .2px; }
+        .btn-export .tx small { font-size: .62rem; font-weight: 700; color: var(--teks-samar); line-height: 1.35; }
+        .ombak { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 30px; display: block; z-index: 1; }
+
+        /* ===== KARTU UMUM ===== */
+        .card {
+            background: var(--bg-kartu); border: 1px solid rgba(226,232,240,.9);
+            border-radius: var(--radius); box-shadow: var(--bayang-kartu);
+            padding: 14px; margin-bottom: 12px;
+        }
+        .judul-kartu { font-weight: 800; font-size: .9rem; color: var(--biru-tua); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+        /* ===== PERIODE ===== */
+        .periode-baris {
+            display: flex; align-items: stretch; gap: 10px;
+            background: linear-gradient(180deg, #f0f9ff, #e8f4fd);
+            border: 1px solid #d3ecfb; border-radius: 14px; padding: 10px;
+        }
+        .tombol-chevron {
+            flex: 0 0 46px; border-radius: 12px; border: 1px solid #cfe8f8;
+            background: #fff; color: var(--biru); font-size: 1.7rem; font-weight: 700; line-height: 1;
+            cursor: pointer; box-shadow: 0 1px 3px rgba(2,32,71,.1);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform .12s ease, background .12s ease;
+        }
+        .tombol-chevron:active { transform: scale(.94); background: var(--cyan-muda); }
+        .periode-tengah { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+        .periode-label { font-size: .66rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--teks-samar); }
+        .periode-nilai { font-size: 1.32rem; font-weight: 800; color: var(--biru-tua); line-height: 1.3; }
+
+        /* ===== TOMBOL ===== */
+        .btn {
+            border: none; border-radius: 12px; padding: 11px 14px;
+            font-size: .85rem; font-weight: 800; cursor: pointer; color: #fff;
+            transition: transform .12s ease, filter .12s ease;
+            box-shadow: 0 3px 10px -3px rgba(2,32,71,.3);
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            min-height: 44px; line-height: 1.2;
+        }
+        .btn:active { transform: scale(.97); }
+        .btn:disabled { opacity: .6; cursor: wait; }
+        .btn-blok { width: 100%; }
+        .btn-primer { background: linear-gradient(135deg, var(--biru), var(--biru-terang)); }
+        .btn-hijau { background: linear-gradient(135deg, #047857, #059669); }
+        .btn-wa { background: linear-gradient(135deg, #059669, #10b981); }
+        .btn-amber { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .btn-merah { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+        .btn-ungu { background: linear-gradient(135deg, #4338ca, #4f46e5); }
+        .btn-abu { background: #64748b; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        /* ===== KPI & PROGRES ===== */
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .kpi {
+            background: #fff; border: 1px solid rgba(226,232,240,.9); border-radius: 14px;
+            box-shadow: var(--bayang-kartu); padding: 12px; display: flex; align-items: center; gap: 10px;
+        }
+        .kpi-ikon { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
+        .kpi-biru { background: #dbeafe; } .kpi-hijau { background: #d1fae5; }
+        .kpi-cyan { background: #cffafe; } .kpi-amber { background: #fef3c7; }
+        .kpi-isi { min-width: 0; }
+        .kpi-isi span { display: block; font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--teks-samar); }
+        .kpi-isi b { font-size: 1rem; font-weight: 800; color: var(--teks); font-variant-numeric: tabular-nums; }
+        .teks-hijau { color: var(--hijau) !important; }
+        .teks-cyan { color: var(--cyan) !important; }
+
+        .progres-bungkus {
+            background: #fff; border: 1px solid rgba(226,232,240,.9); border-radius: 14px;
+            box-shadow: var(--bayang-kartu); padding: 12px 14px; margin-bottom: 12px;
+        }
+        .progres-label { display: flex; justify-content: space-between; align-items: baseline; font-size: .73rem; font-weight: 800; color: var(--teks-samar); margin-bottom: 7px; }
+        .progres-label b { color: var(--hijau); font-size: .8rem; }
+        .progres { height: 9px; border-radius: 999px; background: #e2e8f0; overflow: hidden; box-shadow: inset 0 1px 2px rgba(2,32,71,.1); }
+        .progres-isi { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #34d399, #059669); transition: width .5s ease; }
+
+        /* ===== INPUT & CARI ===== */
+        input.field, select.field {
+            width: 100%; padding: 11px 13px; border: 1.5px solid var(--garis); border-radius: 12px;
+            font-size: .9rem; outline: none; background: #fff; color: var(--teks);
+            transition: border-color .15s ease, box-shadow .15s ease; min-height: 44px;
+        }
+        input.field:focus, select.field:focus { border-color: var(--biru-terang); box-shadow: 0 0 0 3px rgba(2,132,199,.14); }
+        .kotak-cari { position: relative; }
+        .ikon-cari { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: .95rem; opacity: .55; }
+        .kotak-cari input.field { padding-left: 42px; border-radius: 999px; }
+
+        /* ===== DAFTAR PELANGGAN (KARTU RINGKAS 2 BARIS) ===== */
+        /* tap HANYA di tombol — seluruh kartu tidak aktif agar scroll sambil jalan tidak salah tekan */
+        .daftar-pelanggan { display: flex; flex-direction: column; gap: 8px; }
+        .pel-kartu {
+            background: #fff; border: 1.5px solid var(--garis); border-radius: 12px; padding: 9px 12px;
+            transition: box-shadow .15s ease, transform .15s ease;
+        }
+        .pel-kartu:hover { box-shadow: 0 8px 20px -10px rgba(2,32,71,.25); }
+        /* kartu ber-status: warna PEKAT penuh + rel warna di kiri agar terlihat jelas di layar HP */
+        .kartu-deposit { border-color: #6ee7b7; border-left: 4px solid #10b981; background: linear-gradient(180deg, #d1fae5, #ecfdf5); }
+        .kartu-tunggakan { border-color: #fca5a5; border-left: 4px solid #ef4444; background: linear-gradient(180deg, #fee2e2, #fff1f2); }
+        /* baris 1: nomor + nama + status + tombol */
+        .pel-atas { display: flex; align-items: center; gap: 7px; min-width: 0; }
+        .pel-nama {
+            flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: .92rem; color: var(--teks);
+            letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .pel-mini {
+            display: inline-flex; align-items: center; flex: 0 0 auto; padding: 3px 9px;
+            border-radius: 999px; font-size: .67rem; font-weight: 800; white-space: nowrap;
+        }
+        .pel-mini-lunas { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
+        .pel-mini-dicatat { background: var(--amber-muda); color: #b45309; border: 1px solid #fde68a; }
+        .pel-mini-belum { background: var(--merah-muda); color: #b91c1c; border: 1px solid #fecaca; }
+        .btn-aksi {
+            border: none; border-radius: 999px; padding: 9px 16px; font-size: .78rem; font-weight: 800;
+            cursor: pointer; color: #fff; flex: 0 0 auto; min-width: 70px; min-height: 38px;
+            box-shadow: 0 2px 8px -4px rgba(2,32,71,.4); transition: transform .12s ease;
+        }
+        .btn-aksi:active { transform: scale(.94); }
+        .btn-aksi-catat { background: linear-gradient(135deg, var(--biru), var(--biru-terang)); }
+        .btn-aksi-edit { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        /* baris 2: meter + pemakaian (kiri) • saldo + tagihan (kanan) */
+        .pel-bawah {
+            display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+            margin-top: 4px; min-width: 0;
+        }
+        .pel-ringkas {
+            font-size: .77rem; color: var(--teks-samar); font-variant-numeric: tabular-nums;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+        }
+        .pel-ringkas b { color: var(--teks); font-weight: 800; }
+        .pel-kanan { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+        .pel-saldo-minus { font-size: .77rem; color: #b91c1c; font-weight: 800; }
+        .pel-saldo-plus { font-size: .77rem; color: #047857; font-weight: 800; }
+        .pel-tagihan { font-size: .86rem; color: var(--biru); font-weight: 800; }
+        .kosong-cari { text-align: center; color: var(--teks-samar); font-size: .85rem; padding: 18px 0 6px; }
+
+        /* ===== PANEL COLLAPSIBLE ===== */
+        .panel { border: 1.5px dashed #cbd5e1; border-radius: 12px; margin-top: 10px; background: #fbfdff; }
+        .panel-summary {
+            list-style: none; cursor: pointer; padding: 11px 12px; font-weight: 800; font-size: .8rem;
+            color: var(--biru-tua); display: flex; align-items: center; gap: 8px; user-select: none;
+        }
+        .panel-summary::-webkit-details-marker { display: none; }
+        .panel-chevron { display: inline-flex; transition: transform .2s ease; font-size: .68rem; color: var(--teks-samar); }
+        details[open] > .panel-summary .panel-chevron { transform: rotate(90deg); }
+        .panel-isi { padding: 2px 12px 12px; }
+        .baris-admin { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+        .baris-admin .field { flex: 1 1 120px; min-width: 0; }
+        .baris-admin .btn { flex: 0 0 auto; min-height: 40px; padding: 9px 12px; font-size: .77rem; }
+        .catatan { font-size: .74rem; color: var(--teks-samar); line-height: 1.55; margin: 8px 0; }
+        .info-inline { font-size: .74rem; color: #334155; line-height: 1.55; margin-top: 8px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 8px 10px; }
+        .info-inline:empty { display: none; }
+
+        /* ===== MANAJEMEN PELANGGAN ===== */
+        .mj-sub { margin-left: auto; font-size: .66rem; font-weight: 700; color: var(--teks-samar); letter-spacing: .2px; }
+        .mj-blok { padding: 10px 0 2px; border-bottom: 1px dashed #dbe4ee; }
+        .mj-blok:last-of-type { border-bottom: none; }
+        .mj-label { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: var(--biru-tua); margin-bottom: 7px; }
+        .mj-hint { font-size: .68rem; color: var(--teks-samar); line-height: 1.5; margin: -2px 0 8px; }
+        .field.mj-no { flex: 0 0 58px; text-align: center; font-weight: 800; }
+
+        /* nomor urut rumah pada kartu pelanggan */
+        .pel-nomor {
+            display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+            min-width: 26px; height: 24px; padding: 0 5px; border-radius: 8px;
+            background: var(--cyan-muda); color: var(--biru-tua); border: 1px solid #bae6fd;
+            font-size: .7rem; font-weight: 800; font-variant-numeric: tabular-nums;
+        }
+
+        /* ===== MODAL ===== */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8,47,73,.55); z-index: 100; overflow-y: auto; backdrop-filter: blur(3px); }
+        .modal-content-wrapper { padding: 16px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        .form-box {
+            background: #fff; border-radius: 18px; width: 100%; max-width: 430px; overflow: hidden;
+            box-shadow: 0 24px 60px -12px rgba(2,32,71,.45); animation: naikModal .25s ease; margin: auto;
+        }
+        @keyframes naikModal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+        .modal-kepala {
+            background: linear-gradient(135deg, var(--biru-tua), var(--biru-terang));
+            color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-kepala h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+        .tombol-tutup {
+            background: rgba(255,255,255,.2); border: none; color: #fff; width: 30px; height: 30px;
+            border-radius: 999px; font-size: .85rem; cursor: pointer; line-height: 1; flex: 0 0 30px;
+        }
+        .modal-isi { padding: 14px 16px 16px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: .72rem; font-weight: 800; margin-bottom: 5px; color: var(--biru-tua); text-transform: uppercase; letter-spacing: .5px; }
+        input.form-input {
+            width: 100%; padding: 11px 12px; border: 1.5px solid var(--garis); border-radius: 11px;
+            font-size: .92rem; outline: none; transition: border-color .15s ease, box-shadow .15s ease;
+            font-variant-numeric: tabular-nums; min-height: 44px;
+        }
+        input.form-input:focus { border-color: var(--biru-terang); box-shadow: 0 0 0 3px rgba(2,132,199,.14); }
+        input.form-input[readonly] { background: #f1f5f9; font-weight: 800; color: var(--biru-tua); }
+        .ringkasan {
+            background: linear-gradient(180deg, #f0f9ff, #f8fcff); border: 1px solid #d3ecfb;
+            padding: 11px 13px; border-radius: 12px; margin: 12px 0; font-size: .82rem; line-height: 1.65;
+        }
+        .baris-ringkas { display: flex; justify-content: space-between; gap: 8px; }
+        .pemisah-ringkas { border: 0; border-top: 1px dashed #bae6fd; margin: 7px 0; }
+        .total-baris { font-size: .95rem; color: var(--biru-tua); font-weight: 800; }
+        .baris-tombol { display: flex; gap: 6px; margin-bottom: 8px; }
+        .baris-tombol .btn { flex: 1; font-size: .78rem; padding: 10px 6px; }
+        .baris-tombol .btn-abu { flex: 0 0 62px; }
+
+        /* ===== TOAST ===== */
+        .toast-wrap {
+            position: fixed; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+            display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 300;
+            pointer-events: none; padding: 0 16px;
+        }
+        .toast {
+            background: #fff; border-radius: 12px; padding: 10px 16px; font-size: .82rem; font-weight: 700;
+            color: var(--teks); box-shadow: 0 10px 30px -8px rgba(2,32,71,.38);
+            border-left: 4px solid var(--hijau); opacity: 0; transform: translateY(14px);
+            transition: opacity .28s ease, transform .28s ease; max-width: 100%;
+        }
+        .toast.muncul { opacity: 1; transform: none; }
+        .toast-gagal { border-left-color: var(--merah); }
+        .toast-info { border-left-color: var(--biru-terang); }
+
+        .kaki-app { text-align: center; font-size: .72rem; color: #94a3b8; line-height: 1.7; padding: 8px 0 2px; }
+
+        button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--biru-terang); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HEADER -->
+    <div class="header-app">
+        <div class="header-baris">
+            <div class="logo-app" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+                    <path d="M12 2.8c3.3 4.1 6.2 7.4 6.2 10.7a6.2 6.2 0 1 1-12.4 0C5.8 10.2 8.7 6.9 12 2.8z" fill="#ffffff"/>
+                    <path d="M9.1 13.6a2.9 2.9 0 0 0 2 4.3" stroke="#0369a1" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="header-teks">
+                <h2>BPSPAMS TIRTA MAKMUR</h2>
+                <p>Penagihan Air &bull; Sinduharjo 08/04 &bull; Petugas: ANDRI</p>
+            </div>
+        </div>
+        <div class="header-status">
+            <span class="status-pill">
+                <span class="lbl">Database:</span>
+                <span id="statusKoneksiText" style="color:#d97706;">🟡 Memeriksa Koneksi...</span>
+            </span>
+        </div>
+        <div class="header-export">
+            <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')" title="Backup berupa file database utuh (.db)">
+                <span class="ik" aria-hidden="true">💾</span>
+                <span class="tx"><b>Export .db</b><small>File database utuh</small></span>
+            </button>
+            <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')" title="Backup berupa dump teks SQL (.sql)">
+                <span class="ik" aria-hidden="true">🗂️</span>
+                <span class="tx"><b>Export .sql</b><small>Dump teks SQL</small></span>
+            </button>
+        </div>
+        <svg class="ombak" viewBox="0 0 1440 44" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,26 C180,44 360,4 560,16 C760,28 900,8 1100,18 C1260,26 1360,14 1440,22 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.14)"/>
+            <path d="M0,34 C220,20 420,40 640,30 C860,20 1040,38 1240,30 C1340,26 1400,32 1440,30 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.20)"/>
+        </svg>
+    </div>
+
+    <!-- DATA & BACKUP (tepat di bawah tombol Export) -->
+    <div class="card">
+        <div class="judul-kartu">💾 Data &amp; Backup</div>
+        <div id="infoExport" class="info-inline">Belum ada backup — tekan <b>Export .db</b> / <b>Export .sql</b> di atas.</div>
+
+        <details class="panel">
+            <summary class="panel-summary"><span class="panel-chevron">▶</span>⚙️ Menu Admin (Import / Reset Data)</summary>
+            <div class="panel-isi">
+                <p class="catatan">
+                    Letakkan <b>pam.sql</b> di folder aplikasi lalu tekan Import
+                    (baris baru ditambah, lama diperbarui — aman diulang).
+                    Reset mengosongkan seluruh transaksi.
+                </p>
+                <div class="grid-2">
+                    <button class="btn btn-ungu" onclick="importDataLama()">📥 Import pam.sql</button>
+                    <button class="btn btn-merah" onclick="kosongkanData()">🗑️ Kosongkan Data</button>
+                </div>
+                <div id="infoImport" class="info-inline"></div>
+            </div>
+        </details>
+
+    </div>
+
+    <!-- PANEL PERIODE -->
+    <div class="card">
+        <div class="periode-baris">
+            <button class="tombol-chevron" onclick="kembaliBulanLalu()" aria-label="Bulan sebelumnya">&#8249;</button>
+            <div class="periode-tengah">
+                <span class="periode-label">Periode Aktif</span>
+                <span class="periode-nilai" id="labelPeriodeAktif">Juni 2026</span>
+            </div>
+            <button class="tombol-chevron" onclick="lanjutBulanBerikutnya()" aria-label="Bulan sesudahnya">&#8250;</button>
+        </div>
+        <div style="margin-top:10px;">
+            <button class="btn btn-hijau btn-blok" onclick="prosesTutupBukuDanLanjut()">🔒 Tutup Buku &amp; Buat Periode Baru</button>
+        </div>
+    </div>
+
+    <!-- REKAP / KPI -->
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-ikon kpi-biru">👥</div>
+            <div class="kpi-isi"><span>Total Pelanggan</span><b id="recTotalPelanggan">0</b></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-ikon kpi-hijau">✅</div>
+            <div class="kpi-isi"><span>Sudah Bayar</span><b id="recLunas" class="teks-hijau">0</b></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-ikon kpi-cyan">💧</div>
+            <div class="kpi-isi"><span>Pemakaian Air</span><b id="recTotalM3" class="teks-cyan">0 m&sup3;</b></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-ikon kpi-amber">💰</div>
+            <div class="kpi-isi"><span>Nilai Air (m&sup3;)</span><b id="recTotalUangM3" class="teks-hijau">Rp 0</b></div>
+        </div>
+    </div>
+
+    <div class="progres-bungkus">
+        <div class="progres-label">
+            <span>Progres Penagihan Bulan Ini</span>
+            <b id="persenLunas">0%</b>
+        </div>
+        <div class="progres"><div id="barLunas" class="progres-isi" style="width:0%"></div></div>
+    </div>
+
+    <!-- MANAJEMEN PELANGGAN (tepat di atas pencarian) -->
+    <div class="card">
+        <details class="panel" id="panelManajemen">
+            <summary class="panel-summary"><span class="panel-chevron">▶</span>👥 Manajemen Pelanggan<span class="mj-sub">Tambah · Ganti Nama · Hapus</span></summary>
+            <div class="panel-isi">
+                <div class="mj-blok">
+                    <div class="mj-label">➕ Tambah Pelanggan</div>
+                    <div class="baris-admin">
+                        <input type="text" id="inputNoBaru" class="field mj-no" inputmode="numeric" maxlength="3" placeholder="No.">
+                        <input type="text" id="inputNamaBaru" class="field" placeholder="Nama pelanggan baru...">
+                        <button class="btn btn-hijau" onclick="tambahPelangganBaru()">➕ Tambah</button>
+                    </div>
+                    <div class="mj-hint">Isi <b>No.</b> untuk menyisip di tengah daftar — pelanggan dari No. itu bergeser turun. Kosongkan = tambah di akhir.</div>
+                </div>
+                <div class="mj-blok">
+                    <div class="mj-label">✏️ Ganti Nama</div>
+                    <div class="baris-admin">
+                        <select id="pilihNamaLama" class="field"></select>
+                        <input type="text" id="inputNamaGanti" class="field" placeholder="Nama baru...">
+                        <button class="btn btn-primer" onclick="gantiNamaPelanggan()">✏️ Ganti</button>
+                    </div>
+                </div>
+                <div class="mj-blok">
+                    <div class="mj-label">🗑️ Hapus Pelanggan</div>
+                    <div class="baris-admin">
+                        <select id="pilihNamaHapus" class="field"></select>
+                        <button class="btn btn-merah" onclick="hapusPelanggan()">🗑️ Hapus</button>
+                    </div>
+                </div>
+                <div id="infoPelanggan" class="info-inline"></div>
+            </div>
+        </details>
+    </div>
+
+    <!-- PENCARIAN -->
+    <div class="card">
+        <div class="kotak-cari">
+            <span class="ikon-cari">🔍</span>
+            <input type="text" id="searchInput" class="field" onkeyup="cariPelanggan()" placeholder="Cari nama pelanggan...">
+        </div>
+    </div>
+
+    <!-- DAFTAR PELANGGAN -->
+    <div class="card">
+        <div class="judul-kartu">🏠 Daftar Pelanggan</div>
+        <div id="tabelBody" class="daftar-pelanggan"></div>
+        <div id="kosongPencarian" class="kosong-cari" style="display:none;">😕 Tidak ada pelanggan yang cocok dengan pencarian.</div>
+    </div>
+
+    <!-- LAPORAN BULANAN (paling bawah) -->
+    <div class="card">
+        <div class="judul-kartu">📄 Laporan Bulanan</div>
+        <button class="btn btn-primer btn-blok" onclick="downloadLaporanPDF()">📄 Download PDF</button>
+    </div>
+
+    <footer class="kaki-app">
+        BPSPAMS TIRTA MAKMUR &bull; SINDUHARJO 08/04<br>
+        <span>Data tersimpan di database SQLite perangkat ini — jangan lupa rutin Export Database.</span>
+    </footer>
+</div>
+
+<!-- MODAL FORM INPUT POP-UP -->
+<div id="modalInput" class="modal">
+    <div class="modal-content-wrapper">
+        <div class="form-box">
+            <div class="modal-kepala">
+                <h3>📝 Pencatatan Meteran</h3>
+                <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup">✕</button>
+            </div>
+            <div class="modal-isi">
+                <div class="form-group">
+                    <label>Nama Pelanggan</label>
+                    <input type="text" id="formNama" class="form-input" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Meter Awal</label>
+                    <input type="number" id="mLalu" class="form-input" oninput="hitungTagihanModal()">
+                </div>
+
+                <div class="form-group">
+                    <label>Meter Akhir</label>
+                    <input type="number" id="mKini" class="form-input" oninput="hitungTagihanModal()" placeholder="Angka meteran baru">
+                </div>
+
+                <div class="form-group">
+                    <label>Uang Cash Diterima (Rp)</label>
+                    <input type="number" id="mCash" class="form-input" oninput="hitungTagihanModal()" placeholder="Contoh: 20000">
+                </div>
+
+                <div class="ringkasan">
+                    <div class="baris-ringkas"><span>Pemakaian Air:</span><b id="uiPemakaian">0 m&sup3;</b></div>
+                    <div class="baris-ringkas"><span>Biaya Air (x Rp 2.500):</span><b id="uiBiayaAir">Rp 0</b></div>
+                    <div class="baris-ringkas"><span>Biaya Beban Bulan Ini:</span><b id="uiBiayaBeban">Rp 2.000</b></div>
+                    <div class="baris-ringkas"><span>Saldo Bulan Lalu (+/-):</span><b id="uiSaldoLalu">Rp 0</b></div>
+                    <hr class="pemisah-ringkas">
+                    <div class="baris-ringkas total-baris"><span>Total Harus Dibayar:</span><b id="uiTotalHarusBayar">Rp 0</b></div>
+                    <div style="font-size:.86rem; margin-top:6px; font-weight:800;" id="uiCashStatus">Keterangan: Rp 0</div>
+                </div>
+
+                <div class="baris-tombol">
+                    <button class="btn btn-hijau" onclick="simpanSudahBayar()">Sudah Bayar ✅</button>
+                    <button class="btn btn-amber" onclick="simpanBelumBayar()">Catat Saja 📝</button>
+                    <button class="btn btn-abu" onclick="tutupModal()">Batal</button>
+                </div>
+
+                <button class="btn btn-ungu btn-blok" onclick="cetakStrukPDF()">📄 Cetak Struk Individu PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WADAH TOAST NOTIFIKASI -->
+<div id="toastWrap" class="toast-wrap"></div>
+<script>
+    const TARIF_PER_M3 = 2500;
+    const BIAYA_BEBAN_STANDAR = 2000;
+    const NAMA_PETUGAS = "ANDRI";
+
+    // ====== LAPISAN DATABASE SHTTPS (API /api/db/* — TANPA PHP) ======
+    const DB_TABLE = "transaksi_pelanggan";
+    const KOLOM = "nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status";
+    // Kunci localStorage: jaring penyelamat saat penyusunan ulang nomor
+    // (sisip pelanggan di tengah) terputus di tengah jalan.
+    const KUNCI_PENDING = "pamSusunUlangTertunda";
+
+    // Pastikan nilai numerik murni
+    function num(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+    /* ============================================================
+       LAPISAN DATABASE TANPA CUSTOM SQL (cocok untuk SHTTPS GRATIS)
+       Hanya memakai endpoint yang bebas dari fitur PLUS:
+       - GET  /api/db/table  (baca baris + filter)
+       - GET  /api/db/schema (cek database & tabel)
+       - POST /api/db/insert (tulis baris; array = 1 transaksi)
+       - PUT  /api/db/update (ubah baris sesuai filter)
+       - DELETE /api/db/delete (hapus baris sesuai filter)
+       Semua tulis membutuhkan saklar "Enable API to modify
+       tables data" AKTIF (fitur gratis). Pola permintaan mengikuti
+       implementasi resmi web database browser milik SHTTPS.
+       ============================================================ */
+
+    // Permintaan form-encoded (URLSearchParams otomatis set Content-Type)
+    async function dbForm(method, path, params) {
+        const res = await fetch(path, { method: method, body: params });
+        if (res.status === 404) throw new Error("DB_OFF");
+        if (res.status === 403) throw new Error("EDIT_OFF");
+        if (res.status === 401) throw new Error("AUTH");
+        if (res.status === 420) throw new Error("SQL_ERR: " + (await res.text()));
+        if (!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 60));
+        const teks = await res.text();
+        return teks ? JSON.parse(teks) : null;
+    }
+
+    // Baca baris via /api/db/table dengan filter terikat (aman dari injeksi).
+    // filters boleh dikosongkan (baca semua baris); limit bisa disesuaikan;
+    // urutKolom meminta server mengurutkan hasil (didukung SHTTPS baru,
+    // diabaikan tanpa efek di versi lama).
+    async function dbBaca(kolom, filters, limit, urutKolom) {
+        const qs = { table: DB_TABLE, rowsAsObjects: "true", columns: kolom, limit: String(limit || 500) };
+        if (filters) qs.filters = JSON.stringify(filters);
+        if (urutKolom) { qs.sort = urutKolom; qs["sort-order"] = "asc"; }
+        const res = await fetch("/api/db/table?" + new URLSearchParams(qs).toString());
+        if (res.status === 404) throw new Error("DB_OFF");
+        if (res.status === 401) throw new Error("AUTH");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const hasil = await res.json();
+        return hasil.data || [];
+    }
+
+    // Baca satu periode (objek lengkap per pelanggan)
+    async function dbBacaPeriode(periode) {
+        return dbBaca(KOLOM, { clauses: ["periode="], args: [periode] });
+    }
+
+    // Sisipkan baris: array dalam SATU transaksi; bila SHTTPS versi lama
+    // belum mendukung array (jawaban 400), sisip satu per satu.
+    async function dbInsertBanyak(daftarBaris) {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        params.append("values", JSON.stringify(daftarBaris));
+        try {
+            return await dbForm("POST", "/api/db/insert", params);
+        } catch (e) {
+            if (String(e.message || e).includes("HTTP 400")) {
+                for (const r of daftarBaris) {
+                    const p = new URLSearchParams();
+                    p.append("table", DB_TABLE);
+                    p.append("values", JSON.stringify(r));
+                    await dbForm("POST", "/api/db/insert", p);
+                }
+                return { generated_ids: null, jumlah: daftarBaris.length, perBaris: true };
+            }
+            throw e;
+        }
+    }
+
+    // Ubah baris yang cocok filter (periode + nama) — PUT /api/db/update
+    async function dbUpdateBaris(periode, nama, nilai) {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        params.append("filters", JSON.stringify({ clauses: ["periode=", "nama="], args: [periode, nama] }));
+        params.append("values", JSON.stringify(nilai));
+        return dbForm("PUT", "/api/db/update", params);
+    }
+
+    // Hapus SELURUH baris tabel ini (tanpa filters = semua baris)
+    async function dbHapusSemua() {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        return dbForm("DELETE", "/api/db/delete", params);
+    }
+
+    // Ganti nama pelanggan pada SEMUA periode (rumah ganti pemilik):
+    // satu permintaan PUT, filter nama lama, nilai = nama baru.
+    async function dbUpdateNama(namaLama, namaBaru) {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        params.append("filters", JSON.stringify({ clauses: ["nama="], args: [namaLama] }));
+        params.append("values", JSON.stringify({ nama: namaBaru }));
+        const hasil = await dbForm("PUT", "/api/db/update", params);
+        return (hasil && Number(hasil.updated_rows)) || 0;
+    }
+
+    // Hapus seluruh riwayat satu pelanggan (semua periode)
+    async function dbHapusPelanggan(nama) {
+        const params = new URLSearchParams();
+        params.append("table", DB_TABLE);
+        params.append("filters", JSON.stringify({ clauses: ["nama="], args: [nama] }));
+        const hasil = await dbForm("DELETE", "/api/db/delete", params);
+        return (hasil && Number(hasil.deleted_rows)) || 0;
+    }
+
+    // Simpan satu pelanggan: jika baris sudah ada -> UPDATE, kalau belum -> INSERT
+    async function dbSimpan(payload) {
+        const baris = await dbBaca("nama", { clauses: ["periode=", "nama="], args: [payload.periode, payload.nama] });
+        const nilai = {
+            meter_awal: num(payload.meter_awal), meter_akhir: num(payload.meter_akhir),
+            cash: num(payload.cash), biaya_beban: num(payload.biaya_beban),
+            saldo_lalu: num(payload.saldo_lalu), status: payload.status
+        };
+        if (baris.length > 0) return dbUpdateBaris(payload.periode, payload.nama, nilai);
+        return dbInsertBanyak([Object.assign({ periode: payload.periode, nama: payload.nama }, nilai)]);
+    }
+
+    // Upsert banyak baris pada satu periode:
+    // baris baru -> INSERT (array = atomik di SHTTPS versi baru),
+    // baris yang sudah ada -> UPDATE (kolomUpdate: daftar kolom yang ditimpa)
+    async function dbUpsertPeriode(periode, daftarBaris, kolomUpdate) {
+        const ada = new Set((await dbBaca("nama", { clauses: ["periode="], args: [periode] })).map(r => r.nama));
+        const sisip = [], ubah = [];
+        daftarBaris.forEach(r => { (ada.has(r.nama) ? ubah : sisip).push(r); });
+        if (sisip.length > 0) await dbInsertBanyak(sisip);
+        for (const r of ubah) {
+            let nilai;
+            if (kolomUpdate) {
+                nilai = {};
+                kolomUpdate.forEach(k => { nilai[k] = r[k]; });
+            } else {
+                nilai = {
+                    meter_awal: num(r.meter_awal), meter_akhir: num(r.meter_akhir),
+                    cash: num(r.cash), biaya_beban: num(r.biaya_beban),
+                    saldo_lalu: num(r.saldo_lalu), status: r.status
+                };
+            }
+            await dbUpdateBaris(periode, r.nama, nilai);
+        }
+        return { sisip: sisip.length, ubah: ubah.length };
+    }
+
+    // Cek database aktif & tabel ada (baca schema tidak butuh saklar apa pun)
+    async function dbCek() {
+        let res = await fetch("/api/db/schema");
+        if (res.status === 401) return { dbAktif: true, auth: true };
+        if (!res.ok) return { dbAktif: false };
+        res = await fetch("/api/db/schema?table=" + DB_TABLE);
+        return { dbAktif: true, tabelAda: res.ok };
+    }
+
+    const daftarBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    
+    let currentBulanIndex = localStorage.getItem('activeBulanIndex') !== null 
+        ? parseInt(localStorage.getItem('activeBulanIndex')) 
+        : 5; // Default: 5 = Juni
+        
+    let currentTahun = localStorage.getItem('activeTahun') !== null 
+        ? parseInt(localStorage.getItem('activeTahun')) 
+        : 2026;
+
+    // URUTAN PATEN SESUAI PERMINTAAN
+    const defaultNames = [
+        "HARTOYO", "SUPOYO", "HERU", "LEGIMAN / TINAH", "SUWARNI", "TRIYANTO", 
+        "BU SITI", "KISWANTO", "MARNI SATE", "ENI ( OUTLET)", "ERTA", "SUTOPO", 
+        "SUPRAPTI", "SUMARNO", "NUR W", "ADIT", "BOWO", "SUGINO", "MADRIM", 
+        "GALIH (LAMPU)", "GAGAN (BENGKEL)", "SUCI ( PIJAT)", "ATIK", "RINI", 
+        "SUKINO", "AGUS", "TRI W", "DAKIMAH", "NARTI", "WAGIYO", "KATIYO", 
+        "ANI", "ABDULLAH", "ISKAK KISNO", "BAMBANG PARLIS", "MULYONO", "SUTARNO", 
+        "SARPAN", "SUHAR (ADEK)", "SUPRIYONO (TAMBAL BAN)", "GITO", "NGATIRAN", 
+        "CANDRA", "ISBAROH", "BU IS (TOL)"
+    ];
+
+    /* ============================================================
+       DAFTAR PELANGGAN DINAMIS — MURNI DARI DATABASE
+       Urutan rumah = urutan kemunculan pertama menurut kolom id.
+       Daftar 45 nama bawah hanya dipakai sebagai cadangan saat
+       database tidak terbaca (offline); cache localStorage hanya
+       cadangan offline juga. Dengan begitu pelanggan yang dihapus
+       / berganti nama tidak menjadi "hantu" di perangkat lain,
+       dan urutan tata letak rumah tetap konsisten di mana pun.
+       ============================================================ */
+    let daftarPelanggan = [...defaultNames];
+    let hitungPelanggan = new Map(); // nama -> jumlah baris riwayat di database
+
+    function muatCacheDaftarPelanggan() {
+        try {
+            const c = JSON.parse(localStorage.getItem('daftarPelanggan') || 'null');
+            if (Array.isArray(c) && c.length > 0) daftarPelanggan = c;
+        } catch (e) {}
+    }
+    muatCacheDaftarPelanggan();
+
+    function simpanCacheDaftarPelanggan() {
+        try { localStorage.setItem('daftarPelanggan', JSON.stringify(daftarPelanggan)); } catch (e) {}
+    }
+
+    // Susun nama unik dari baris database. Urutan hasil SQL tanpa ORDER BY
+    // TIDAK dijamin (bisa urut indeks, bukan urutan id), maka baris yang
+    // membawa id diurutkan sendiri dulu; urutan daftar = kemunculan pertama
+    // (id terkecil) sehingga susunan lama tetap terjaga. barisPeriodeIni
+    // menjadi jaring pengaman bila hasil baca terpotong batas limit.
+    function susunDaftarDariBaris(semuaBaris, barisPeriodeIni) {
+        const baris = (semuaBaris || []).slice();
+        if (baris.length && baris[0] && baris[0].id != null) {
+            baris.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+        }
+        const urut = [], lihat = new Set(), hitung = new Map();
+        baris.forEach(r => {
+            const n = r.nama;
+            if (n == null) return;
+            hitung.set(n, (hitung.get(n) || 0) + 1);
+            if (!lihat.has(n)) { lihat.add(n); urut.push(n); }
+        });
+        (barisPeriodeIni || []).forEach(r => {
+            const n = r.nama;
+            if (n == null) return;
+            if (!lihat.has(n)) {
+                lihat.add(n);
+                urut.push(n);
+                hitung.set(n, (hitung.get(n) || 0) + 1);
+            }
+        });
+        return { urut, hitung };
+    }
+
+    let excelData = [];
+    let selectedIndex = null;
+
+    function simpanPeriodeAktif() {
+        localStorage.setItem('activeBulanIndex', currentBulanIndex);
+        localStorage.setItem('activeTahun', currentTahun);
+    }
+
+    function getPeriodeText() {
+        return `${daftarBulan[currentBulanIndex]} ${currentTahun}`;
+    }
+
+    function updateStatusKoneksi(terhubung, pesan = "") {
+        const el = document.getElementById('statusKoneksiText');
+        if (!el) return;
+        const pill = el.closest ? el.closest('.status-pill') : null;
+        if (pill && pill.classList) pill.classList.toggle('status-ok', !!terhubung);
+        
+        if (terhubung) {
+            el.style.color = "#16a34a";
+            el.innerHTML = "🟢 Terhubung";
+        } else {
+            el.style.color = "#dc2626";
+            el.innerHTML = `🔴 Terputus ${pesan ? '(' + pesan + ')' : ''}`;
+        }
+    }
+
+    // Terjemahkan kode error SHTTPS jadi pesan yang bisa ditindaklanjuti
+    function pesanErrorDB(err) {
+        const m = String(err.message || err);
+        if (m.includes("DB_OFF")) return "Database belum aktif - aktifkan 'Enable SQLite database' di Pengaturan SHTTPS lalu pilih 'Attach existing database' dengan file pam.db";
+        if (m.includes("TABEL_TIDAK_ADA")) return "Tabel belum ada di database. Matikan lalu nyalakan lagi 'Enable SQLite database' di SHTTPS, lalu pilih ATTACH EXISTING DATABASE dengan file pam.db (jangan Create new - versi gratis tidak bisa membuat tabel dari aplikasi ini)";
+        if (m.includes("EDIT_OFF")) return "Aktifkan toggle 'Enable API to modify tables data' di Pengaturan > Database SHTTPS (fitur GRATIS, bukan PLUS)";
+        if (m.includes("AUTH")) return "Perlu login - masuk dulu ke SHTTPS (username & password)";
+        if (m.includes("SQL_ERR")) return "Kesalahan SQL: " + m.replace("SQL_ERR: ", "").slice(0, 100);
+        return "Server tidak merespons - pastikan server START dan halaman dibuka lewat http://";
+    }
+
+    async function loadDataPeriodeIni() {
+        simpanPeriodeAktif();
+
+        let key = getPeriodeText();
+        document.getElementById('labelPeriodeAktif').innerText = key;
+
+        try {
+            // Pastikan database aktif & tabel tersedia (sekali saja per sesi)
+            if (!window._dbSiap) {
+                const cek = await dbCek();
+                if (!cek.dbAktif) throw new Error("DB_OFF");
+                if (cek.auth) throw new Error("AUTH");
+                if (!cek.tabelAda) throw new Error("TABEL_TIDAK_ADA");
+                window._dbSiap = true;
+            }
+
+            // Bila ada penyusunan ulang (sisip nomor) yang terputus di tengah
+            // jalan, pulihkan dulu supaya tidak ada data yang hilang.
+            await pulihkanOperasiTertunda();
+
+            // Daftar pelanggan = MURNI dari database (urut kemunculan
+            // pertama menurut id = urutan tata letak rumah). Cache
+            // lokal hanya cadangan offline, tidak digabungkan lagi.
+            const semuaBaris = await dbBaca("id,nama", null, 2000, "id");
+            const baris = await dbBacaPeriode(key);
+            const susun = susunDaftarDariBaris(semuaBaris, baris);
+            daftarPelanggan = susun.urut;
+            hitungPelanggan = susun.hitung;
+            simpanCacheDaftarPelanggan();
+
+            updateStatusKoneksi(true);
+
+            // Susun data periode ini mengikuti urutan daftar pelanggan;
+            // pelanggan tanpa catatan di periode ini tampil kosong (nol).
+            const dataMap = new Map();
+            baris.forEach(item => dataMap.set(item.nama, item));
+
+            excelData = daftarPelanggan.map(nama => {
+                const item = dataMap.get(nama);
+                if (item) {
+                    return {
+                        NAMA: item.nama,
+                        METER_AWAL: parseFloat(item.meter_awal) || 0,
+                        METER_AKHIR: parseFloat(item.meter_akhir) || 0,
+                        CASH: parseFloat(item.cash) || 0,
+                        BIAYA_BEBAN: parseFloat(item.biaya_beban) || BIAYA_BEBAN_STANDAR,
+                        SALDO_LALU: parseFloat(item.saldo_lalu) || 0,
+                        STATUS: item.status || 'Belum Bayar'
+                    };
+                }
+                return {
+                    NAMA: nama,
+                    METER_AWAL: 0,
+                    METER_AKHIR: 0,
+                    CASH: 0,
+                    BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                    SALDO_LALU: 0,
+                    STATUS: 'Belum Bayar'
+                };
+            });
+            renderTabel();
+        } catch (err) {
+            console.error("Gagal mengambil data dari database SHTTPS:", err);
+            updateStatusKoneksi(false, pesanErrorDB(err));
+            // Tetap tampilkan daftar pelanggan (mode offline) agar UI tidak kosong
+            excelData = daftarPelanggan.map(nama => ({
+                NAMA: nama,
+                METER_AWAL: 0,
+                METER_AKHIR: 0,
+                CASH: 0,
+                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                SALDO_LALU: 0,
+                STATUS: 'Belum Bayar'
+            }));
+            renderTabel();
+        }
+    }
+
+    function hitungDetailPelanggan(item) {
+        let mLalu = parseFloat(item.METER_AWAL) || 0;
+        let mKini = parseFloat(item.METER_AKHIR) || 0;
+        let pemakaian = (mKini - mLalu) > 0 ? (mKini - mLalu) : 0;
+        
+        let biayaAir = pemakaian * TARIF_PER_M3;
+        let beban = BIAYA_BEBAN_STANDAR; 
+        let saldoLalu = parseFloat(item.SALDO_LALU) || 0;
+
+        let tagihanBulanIni = biayaAir + beban;
+        let sisaTagihanNet = tagihanBulanIni - saldoLalu;
+        
+        let totalHarusBayar = sisaTagihanNet > 0 ? sisaTagihanNet : 0;
+        let cash = parseFloat(item.CASH) || 0;
+        let selisihAset = cash - sisaTagihanNet;
+
+        return {
+            pemakaian,
+            biayaAir,
+            beban,
+            saldoLalu,
+            tagihanBulanIni,
+            totalHarusBayar,
+            cash,
+            selisihAset
+        };
+    }
+
+        function renderTabel() {
+        const wadah = document.getElementById('tabelBody');
+        if (!wadah) return;
+        wadah.innerHTML = '';
+
+        excelData.forEach((item, index) => {
+            let info = hitungDetailPelanggan(item);
+
+            let saldoAktif = item.STATUS === 'Sudah Bayar' ? info.selisihAset : info.saldoLalu;
+
+            let kelasSaldo = '';
+            if (saldoAktif > 0) kelasSaldo = 'kartu-deposit';
+            else if (saldoAktif < 0) kelasSaldo = 'kartu-tunggakan';
+
+            let statusMiniHtml = '';
+            let isMeterEntered = item.METER_AKHIR > 0 && item.METER_AKHIR >= item.METER_AWAL;
+
+            if (item.STATUS === 'Sudah Bayar') {
+                statusMiniHtml = `<span class="pel-mini pel-mini-lunas">✅ Lunas</span>`;
+            } else if (isMeterEntered) {
+                statusMiniHtml = `<span class="pel-mini pel-mini-dicatat">📝 Dicatat</span>`;
+            } else {
+                statusMiniHtml = `<span class="pel-mini pel-mini-belum">🔴 Belum</span>`;
+            }
+
+            let labelAksi = 'Catat';
+            let kelasAksi = 'btn-aksi-catat';
+            if (item.STATUS === 'Sudah Bayar') { labelAksi = 'Edit'; kelasAksi = 'btn-aksi-edit'; }
+            else if (isMeterEntered) { labelAksi = 'Edit'; kelasAksi = 'btn-aksi-edit'; }
+
+            // meter: tampil "?" bila belum dicatat (bukan 0 yang membingungkan)
+            let meterTeks = isMeterEntered
+                ? `${item.METER_AWAL} ➔ ${item.METER_AKHIR}`
+                : `${item.METER_AWAL} ➔ ?`;
+
+            // saldo sebagai teks inline berwarna (tanpa badge besar)
+            let saldoTeks = '';
+            if (saldoAktif > 0) {
+                saldoTeks = `<span class="pel-saldo-plus">Deposit Rp ${saldoAktif.toLocaleString('id-ID')}</span><span>·</span>`;
+            } else if (saldoAktif < 0) {
+                saldoTeks = `<span class="pel-saldo-minus">Utang Rp ${Math.abs(saldoAktif).toLocaleString('id-ID')}</span><span>·</span>`;
+            }
+
+            const kartu = document.createElement('div');
+            kartu.className = 'pel-kartu' + (kelasSaldo ? ' ' + kelasSaldo : '');
+            kartu.title = `No. ${index + 1} — ${item.NAMA}`;
+            kartu.innerHTML = `
+                <div class="pel-atas">
+                    <span class="pel-nomor">${index + 1}</span>
+                    <span class="pel-nama" title="${item.NAMA}">${item.NAMA}</span>
+                    ${statusMiniHtml}
+                    <button class="btn-aksi ${kelasAksi}" onclick="bukaModal(${index})">${labelAksi}</button>
+                </div>
+                <div class="pel-bawah">
+                    <span class="pel-ringkas"><b>${info.pemakaian} m³</b> · ${meterTeks}</span>
+                    <span class="pel-kanan">${saldoTeks}<b class="pel-tagihan">Rp ${info.totalHarusBayar.toLocaleString('id-ID')}</b></span>
+                </div>
+            `;
+            wadah.appendChild(kartu);
+        });
+
+        hitungRekap();
+        isiPilihanPelanggan();
+    }
+
+    function hitungRekap() {
+        let totalPelanggan = excelData.length;
+        let lunasCount = 0;
+        let totalM3BulanIni = 0;
+
+        excelData.forEach(item => {
+            let info = hitungDetailPelanggan(item);
+            if (item.STATUS === 'Sudah Bayar') {
+                lunasCount++;
+            }
+            totalM3BulanIni += info.pemakaian;
+        });
+
+        let totalUangM3 = totalM3BulanIni * TARIF_PER_M3;
+
+        document.getElementById('recTotalPelanggan').innerText = totalPelanggan;
+        document.getElementById('recLunas').innerText = lunasCount + ' / ' + totalPelanggan;
+        document.getElementById('recTotalM3').innerText = totalM3BulanIni.toLocaleString('id-ID') + ' m³';
+        document.getElementById('recTotalUangM3').innerText = 'Rp ' + totalUangM3.toLocaleString('id-ID');
+
+        // Progres penagihan bulan ini (bar + persen)
+        const persen = totalPelanggan > 0 ? Math.round((lunasCount / totalPelanggan) * 100) : 0;
+        const bar = document.getElementById('barLunas');
+        if (bar) bar.style.width = persen + '%';
+        const elPersen = document.getElementById('persenLunas');
+        if (elPersen) elPersen.innerText = persen + '% (' + lunasCount + '/' + totalPelanggan + ')';
+    }
+
+    function kembaliBulanLalu() {
+        currentBulanIndex--;
+        if (currentBulanIndex < 0) {
+            currentBulanIndex = 11;
+            currentTahun--;
+        }
+        simpanPeriodeAktif();
+        loadDataPeriodeIni();
+    }
+
+    function lanjutBulanBerikutnya() {
+        currentBulanIndex++;
+        if (currentBulanIndex > 11) {
+            currentBulanIndex = 0;
+            currentTahun++;
+        }
+        simpanPeriodeAktif();
+        loadDataPeriodeIni();
+    }
+
+    async function prosesTutupBukuDanLanjut() {
+        let periodeSekarang = getPeriodeText();
+
+        let konfirmasi1 = confirm(
+            `⚠️ PERINGATAN KRUSIAL! ⚠️\n\n` +
+            `Apakah Anda yakin ingin MELAKUKAN TUTUP BUKU untuk periode "${periodeSekarang}"?\n\n` +
+            `• Meter Akhir akan terkunci dan menjadi Meter Awal bulan depan.\n` +
+            `• Sisa Deposit / Tunggakan akan otomatis dialihkan ke bulan berikutnya.\n\n` +
+            `Klik [OK] untuk Ya (Lanjut) atau [Cancel] untuk Batal.`
+        );
+
+        if (!konfirmasi1) return;
+
+        let konfirmasi2 = confirm(
+            `🔴 KONFIRMASI TERAKHIR 🔴\n\n` +
+            `Proses penguncian data untuk periode ${periodeSekarang} akan dieksekusi.\n\n` +
+            `Apakah Anda benar-benar yakin seluruh data transaksi periode ini sudah 100% valid?`
+        );
+
+        if (!konfirmasi2) return;
+
+        let bulanSekarang = currentBulanIndex;
+        let tahunSekarang = currentTahun;
+
+        currentBulanIndex++;
+        if (currentBulanIndex > 11) {
+            currentBulanIndex = 0;
+            currentTahun++;
+        }
+
+        let periodeBaruKey = getPeriodeText();
+
+        let itemsBaru = excelData.map(item => {
+            let infoLama = hitungDetailPelanggan(item);
+            return {
+                NAMA: item.NAMA,
+                METER_AWAL: parseFloat(item.METER_AKHIR) || parseFloat(item.METER_AWAL) || 0,
+                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
+                SALDO_LALU: infoLama.selisihAset
+            };
+        });
+
+        try {
+            // Upsert 45 baris periode baru: baris baru disisipkan dalam SATU
+            // permintaan array (= satu transaksi di SHTTPS versi baru), baris
+            // yang sudah ada hanya diperbarui meter_awal & saldo_lalu
+            // (input bulan baru yang sudah ada dipertahankan).
+            const barisBaru = itemsBaru.map(it => ({
+                periode: periodeBaruKey,
+                nama: it.NAMA,
+                meter_awal: num(it.METER_AWAL),
+                meter_akhir: 0,
+                cash: 0,
+                biaya_beban: num(it.BIAYA_BEBAN),
+                saldo_lalu: num(it.SALDO_LALU),
+                status: "Belum Bayar"
+            }));
+            await dbUpsertPeriode(periodeBaruKey, barisBaru, ["meter_awal", "saldo_lalu"]);
+
+            simpanPeriodeAktif();
+            await loadDataPeriodeIni();
+            alert(`🎉 BERHASIL!\nTutup Buku Selesai. Selamat Bekerja di Periode Baru: ${periodeBaruKey}`);
+        } catch (e) {
+            alert("❌ Gagal Tutup Buku: " + pesanErrorDB(e));
+            currentBulanIndex = bulanSekarang;
+            currentTahun = tahunSekarang;
+        }
+    }
+
+    function bukaModal(index) {
+        selectedIndex = index;
+        let item = excelData[index];
+        document.getElementById('formNama').value = item.NAMA;
+        document.getElementById('mLalu').value = item.METER_AWAL || 0;
+        document.getElementById('mKini').value = item.METER_AKHIR || 0;
+        document.getElementById('mCash').value = item.CASH || "";
+        hitungTagihanModal();
+        document.getElementById('modalInput').style.display = 'block';
+    }
+
+    function tutupModal() { document.getElementById('modalInput').style.display = 'none'; }
+
+    function hitungTagihanModal() {
+        let item = excelData[selectedIndex];
+        let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
+        let mKini = parseFloat(document.getElementById('mKini').value) || 0;
+        let cash = parseFloat(document.getElementById('mCash').value) || 0;
+
+        let pemakaian = (mKini - mLalu) > 0 ? (mKini - mLalu) : 0;
+        let biayaAir = pemakaian * TARIF_PER_M3;
+        let beban = BIAYA_BEBAN_STANDAR;
+        let saldoLalu = parseFloat(item.SALDO_LALU) || 0;
+
+        let tagihanBulanIni = biayaAir + beban;
+        let sisaTagihan = tagihanBulanIni - saldoLalu;
+        
+        let totalHarusBayar = sisaTagihan > 0 ? sisaTagihan : 0;
+        let sisaDepositAwal = sisaTagihan < 0 ? Math.abs(sisaTagihan) : 0;
+
+        let selisihCash = cash - totalHarusBayar;
+
+        document.getElementById('uiPemakaian').innerText = pemakaian + " m³";
+        document.getElementById('uiBiayaAir').innerText = "Rp " + biayaAir.toLocaleString('id-ID');
+        document.getElementById('uiBiayaBeban').innerText = "Rp " + beban.toLocaleString('id-ID');
+        
+        let elSaldo = document.getElementById('uiSaldoLalu');
+        if (saldoLalu > 0) {
+            elSaldo.innerHTML = `<span style="color:#16a34a;">(+) Rp ${saldoLalu.toLocaleString('id-ID')} (Deposit)</span>`;
+        } else if (saldoLalu < 0) {
+            elSaldo.innerHTML = `<span style="color:#dc2626;">(-) Rp ${Math.abs(saldoLalu).toLocaleString('id-ID')} (Utang)</span>`;
+        } else {
+            elSaldo.innerText = "Rp 0";
+        }
+
+        document.getElementById('uiTotalHarusBayar').innerText = "Rp " + totalHarusBayar.toLocaleString('id-ID');
+
+        let elStatus = document.getElementById('uiCashStatus');
+        
+        if (sisaDepositAwal > 0) {
+            let depositAkhir = sisaDepositAwal + cash;
+            elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">Lunas Terpotong Deposit (Sisa Deposit: Rp ${depositAkhir.toLocaleString('id-ID')})</span>`;
+        } else {
+            if (cash === 0) {
+                elStatus.innerHTML = `Keterangan: <span style="color:#64748b;">Belum Ada Cash</span>`;
+            } else if (selisihCash === 0) {
+                elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">Uang Pas (Lunas)</span>`;
+            } else if (selisihCash > 0) {
+                elStatus.innerHTML = `Keterangan: <span style="color:#16a34a;">(+) Lebih Rp ${selisihCash.toLocaleString('id-ID')} (Deposit Baru)</span>`;
+            } else {
+                elStatus.innerHTML = `Keterangan: <span style="color:#dc2626;">(-) Kurang Rp ${Math.abs(selisihCash).toLocaleString('id-ID')} (Utang Baru)</span>`;
+            }
+        }
+    }
+
+    async function simpanSudahBayar() {
+        if (selectedIndex === null) return;
+
+        let item = excelData[selectedIndex];
+        let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
+        let mKini = parseFloat(document.getElementById('mKini').value) || 0;
+        let cash = parseFloat(document.getElementById('mCash').value) || 0;
+
+        let pemakaian = (mKini - mLalu) > 0 ? (mKini - mLalu) : 0;
+        let biayaAir = pemakaian * TARIF_PER_M3;
+        let saldoLalu = parseFloat(item.SALDO_LALU) || 0;
+        
+        let tagihanBulanIni = biayaAir + BIAYA_BEBAN_STANDAR;
+        let totalHarusBayar = (tagihanBulanIni - saldoLalu) > 0 ? (tagihanBulanIni - saldoLalu) : 0;
+
+        if (cash < totalHarusBayar) {
+            let selisihKurang = totalHarusBayar - cash;
+            let konfirm = confirm(`Uang cash kurang Rp ${selisihKurang.toLocaleString('id-ID')}.\nKekurangan akan dicatat sebagai utang bulan depan.\nSimpan?`);
+            if (!konfirm) return;
+        }
+
+        let payload = {
+            periode: getPeriodeText(),
+            nama: item.NAMA,
+            meter_awal: mLalu,
+            meter_akhir: mKini,
+            cash: cash,
+            biaya_beban: BIAYA_BEBAN_STANDAR,
+            saldo_lalu: saldoLalu,
+            status: 'Sudah Bayar'
+        };
+
+        try {
+            await dbSimpan(payload);
+            await loadDataPeriodeIni();
+            tutupModal();
+            showToast("✅ " + item.NAMA + " tersimpan — Sudah Bayar");
+        } catch (e) {
+            alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
+        }
+    }
+
+    async function simpanBelumBayar() {
+        if (selectedIndex === null) return;
+
+        let item = excelData[selectedIndex];
+        let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
+        let mKini = parseFloat(document.getElementById('mKini').value) || 0;
+
+        let payload = {
+            periode: getPeriodeText(),
+            nama: item.NAMA,
+            meter_awal: mLalu,
+            meter_akhir: mKini,
+            cash: 0,
+            biaya_beban: BIAYA_BEBAN_STANDAR,
+            saldo_lalu: parseFloat(item.SALDO_LALU) || 0,
+            status: 'Belum Bayar'
+        };
+
+        try {
+            await dbSimpan(payload);
+            await loadDataPeriodeIni();
+            tutupModal();
+            showToast("📝 " + item.NAMA + " tersimpan — Belum Bayar");
+        } catch (e) {
+            alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
+        }
+    }
+
+    function generateLaporanPDFDoc() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+        let periodeStr = getPeriodeText();
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("LAPORAN REKAPITULASI PENAGIHAN AIR BPSPAMS TIRTA MAKMUR", 14, 15);
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Wilayah Penagihan: SINDUHARJO 08/04 | Periode: ${periodeStr}`, 14, 21);
+
+        let tableRows = [];
+        let totalM3 = 0;
+        let totalTagihanAll = 0;
+        let totalCashAll = 0;
+
+        excelData.forEach((item, idx) => {
+            let info = hitungDetailPelanggan(item);
+            totalM3 += info.pemakaian;
+            totalTagihanAll += info.totalHarusBayar;
+            totalCashAll += info.cash;
+
+            let ketSaldo = "-";
+            if (info.selisihAset > 0) ketSaldo = `Deposit (+${info.selisihAset.toLocaleString('id-ID')})`;
+            else if (info.selisihAset < 0) ketSaldo = `Utang (-${Math.abs(info.selisihAset).toLocaleString('id-ID')})`;
+
+            tableRows.push([
+                idx + 1,
+                item.NAMA,
+                item.METER_AWAL,
+                item.METER_AKHIR,
+                `${info.pemakaian} m³`,
+                `Rp ${info.beban.toLocaleString('id-ID')}`,
+                `Rp ${info.saldoLalu.toLocaleString('id-ID')}`,
+                `Rp ${info.totalHarusBayar.toLocaleString('id-ID')}`,
+                `Rp ${info.cash.toLocaleString('id-ID')}`,
+                ketSaldo,
+                item.STATUS
+            ]);
+        });
+
+        doc.autoTable({
+            startY: 26,
+            head: [['No', 'Nama Pelanggan', 'Awal', 'Akhir', 'Pakai', 'Beban', 'Saldo Lalu', 'Total Tagihan', 'Uang Cash', 'Saldo/Utang', 'Status']],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8 },
+            columnStyles: {
+                0: { cellWidth: 10, halign: 'center' },
+                1: { cellWidth: 40 },
+                2: { halign: 'right' },
+                3: { halign: 'right' },
+                4: { halign: 'right' },
+                5: { halign: 'right' },
+                6: { halign: 'right' },
+                7: { halign: 'right', fontStyle: 'bold' },
+                8: { halign: 'right', fontStyle: 'bold' },
+                9: { halign: 'center' },
+                10: { halign: 'center' }
+            }
+        });
+
+        let finalY = doc.lastAutoTable.finalY + 8;
+        if (finalY > 180) { doc.addPage(); finalY = 15; }
+
+        let totalUangM3 = totalM3 * TARIF_PER_M3;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.text(`TOTAL PEMAKAIAN AIR : ${totalM3} m³ (Nominal: Rp ${totalUangM3.toLocaleString('id-ID')})`, 14, finalY);
+        doc.text(`TOTAL HARUS DIBAYAR: Rp ${totalTagihanAll.toLocaleString('id-ID')}`, 14, finalY + 5);
+        doc.text(`TOTAL CASH DITERIMA : Rp ${totalCashAll.toLocaleString('id-ID')}`, 14, finalY + 10);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(`Petugas Pemungut: ${NAMA_PETUGAS}`, 220, finalY + 5);
+        doc.text("Tanggal Cetak: " + new Date().toLocaleDateString('id-ID'), 220, finalY + 10);
+
+        return doc;
+    }
+
+    function downloadLaporanPDF() {
+        let doc = generateLaporanPDFDoc();
+        doc.save(`LAPORAN_BPSPAMS_${getPeriodeText().replace(' ', '_')}.pdf`);
+    }
+
+    async function shareLaporanPDF() {
+        let doc = generateLaporanPDFDoc();
+        let periodeStr = getPeriodeText();
+
+        const pdfBlob = doc.output('blob');
+        const fileName = `LAPORAN_BPSPAMS_${periodeStr.replace(' ', '_')}.pdf`;
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: `Laporan BPSPAMS - ${periodeStr}`,
+                    text: `Berikut Laporan Bulanan Rekapitulasi Pembayaran BPSPAMS Tirta Makmur Periode ${periodeStr}.`
+                });
+            } catch (error) {
+                console.log("Share dibatalkan/gagal", error);
+            }
+        } else {
+            let totalPelanggan = excelData.length;
+            let lunasCount = 0;
+            let totalM3 = 0;
+
+            excelData.forEach(item => {
+                let info = hitungDetailPelanggan(item);
+                if (item.STATUS === 'Sudah Bayar') {
+                    lunasCount++;
+                }
+                totalM3 += info.pemakaian;
+            });
+
+            let totalUangM3 = totalM3 * TARIF_PER_M3;
+
+            let pesanWA = `*REKAP LAPORAN BPSPAMS TIRTA MAKMUR*\n` +
+                          `*Periode:* ${periodeStr}\n` +
+                          `-----------------------------------\n` +
+                          `*Total Pelanggan:* ${totalPelanggan}\n` +
+                          `*Sudah Bayar:* ${lunasCount} / ${totalPelanggan}\n` +
+                          `*Jumlah Pemakaian Air:* ${totalM3.toLocaleString('id-ID')} m³\n` +
+                          `*Total Nominal m³:* Rp ${totalUangM3.toLocaleString('id-ID')}\n` +
+                          `-----------------------------------\n` +
+                          `_Silakan unduh file PDF lengkap dari aplikasi jika diperlukan._`;
+
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(pesanWA)}`, '_blank');
+        }
+    }
+
+    function cetakStrukPDF() {
+        if (selectedIndex === null) return;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [95, 160] });
+
+        let item = excelData[selectedIndex];
+        let info = hitungDetailPelanggan(item);
+
+        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.8); doc.rect(4, 4, 152, 87);
+        doc.setFillColor(30, 64, 175); doc.rect(4, 4, 152, 16, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+        doc.text("BUKTI PEMBAYARAN AIR - BPSPAMS TIRTA MAKMUR", 80, 11, { align: 'center' });
+        doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        doc.text("SINDUHARJO 08/04, SOMOPURO, JOGONALAN", 80, 16, { align: 'center' });
+
+        doc.setTextColor(30, 41, 59); doc.setFontSize(8.5);
+        doc.setFont("helvetica", "bold"); doc.text("Nama Pelanggan", 8, 25);
+        doc.setFont("helvetica", "normal"); doc.text(": " + item.NAMA, 36, 25);
+        doc.setFont("helvetica", "bold"); doc.text("Periode / Bulan", 8, 30);
+        doc.setFont("helvetica", "normal"); doc.text(": " + getPeriodeText(), 36, 30);
+
+        doc.setFont("helvetica", "bold"); doc.text("Status Bayar", 100, 25);
+        doc.setFont("helvetica", "normal"); doc.text(": " + item.STATUS, 122, 25);
+        doc.setFont("helvetica", "bold"); doc.text("Angka Meteran", 100, 30);
+        doc.setFont("helvetica", "normal"); doc.text(`: ${item.METER_AWAL} (Awal) - ${item.METER_AKHIR} (Akhir)`, 122, 30);
+
+        doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.4); doc.line(8, 33, 152, 33);
+
+        let startY = 38;
+        doc.text("1. Pemakaian Air (" + info.pemakaian + " m³ x Rp " + TARIF_PER_M3.toLocaleString('id-ID') + ")", 8, startY);
+        doc.text("Rp " + info.biayaAir.toLocaleString('id-ID'), 152, startY, { align: 'right' });
+
+        doc.text("2. Biaya Beban Administrasi", 8, startY + 5);
+        doc.text("Rp " + info.beban.toLocaleString('id-ID'), 152, startY + 5, { align: 'right' });
+
+        doc.text("3. Saldo Bulan Lalu (Deposit / Tunggakan)", 8, startY + 10);
+        let saldoTxt = (info.saldoLalu >= 0 ? "(+) Rp " : "(-) Rp ") + Math.abs(info.saldoLalu).toLocaleString('id-ID');
+        doc.text(saldoTxt, 152, startY + 10, { align: 'right' });
+
+        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.5); doc.line(8, startY + 14, 152, startY + 14);
+
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(30, 64, 175);
+        doc.text("TOTAL HARUS DIBAYAR", 8, startY + 19);
+        doc.text("Rp " + info.totalHarusBayar.toLocaleString('id-ID'), 152, startY + 19, { align: 'right' });
+
+        doc.setFillColor(248, 250, 252); doc.rect(8, startY + 23, 90, 16, 'F');
+        doc.setDrawColor(203, 213, 225); doc.rect(8, startY + 23, 90, 16, 'S');
+
+        doc.setFontSize(8); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
+        doc.text("Uang Diterima (Cash) : Rp " + info.cash.toLocaleString('id-ID'), 10, startY + 28);
+        
+        let ketKelebihan = "";
+        if (info.selisihAset > 0) ketKelebihan = "(+) Deposit: Rp " + info.selisihAset.toLocaleString('id-ID');
+        else if (info.selisihAset < 0) ketKelebihan = "(-) Utang: Rp " + Math.abs(info.selisihAset).toLocaleString('id-ID');
+        else ketKelebihan = "Lunas (Uang Pas)";
+        
+        doc.setFont("helvetica", "bold"); doc.text("Keterangan Saldo    : " + ketKelebihan, 10, startY + 34);
+
+        doc.setTextColor(30, 41, 59); doc.setFont("helvetica", "normal");
+        doc.text("Petugas Pemungut,", 120, startY + 27, { align: 'center' });
+        doc.setFont("helvetica", "bold"); doc.text("( " + NAMA_PETUGAS + " )", 120, startY + 36, { align: 'center' });
+
+        doc.save(`STRUK_${item.NAMA}_${getPeriodeText()}.pdf`);
+    }
+
+        /* ============================================================
+       TOAST NOTIFIKASI RINGAN
+       ============================================================ */
+    function showToast(pesan, tipe) {
+        const wrap = document.getElementById("toastWrap");
+        if (!wrap) return;
+        const el = document.createElement("div");
+        el.className = "toast" + (tipe === "gagal" ? " toast-gagal" : (tipe === "info" ? " toast-info" : ""));
+        el.innerHTML = pesan;
+        wrap.appendChild(el);
+        setTimeout(() => { el.classList.add("muncul"); }, 10);
+        setTimeout(() => {
+            el.classList.remove("muncul");
+            setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
+        }, 3000);
+    }
+
+    /* ============================================================
+       EXPORT DATABASE (BACKUP LENGKAP) - 2 MODE
+       Tombolnya ada di HEADER (di bawah judul):
+       mode "db"  : unduh file pam.db ASLI dari folder aplikasi
+                    (byte-perfect, bisa dipasang ulang lewat
+                    "Attach existing database"). Bila file tidak
+                    bisa diambil / terindikasi basi, fallback:
+                    dump .sql dari data live (data tetap lengkap).
+       mode "sql" : dump teks .sql LANGSUNG dari data live lewat
+                    API baca gratis - selalu terbaru, formatnya
+                    sama dengan pam.sql sehingga bisa dipulihkan
+                    lewat tombol Import.
+       ============================================================ */
+    function namaFileBackup(ext) {
+        const d = new Date();
+        const dua = n => String(n).padStart(2, "0");
+        return "pam-backup-" + d.getFullYear() + "-" + dua(d.getMonth() + 1) + "-" + dua(d.getDate()) +
+            "_" + dua(d.getHours()) + dua(d.getMinutes()) + "." + ext;
+    }
+
+    function unduhBlob(blob, namaFile) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = namaFile;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 3000);
+    }
+
+    // Escape nilai untuk dump SQL gaya phpMyAdmin (kutip & backslash),
+    // kompatibel dengan parser Import milik aplikasi ini sendiri.
+    function sqlEscape(v) {
+        return String(v).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function buatDumpSql(baris) {
+        const kop = [
+            "-- Backup Database BPSPAMS Tirta Makmur - Sinduharjo 08/04",
+            "-- Dibuat: " + new Date().toLocaleString('id-ID'),
+            "-- Total baris: " + baris.length,
+            "-- Cara memulihkan: letakkan file ini sebagai pam.sql di folder aplikasi,",
+            "-- lalu buka Menu Admin > Import pam.sql (baris lama diperbarui, tidak dobel).",
+            ""
+        ].join("\n");
+        if (!baris.length) return kop + "-- (database kosong saat backup ini dibuat)\n";
+        const nilai = baris.map(r =>
+            "('" + sqlEscape(r.periode) + "', '" + sqlEscape(r.nama) + "', " +
+            num(r.meter_awal) + ", " + num(r.meter_akhir) + ", " + num(r.cash) + ", " +
+            num(r.biaya_beban) + ", " + num(r.saldo_lalu) + ", '" + sqlEscape(r.status) + "')"
+        ).join(",\n");
+        return kop +
+            "INSERT INTO `transaksi_pelanggan` (`periode`, `nama`, `meter_awal`, `meter_akhir`, `cash`, `biaya_beban`, `saldo_lalu`, `status`) VALUES\n" +
+            nilai + ";\n";
+    }
+
+    async function exportDatabase(mode) {
+        // mode "db"  : unduh file pam.db ASLI dari folder aplikasi
+        //              (fallback otomatis ke .sql bila file tak bisa dipakai)
+        // mode "sql" : dump teks .sql langsung dari data live (selalu terbaru)
+        mode = (mode === "sql") ? "sql" : "db";
+        const btnDb = document.getElementById("btnExportDb");
+        const btnSql = document.getElementById("btnExportSql");
+        const info = document.getElementById("infoExport");
+        if (btnDb) btnDb.disabled = true;
+        if (btnSql) btnSql.disabled = true;
+        let alasanFallback = "";
+        try {
+            // 1) Baca seluruh baris dari database live (endpoint baca, gratis)
+            const baris = await dbBaca(
+                "id,periode,nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status,updated_at",
+                null, 5000, "id"
+            );
+            baris.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+
+            const periodeUnik = [];
+            baris.forEach(r => { if (periodeUnik.indexOf(r.periode) < 0) periodeUnik.push(r.periode); });
+            const ringkas = baris.length + " baris, " + periodeUnik.length + " periode";
+
+            let pakaiFileDb = false;
+            // 2) Mode "db": coba ambil file pam.db asli dari folder aplikasi
+            if (mode === "db") {
+                try {
+                    const res = await fetch("pam.db?v=" + Date.now());
+                    if (res.ok) {
+                        const buf = await res.arrayBuffer();
+                        const bytes = new Uint8Array(buf);
+                        // Validasi: harus file SQLite asli ("SQLite format 3")
+                        let valid = bytes.length > 100;
+                        const tanda = "SQLite format 3";
+                        for (let i = 0; i < tanda.length && valid; i++) {
+                            if (bytes[i] !== tanda.charCodeAt(i)) valid = false;
+                        }
+                        if (!valid) alasanFallback = "file pam.db di folder bukan database SQLite yang valid";
+                        // Guard kebaruan: waktu file pam.db di server tidak boleh
+                        // lebih TUA dari tulisan terakhir di database live
+                        // (toleransi 60 menit). Kalau lebih tua, kemungkinan besar
+                        // file pam.db di folder BUKAN database yang sedang aktif.
+                        if (valid) {
+                            const lm = res.headers.get("Last-Modified");
+                            let maxUpd = 0;
+                            baris.forEach(r => {
+                                const t = Date.parse(String(r.updated_at || "").replace(" ", "T"));
+                                if (!isNaN(t) && t > maxUpd) maxUpd = t;
+                            });
+                            if (lm && maxUpd) {
+                                const tFile = Date.parse(lm);
+                                if (!isNaN(tFile) && tFile + 3600000 < maxUpd) {
+                                    valid = false;
+                                    alasanFallback = "file pam.db di folder lebih lama dari data terbaru (kemungkinan bukan database yang sedang aktif)";
+                                }
+                            }
+                        }
+                        if (valid) {
+                            unduhBlob(new Blob([buf], { type: "application/octet-stream" }), namaFileBackup("db"));
+                            pakaiFileDb = true;
+                        }
+                    } else {
+                        alasanFallback = "file pam.db tidak ditemukan di folder aplikasi";
+                    }
+                } catch (e) {
+                    alasanFallback = "file pam.db tidak bisa diambil dari folder aplikasi";
+                }
+            }
+
+            // 3) Dump .sql dari data live: mode "sql" langsung, atau fallback
+            //    mode "db" (selalu lengkap & terbaru karena dari database aktif)
+            if (!pakaiFileDb) {
+                unduhBlob(new Blob([buatDumpSql(baris)], { type: "application/sql" }), namaFileBackup("sql"));
+            }
+
+            showToast(mode === "sql"
+                ? "🗂️ Backup .sql terunduh (" + ringkas + ")"
+                : (pakaiFileDb
+                    ? "💾 Backup .db terunduh (" + ringkas + ")"
+                    : "💾 File .db tak tersedia — backup .sql terunduh (" + ringkas + ")"));
+            if (info) {
+                info.innerHTML = "✅ <b>Backup terakhir:</b> " + namaFileBackup(pakaiFileDb ? "db" : "sql") +
+                    " (" + ringkas + ") — format <b>." + (pakaiFileDb ? "db" : "sql") + "</b>." +
+                    (mode === "db" && !pakaiFileDb
+                        ? "<br>⚠️ " + (alasanFallback || "File pam.db tidak bisa dipakai") +
+                          " — yang diunduh: backup <b>.sql</b> (data tetap lengkap &amp; terbaru)."
+                        : "") +
+                    "<br>" + (pakaiFileDb
+                        ? "Memulihkan: SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file backup .db ini."
+                        : "Memulihkan: letakkan file .sql ini di folder aplikasi (boleh diganti nama jadi pam.sql), lalu Menu Admin &gt; Import pam.sql.");
+            }
+        } catch (e) {
+            alert("❌ Gagal Export Database: " + pesanErrorDB(e));
+            showToast("❌ Export database gagal", "gagal");
+        } finally {
+            if (btnDb) btnDb.disabled = false;
+            if (btnSql) btnSql.disabled = false;
+        }
+    }
+
+        function cariPelanggan() {
+        let input = document.getElementById('searchInput').value.toLowerCase().trim();
+        let kartu = document.querySelectorAll('#tabelBody .pel-kartu');
+        let nTampil = 0;
+        kartu.forEach(k => {
+            const cocok = k.innerText.toLowerCase().includes(input);
+            k.style.display = cocok ? '' : 'none';
+            if (cocok) nTampil++;
+        });
+        const kosong = document.getElementById('kosongPencarian');
+        if (kosong) kosong.style.display = (input && nTampil === 0) ? 'block' : 'none';
+    }
+
+    // ============ IMPORT DATA LAMA DARI pam.sql (client-side) ============
+
+    // Scanner sadar-kutip: ambil statement INSERT utk tabel transaksi_pelanggan
+    function ekstrakInserts(sqlText) {
+        const hasil = [];
+        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan`?\s*\(/gi;
+        let m;
+        while ((m = re.exec(sqlText)) !== null) {
+            let i = m.index, stmt = "", inStr = false;
+            while (i < sqlText.length) {
+                const ch = sqlText[i];
+                if (inStr) {
+                    if (ch === "\\" && i + 1 < sqlText.length) { stmt += ch + sqlText[i + 1]; i += 2; continue; }
+                    if (ch === "'") inStr = false;
+                    stmt += ch; i++; continue;
+                }
+                if (ch === "'") { inStr = true; stmt += ch; i++; continue; }
+                if (ch === ";") break;
+                stmt += ch; i++;
+            }
+            hasil.push(stmt.trim());
+            re.lastIndex = i;
+        }
+        return hasil;
+    }
+
+    // Parse statement INSERT (termasuk multi-baris VALUES (...),(...))
+    // menjadi daftar objek {kolom: nilai}. Menangani string berkutip,
+    // escape MySQL \' \" \\, angka, dan NULL.
+    function parseInsertBaris(stmt) {
+        const mVal = stmt.toUpperCase().indexOf("VALUES");
+        if (mVal < 0) return [];
+        const mOpen = stmt.indexOf("(");
+        if (mOpen < 0 || mOpen > mVal) return [];
+        const kolom = stmt.slice(mOpen + 1, stmt.indexOf(")", mOpen))
+            .split(",").map(s => s.trim().replace(/`/g, ""));
+        const sisa = stmt.slice(stmt.indexOf("(", mVal));
+
+        // pecah menjadi tuple-tuple sadar-kutip: (..),(..),...
+        const tupleTeks = [];
+        let cur = "", depth = 0, inStr = false, i = 0;
+        while (i < sisa.length) {
+            const ch = sisa[i];
+            if (inStr) {
+                if (ch === "\\" && i + 1 < sisa.length) { cur += ch + sisa[i + 1]; i += 2; continue; }
+                if (ch === "'") inStr = false;
+                cur += ch; i++; continue;
+            }
+            if (ch === "'") { inStr = true; cur += ch; i++; continue; }
+            if (ch === "(") {
+                depth++;
+                if (depth === 1) { cur = ""; i++; continue; }
+            } else if (ch === ")") {
+                depth--;
+                if (depth === 0) { tupleTeks.push(cur); cur = ""; i++; continue; }
+            }
+            if (depth > 0) cur += ch;
+            i++;
+        }
+
+        // parse nilai tiap tuple
+        const hasil = [];
+        for (const t of tupleTeks) {
+            const nilai = [];
+            let v = "", str = false, j = 0;
+            while (j < t.length) {
+                const ch = t[j];
+                if (str) {
+                    if (ch === "\\" && j + 1 < t.length) { v += t[j + 1]; j += 2; continue; }
+                    if (ch === "'") { str = false; j++; continue; }
+                    v += ch; j++; continue;
+                }
+                if (ch === "'") { str = true; j++; continue; }
+                if (ch === ",") { nilai.push(v.trim()); v = ""; j++; continue; }
+                v += ch; j++;
+            }
+            if (v.trim() !== "") nilai.push(v.trim());
+            if (kolom.length === 0 || nilai.length === 0) continue;
+            const row = {};
+            kolom.forEach((k, idx) => { if (idx < nilai.length) row[k] = nilai[idx]; });
+            hasil.push(row);
+        }
+        return hasil;
+    }
+
+    // Ubah hasil parse menjadi baris siap tulis ke database
+    function barisDariSql(r) {
+        if (!r || !r.periode || !r.nama) return null;
+        return {
+            periode: r.periode,
+            nama: r.nama,
+            meter_awal: num(r.meter_awal),
+            meter_akhir: num(r.meter_akhir),
+            cash: num(r.cash),
+            biaya_beban: num(r.biaya_beban),
+            saldo_lalu: num(r.saldo_lalu),
+            status: (r.status === "Sudah Bayar") ? "Sudah Bayar" : "Belum Bayar"
+        };
+    }
+
+    async function importDataLama() {
+        const info = document.getElementById('infoImport');
+        if (!confirm("Import data dari pam.sql?\n\nBaris yang belum ada akan DITAMBAHKAN, baris yang sudah ada akan DIPERBARUI (data periode lain tetap aman).")) return;
+
+        info.innerText = "⏳ Membaca pam.sql...";
+        try {
+            // parameter acak agar browser tidak memakai pam.sql versi lama dari cache
+            const res = await fetch("pam.sql?v=" + Date.now());
+            if (!res.ok) throw new Error("FILE_SQL_TIDAK_ADA");
+            const raw = await res.text();
+
+            info.innerText = "⏳ Memproses " + raw.length.toLocaleString('id-ID') + " byte...";
+            const stmts = ekstrakInserts(raw);
+            if (stmts.length === 0) throw new Error("TIDAK_ADA_INSERT");
+
+            const barisSemua = stmts.flatMap(s => parseInsertBaris(s)).map(barisDariSql).filter(Boolean);
+            if (barisSemua.length === 0) throw new Error("TIDAK_ADA_INSERT");
+
+            // Pastikan database aktif & tabel ada
+            if (!window._dbSiap) {
+                const cek = await dbCek();
+                if (!cek.dbAktif) throw new Error("DB_OFF");
+                if (cek.auth) throw new Error("AUTH");
+                if (!cek.tabelAda) throw new Error("TABEL_TIDAK_ADA");
+                window._dbSiap = true;
+            }
+
+            // Kelompokkan per periode lalu upsert per periode
+            const perPeriode = {};
+            barisSemua.forEach(r => { (perPeriode[r.periode] = perPeriode[r.periode] || []).push(r); });
+            let totalSisip = 0, totalUbah = 0;
+            for (const periode of Object.keys(perPeriode)) {
+                info.innerText = "⏳ Mengimpor " + periode + "...";
+                const hasil = await dbUpsertPeriode(periode, perPeriode[periode], null);
+                totalSisip += hasil.sisip; totalUbah += hasil.ubah;
+            }
+
+            info.innerHTML = "✅ <b>Import BERHASIL</b> — " + totalSisip + " baris baru, " + totalUbah + " diperbarui. Memuat ulang...";
+            await loadDataPeriodeIni();
+            alert("🎉 Import selesai!\n" + totalSisip + " baris baru ditambahkan, " + totalUbah + " baris diperbarui.");
+        } catch (e) {
+            const m = String(e.message || e);
+            let pesan = m;
+            if (m.includes("FILE_SQL_TIDAK_ADA")) pesan = "File pam.sql tidak ditemukan. Letakkan pam.sql di folder yang sama dengan index.html, lalu coba lagi.";
+            else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk transaksi_pelanggan.";
+            else if (m.includes("SQL_ERR")) pesan = "Database menolak: " + m.replace("SQL_ERR: ", "").slice(0, 150);
+            else pesan = pesanErrorDB(e);
+            info.innerHTML = "❌ <b>Import gagal:</b> " + pesan;
+            alert("❌ Import gagal: " + pesan);
+        }
+    }
+
+    async function kosongkanData() {
+        const info = document.getElementById('infoImport');
+        if (!confirm("⚠️ PERINGATAN!\n\nSemua data transaksi (semua periode) akan DIHAPUS PERMANEN dari database.\nLanjutkan?")) return;
+        if (!confirm("🔴 KONFIRMASI TERAKHIR\n\nYakin 100%? Ada baiknya Export Database (backup) dulu sekarang.")) return;
+        try {
+            info.innerText = "⏳ Mengosongkan...";
+            await dbHapusSemua();
+            try { localStorage.removeItem(KUNCI_PENDING); } catch (e) {}
+            info.innerHTML = "✅ <b>Data dikosongkan.</b>";
+            await loadDataPeriodeIni();
+        } catch (e) {
+            info.innerHTML = "❌ Gagal: " + pesanErrorDB(e);
+        }
+    }
+
+    /* ============================================================
+       MANAJEMEN PELANGGAN (dipanggil dari panel 👥)
+       ============================================================ */
+    function isiPilihanPelanggan() {
+        ["pilihNamaLama", "pilihNamaHapus"].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const tersimpan = el.value;
+            el.innerHTML = daftarPelanggan
+                .map((n, i) => `<option value="${String(n).replace(/"/g, "&quot;")}">#${i + 1} · ${n}</option>`)
+                .join("");
+            if (tersimpan && daftarPelanggan.includes(tersimpan)) el.value = tersimpan;
+        });
+    }
+
+    function infoPelangganTeks(html) {
+        const el = document.getElementById("infoPelanggan");
+        if (el) el.innerHTML = html;
+    }
+
+    /* ============================================================
+       SISIP PELANGGAN DI POSISI NOMOR TERTENTU
+       Contoh: pelanggan baru di No. 6 -> pelanggan lama No. 6
+       bergeser ke No. 7 dst. (bukan dilempar ke akhir).
+       Cara kerja: seluruh tabel disusun ulang agar kolom id
+       kembali berurutan mengikuti urutan rumah (id = urutan
+       rumah). Sebelum menghapus, data final disimpan dulu ke
+       localStorage sebagai jaring penyelamat; bila proses
+       terputus, otomatis dipulihkan saat aplikasi dibuka lagi.
+       ============================================================ */
+
+    // Rencana penambahan dari input No.: posisi valid 1..total = sisip
+    // di tengah; kosong / lebih besar dari total = tambah di akhir.
+    function hitungRencanaTambah(noTeks, total) {
+        let p = parseInt(String(noTeks == null ? "" : noTeks).trim(), 10);
+        if (!Number.isInteger(p) || p < 1 || p > total + 1) p = total + 1;
+        return { posisi: p, sisip: p <= total };
+    }
+
+    // Sisipkan baris secara bertahap (45 baris per permintaan) agar
+    // ukuran permintaan tetap kecil; urutan array dijaga = urutan id.
+    async function dbInsertUrut(baris) {
+        const UKURAN = 45;
+        for (let i = 0; i < baris.length; i += UKURAN) {
+            await dbInsertBanyak(baris.slice(i, i + UKURAN));
+        }
+    }
+
+    function bacaPending() {
+        try {
+            const p = JSON.parse(localStorage.getItem(KUNCI_PENDING) || "null");
+            if (p && Array.isArray(p.baris) && p.baris.length > 0) return p;
+        } catch (e) {}
+        return null;
+    }
+
+    // Pulihkan penyusunan ulang yang terputus (dipanggil tiap muat data)
+    async function pulihkanOperasiTertunda() {
+        const p = bacaPending();
+        if (!p) return true;
+        try {
+            await dbHapusSemua();
+            await dbInsertUrut(p.baris);
+            localStorage.removeItem(KUNCI_PENDING);
+            showToast("✅ Penyusunan ulang daftar pelanggan yang tertunda berhasil dipulihkan (" + p.baris.length + " baris).", "info");
+            return true;
+        } catch (e) {
+            const coba = (Number(p.coba) || 0) + 1;
+            try { localStorage.setItem(KUNCI_PENDING, JSON.stringify({ baris: p.baris, coba: coba })); } catch (e2) {}
+            showToast("⚠️ Ada penyusunan ulang daftar yang belum selesai — akan dicoba lagi otomatis. Pastikan toggle <b>Enable API to modify tables data</b> aktif.", "gagal");
+            return false;
+        }
+    }
+
+    // Susun ulang seluruh tabel dengan pelanggan baru di posisi `posisi`
+    async function sisipkanPelangganPosisi(namaBaru, posisi) {
+        // 1) Baca seluruh baris (semua periode), urut id
+        const semua = await dbBaca("id,periode,nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status", null, 5000, "id");
+        semua.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+
+        // 2) Urutan pelanggan sekarang = kemunculan pertama menurut id
+        const urutSekarang = [];
+        const lihat = new Set();
+        semua.forEach(r => { if (r.nama && !lihat.has(r.nama)) { lihat.add(r.nama); urutSekarang.push(r.nama); } });
+        if (posisi < 1 || posisi > urutSekarang.length + 1) posisi = urutSekarang.length + 1;
+
+        // 3) Urutan baru: sisipkan nama baru di posisi yang diminta
+        const urutBaru = urutSekarang.slice();
+        urutBaru.splice(posisi - 1, 0, namaBaru);
+
+        // 4) Baris milik pelanggan baru (periode aktif, nilai kosong)
+        const barisBaru = {
+            periode: getPeriodeText(), nama: namaBaru,
+            meter_awal: 0, meter_akhir: 0, cash: 0,
+            biaya_beban: BIAYA_BEBAN_STANDAR, saldo_lalu: 0, status: "Belum Bayar"
+        };
+
+        // 5) Susun ulang seluruh baris: pelanggan demi pelanggan mengikuti
+        //    urutan rumah baru (riwayat tiap pelanggan tetap kronologis),
+        //    sehingga id baru berurutan sesuai urutan rumah
+        const perPelanggan = new Map();
+        semua.forEach(r => {
+            if (!perPelanggan.has(r.nama)) perPelanggan.set(r.nama, []);
+            perPelanggan.get(r.nama).push(r);
+        });
+        const barisAkhir = [];
+        urutBaru.forEach(n => {
+            if (n === namaBaru) { barisAkhir.push(barisBaru); return; }
+            (perPelanggan.get(n) || []).forEach(r => barisAkhir.push({
+                periode: r.periode, nama: r.nama,
+                meter_awal: num(r.meter_awal), meter_akhir: num(r.meter_akhir),
+                cash: num(r.cash), biaya_beban: num(r.biaya_beban),
+                saldo_lalu: num(r.saldo_lalu), status: r.status
+            }));
+        });
+
+        // 6) Jaring penyelamat: simpan rencana final SEBELUM menghapus
+        try { localStorage.setItem(KUNCI_PENDING, JSON.stringify({ baris: barisAkhir, coba: 0 })); } catch (e) {}
+
+        // 7) Hapus semua lalu sisipkan ulang sesuai urutan rumah
+        await dbHapusSemua();
+        await dbInsertUrut(barisAkhir);
+
+        // 8) Sukses -> lepas jaring penyelamat
+        localStorage.removeItem(KUNCI_PENDING);
+        return barisAkhir.length;
+    }
+
+    async function tambahPelangganBaru() {
+        const nama = (document.getElementById("inputNamaBaru").value || "").trim().toUpperCase();
+        if (!nama) { infoPelangganTeks("❌ Tulis nama pelanggan baru dulu."); return; }
+        if (daftarPelanggan.includes(nama)) { infoPelangganTeks("❌ Nama <b>" + nama + "</b> sudah ada di daftar."); return; }
+        const total = daftarPelanggan.length;
+        const rencana = hitungRencanaTambah(document.getElementById("inputNoBaru").value, total);
+        const periode = getPeriodeText();
+        const pesan = rencana.sisip
+            ? `Tambah pelanggan "${nama}" di posisi No. ${rencana.posisi}?\n\n"${daftarPelanggan[rencana.posisi - 1]}" (No. ${rencana.posisi}) dan ${total - rencana.posisi} pelanggan di bawahnya bergeser turun 1 nomor.\nSeluruh riwayat data tetap aman.`
+            : `Tambah pelanggan baru "${nama}"?\n\nMulai dicatat pada periode ${periode} (di akhir daftar, No. ${rencana.posisi}).`;
+        if (!confirm(pesan)) return;
+        try {
+            infoPelangganTeks(rencana.sisip ? "⏳ Menyisipkan & mengatur ulang nomor..." : "⏳ Menambahkan...");
+            if (rencana.sisip) {
+                await sisipkanPelangganPosisi(nama, rencana.posisi);
+            } else {
+                await dbInsertBanyak([{ periode: periode, nama: nama, meter_awal: 0, meter_akhir: 0, cash: 0, biaya_beban: BIAYA_BEBAN_STANDAR, saldo_lalu: 0, status: "Belum Bayar" }]);
+            }
+            document.getElementById("inputNamaBaru").value = "";
+            document.getElementById("inputNoBaru").value = "";
+            await loadDataPeriodeIni();
+            infoPelangganTeks(`✅ <b>${nama}</b> ditambahkan di No. ${rencana.posisi}${rencana.sisip ? " (pelanggan di bawahnya bergeser turun)" : ""}. Total sekarang: ${daftarPelanggan.length} pelanggan.`);
+        } catch (e) {
+            // Bila penyusunan ulang terputus, coba pulihkan otomatis sekali
+            if (rencana.sisip && bacaPending()) {
+                try { await pulihkanOperasiTertunda(); await loadDataPeriodeIni(); } catch (e2) {}
+            }
+            infoPelangganTeks("❌ Gagal menambah: " + pesanErrorDB(e));
+        }
+    }
+
+    async function gantiNamaPelanggan() {
+        const lama = (document.getElementById("pilihNamaLama").value || "").trim();
+        const baru = (document.getElementById("inputNamaGanti").value || "").trim().toUpperCase();
+        if (!lama) { infoPelangganTeks("❌ Pilih pelanggan yang mau diganti namanya."); return; }
+        if (!baru) { infoPelangganTeks("❌ Tulis nama barunya."); return; }
+        if (baru === lama) { infoPelangganTeks("❌ Nama baru sama dengan nama lama."); return; }
+        if (daftarPelanggan.includes(baru)) { infoPelangganTeks("❌ Nama <b>" + baru + "</b> sudah dipakai pelanggan lain."); return; }
+        const nBaris = hitungPelanggan.get(lama) || 0;
+        if (!confirm(`Ganti nama pemilik rumah:\n"${lama}" ➔ "${baru}"\n\nSeluruh riwayatnya (${nBaris} baris, semua periode) akan memakai nama baru.`)) return;
+        try {
+            infoPelangganTeks("⏳ Mengganti nama...");
+            const n = await dbUpdateNama(lama, baru);
+            const idx = daftarPelanggan.indexOf(lama);
+            if (idx >= 0) daftarPelanggan[idx] = baru;
+            const c = hitungPelanggan.get(lama) || 0;
+            hitungPelanggan.delete(lama);
+            hitungPelanggan.set(baru, c);
+            simpanCacheDaftarPelanggan();
+            document.getElementById("inputNamaGanti").value = "";
+            await loadDataPeriodeIni();
+            infoPelangganTeks(`✅ Berhasil. ${n} baris riwayat kini atas nama <b>${baru}</b>.`);
+        } catch (e) {
+            infoPelangganTeks("❌ Gagal mengganti nama: " + pesanErrorDB(e));
+        }
+    }
+
+    async function hapusPelanggan() {
+        const nama = (document.getElementById("pilihNamaHapus").value || "").trim();
+        if (!nama) { infoPelangganTeks("❌ Pilih pelanggan yang mau dihapus."); return; }
+        const nBaris = hitungPelanggan.get(nama) || 0;
+        if (!confirm(`🔴 HAPUS PELANGGAN "${nama}"\n\n${nBaris} baris riwayat (SEMUA periode) akan dihapus PERMANEN.\nSebaiknya Export Database (backup) dulu sekarang.`)) return;
+        if (!confirm(`KONFIRMASI TERAKHIR:\nYakin 100% hapus "${nama}" dari daftar?`)) return;
+        try {
+            infoPelangganTeks("⏳ Menghapus...");
+            await dbHapusPelanggan(nama);
+            const idx = daftarPelanggan.indexOf(nama);
+            if (idx >= 0) daftarPelanggan.splice(idx, 1);
+            hitungPelanggan.delete(nama);
+            simpanCacheDaftarPelanggan();
+            await loadDataPeriodeIni();
+            infoPelangganTeks(`✅ <b>${nama}</b> dihapus. Total sekarang: ${daftarPelanggan.length} pelanggan.`);
+        } catch (e) {
+            infoPelangganTeks("❌ Gagal menghapus: " + pesanErrorDB(e));
+        }
+    }
+
+    loadDataPeriodeIni();
+</script>
+
+</body>
+</html>
