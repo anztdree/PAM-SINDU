@@ -375,6 +375,19 @@
             box-shadow: none; font-size: .9rem; font-weight: 700; letter-spacing: .3px;
         }
         .tombol-batal:active { background: #f1f5f9; }
+        /* Ikon SVG pengganti emoji (Task 30) — seragam, ikut warna teks */
+        .svgi { width: 1.12em; height: 1.12em; flex: 0 0 auto; vertical-align: -0.2em; }
+        .pel-mini { gap: 5px; }
+        .pel-mini .svgi { width: .92em; height: .92em; }
+        .baris-tombol .svgi { width: 1.2em; height: 1.2em; }
+        .struk-baris .svgi { color: var(--biru); }
+        .struk-hasil .svgi { width: 1.15em; height: 1.15em; }
+        .mj-label .svgi { vertical-align: -0.18em; }
+        .modal-kepala h3 .svgi { vertical-align: -0.22em; }
+        .dot-koneksi {
+            display: inline-block; width: 9px; height: 9px; border-radius: 999px;
+            margin-right: 6px; vertical-align: 1px; box-shadow: 0 0 0 3px rgba(148,163,184,.18);
+        }
 
         /* ===== TOAST ===== */
         .toast-wrap {
@@ -412,7 +425,7 @@
             </div>
             <div class="header-teks">
                 <h2>BPSPAMS TIRTA MAKMUR</h2>
-                <p>Penagihan Air &bull; Sinduharjo 08/04 &bull; Petugas: ANDRI</p>
+                <p>&bull; Sinduharjo 08 / 04 &bull; <br>&bull; Petugas: <b>ANDRI</b></p>
             </div>
             <button class="tombol-backup" id="btnBukaBackup" onclick="bukaModalBackup()" title="Backup & Export — file .db / .sql, Import, Reset (tanpa password)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
@@ -422,7 +435,7 @@
         <div class="header-status">
             <span class="status-pill">
                 <span class="lbl">Database:</span>
-                <span id="statusKoneksiText" style="color:#d97706;">🟡 Memeriksa Koneksi...</span>
+                <span id="statusKoneksiText" style="color:#d97706;"><span class="dot-koneksi" style="background:#f59e0b;"></span>Memeriksa Koneksi...</span>
             </span>
         </div>
         <svg class="ombak" viewBox="0 0 1440 44" preserveAspectRatio="none" aria-hidden="true">
@@ -442,7 +455,7 @@
             <button class="tombol-chevron" onclick="lanjutBulanBerikutnya()" aria-label="Bulan sesudahnya">&#8250;</button>
         </div>
         <div style="margin-top:10px;">
-            <button class="btn btn-hijau btn-blok" onclick="prosesTutupBukuDanLanjut()">🔒 Tutup Buku &amp; Buat Periode Baru</button>
+            <button class="btn btn-hijau btn-blok" onclick="prosesTutupBukuDanLanjut()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Tutup Buku &amp; Buat Periode Baru</button>
         </div>
     </div>
 
@@ -481,30 +494,30 @@
     <!-- MANAJEMEN PELANGGAN (tepat di atas pencarian) -->
     <div class="card">
         <details class="panel" id="panelManajemen">
-            <summary class="panel-summary"><span class="panel-chevron">▶</span>👥 Manajemen Pelanggan<span class="mj-sub">Tambah · Ganti Nama · Hapus</span></summary>
+            <summary class="panel-summary"><span class="panel-chevron">▶</span><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Manajemen Pelanggan<span class="mj-sub">Tambah · Ganti Nama · Hapus</span></summary>
             <div class="panel-isi">
                 <div class="mj-blok">
-                    <div class="mj-label">➕ Tambah Pelanggan</div>
+                    <div class="mj-label"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Tambah Pelanggan</div>
                     <div class="baris-admin">
                         <input type="text" id="inputNoBaru" class="field mj-no" inputmode="numeric" maxlength="3" placeholder="No.">
                         <input type="text" id="inputNamaBaru" class="field" placeholder="Nama pelanggan baru...">
-                        <button class="btn btn-hijau" onclick="tambahPelangganBaru()">➕ Tambah</button>
+                        <button class="btn btn-hijau" onclick="tambahPelangganBaru()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Tambah</button>
                     </div>
                     <div class="mj-hint">Isi <b>No.</b> untuk menyisip di tengah daftar — pelanggan dari No. itu bergeser turun. Kosongkan = tambah di akhir.</div>
                 </div>
                 <div class="mj-blok">
-                    <div class="mj-label">✏️ Ganti Nama</div>
+                    <div class="mj-label"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Ganti Nama</div>
                     <div class="baris-admin">
                         <select id="pilihNamaLama" class="field"></select>
                         <input type="text" id="inputNamaGanti" class="field" placeholder="Nama baru...">
-                        <button class="btn btn-primer" onclick="gantiNamaPelanggan()">✏️ Ganti</button>
+                        <button class="btn btn-primer" onclick="gantiNamaPelanggan()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Ganti</button>
                     </div>
                 </div>
                 <div class="mj-blok">
-                    <div class="mj-label">🗑️ Hapus Pelanggan</div>
+                    <div class="mj-label"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Hapus Pelanggan</div>
                     <div class="baris-admin">
                         <select id="pilihNamaHapus" class="field"></select>
-                        <button class="btn btn-merah" onclick="hapusPelanggan()">🗑️ Hapus</button>
+                        <button class="btn btn-merah" onclick="hapusPelanggan()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Hapus</button>
                     </div>
                 </div>
                 <div id="infoPelanggan" class="info-inline"></div>
@@ -515,21 +528,20 @@
     <!-- PENCARIAN -->
     <div class="card">
         <div class="kotak-cari">
-            <span class="ikon-cari">🔍</span>
+            <span class="ikon-cari"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
             <input type="text" id="searchInput" class="field" onkeyup="cariPelanggan()" placeholder="Cari nama pelanggan...">
         </div>
     </div>
 
     <!-- DAFTAR PELANGGAN -->
     <div class="card">
-        <div class="judul-kartu">🏠 Daftar Pelanggan</div>
+        <div class="judul-kartu"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20V9.5z"/><path d="M9 21.5V13h6v8.5"/></svg> Daftar Pelanggan</div>
         <div id="tabelBody" class="daftar-pelanggan"></div>
-        <div id="kosongPencarian" class="kosong-cari" style="display:none;">😕 Tidak ada pelanggan yang cocok dengan pencarian.</div>
+        <div id="kosongPencarian" class="kosong-cari" style="display:none;"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8.5 8.5l5 5"/><path d="M13.5 8.5l-5 5"/></svg> Tidak ada pelanggan yang cocok dengan pencarian.</div>
     </div>
 
     <footer class="kaki-app">
         BPSPAMS TIRTA MAKMUR &bull; SINDUHARJO 08/04<br>
-        <span>Data tersimpan di database SQLite perangkat ini — jangan lupa rutin Export Database.</span>
     </footer>
 </div>
 
@@ -538,8 +550,8 @@
     <div class="modal-content-wrapper">
         <div class="form-box">
             <div class="modal-kepala">
-                <h3>📝 Pencatatan Meteran</h3>
-                <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup">✕</button>
+                <h3><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pencatatan Meteran</h3>
+                <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-isi">
                 <div class="form-group">
@@ -570,14 +582,14 @@
                     </div>
                     <div id="uiCashStatus"></div>
                     <details class="struk-rincian">
-                        <summary>🔍 Lihat rincian penyelesaian ▾</summary>
+                        <summary><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Lihat rincian penyelesaian ▾</summary>
                         <div id="uiRincianAlokasi" style="padding:0 2px 8px;"></div>
                     </details>
                 </div>
 
                 <div class="baris-tombol">
-                    <button class="btn btn-hijau" onclick="simpanSudahBayar()">Sudah Bayar ✅</button>
-                    <button class="btn btn-amber" onclick="simpanBelumBayar()">Catat Saja 📝</button>
+                    <button class="btn btn-hijau" onclick="simpanSudahBayar()">Sudah Bayar <svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></button>
+                    <button class="btn btn-amber" onclick="simpanBelumBayar()">Catat Saja <svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
                 </div>
                 <button class="btn tombol-batal" onclick="tutupModal()">Batal</button>
             </div>
@@ -590,8 +602,8 @@
     <div class="modal-content-wrapper">
         <div class="form-box">
             <div class="modal-kepala">
-                <h3>💾 Data &amp; Backup</h3>
-                <button class="tombol-tutup" onclick="tutupModalBackup()" aria-label="Tutup">✕</button>
+                <h3><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Data &amp; Backup</h3>
+                <button class="tombol-tutup" onclick="tutupModalBackup()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-isi isi-backup">
                 <p class="catatan" style="margin:0;">
@@ -611,7 +623,7 @@
                 </div>
                 <div id="infoExport" class="info-inline" style="margin-top:0;">Belum ada backup — tekan tombol Export di panel ini.</div>
                 <details class="panel" style="margin-top:0;">
-                    <summary class="panel-summary"><span class="panel-chevron">▶</span>⚙️ Menu Admin (Import / Reset Data)</summary>
+                    <summary class="panel-summary"><span class="panel-chevron">▶</span><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg> Menu Admin (Import / Reset Data)</summary>
                     <div class="panel-isi">
                         <p class="catatan">
                             Letakkan <b>pam.sql</b> di folder aplikasi lalu tekan Import
@@ -619,8 +631,8 @@
                             Reset mengosongkan seluruh transaksi.
                         </p>
                         <div class="grid-2">
-                            <button class="btn btn-ungu" onclick="importDataLama()">📥 Import pam.sql</button>
-                            <button class="btn btn-merah" onclick="kosongkanData()">🗑️ Kosongkan Data</button>
+                            <button class="btn btn-ungu" onclick="importDataLama()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg> Import pam.sql</button>
+                            <button class="btn btn-merah" onclick="kosongkanData()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Kosongkan Data</button>
                         </div>
                         <div id="infoImport" class="info-inline"></div>
                     </div>
@@ -892,10 +904,10 @@
         
         if (terhubung) {
             el.style.color = "#16a34a";
-            el.innerHTML = "🟢 Terhubung";
+            el.innerHTML = '<span class="dot-koneksi" style="background:#16a34a;"></span>Terhubung';
         } else {
             el.style.color = "#dc2626";
-            el.innerHTML = `🔴 Terputus ${pesan ? '(' + pesan + ')' : ''}`;
+            el.innerHTML = '<span class="dot-koneksi" style="background:#dc2626;"></span>Terputus ' + (pesan ? '(' + pesan + ')' : '');
         }
     }
 
@@ -1016,6 +1028,33 @@
         };
     }
 
+// ===== IKON SVG (Task 30) — pengganti emoji, seragam & elegan =====
+        const ikonSvg = isi => '<svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + isi + '</svg>';
+        const IK = {
+            check: ikonSvg('<path d="M20 6L9 17l-5-5"/>'),
+            pencil: ikonSvg('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
+            clock: ikonSvg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+            alert: ikonSvg('<circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/>'),
+            x: ikonSvg('<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6"/><path d="M9 9l6 6"/>'),
+            minus: ikonSvg('<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>'),
+            droplet: ikonSvg('<path d="M12 2.7c3.3 4.1 6.2 7.4 6.2 10.7a6.2 6.2 0 1 1-12.4 0C5.8 10.1 8.7 6.8 12 2.7z"/>'),
+            box: ikonSvg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7L12 12l8.7-5"/><path d="M12 22V12"/>'),
+            inbox: ikonSvg('<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'),
+            card: ikonSvg('<rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>'),
+            wallet: ikonSvg('<path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/>'),
+            search: ikonSvg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>'),
+            searchX: ikonSvg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8.5 8.5l5 5"/><path d="M13.5 8.5l-5 5"/>'),
+            db: ikonSvg('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'),
+            file: ikonSvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/>'),
+            lock: ikonSvg('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+            upload: ikonSvg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>'),
+            trash: ikonSvg('<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>'),
+            plus: ikonSvg('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+            users: ikonSvg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+            sliders: ikonSvg('<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/>'),
+            home: ikonSvg('<path d="M3 9.5L12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20V9.5z"/><path d="M9 21.5V13h6v8.5"/>')
+        };
+
         function renderTabel() {
         const wadah = document.getElementById('tabelBody');
         if (!wadah) return;
@@ -1054,17 +1093,17 @@
             let isMeterEntered = item.METER_AKHIR > 0 && item.METER_AKHIR >= item.METER_AWAL;
 
             if (item.STATUS === 'Sudah Bayar') {
-                statusMiniHtml = `<span class="pel-mini pel-mini-lunas">✅ Lunas</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-lunas">${IK.check}Lunas</span>`;
             } else if (hanyaBeban) {
                 // kekurangan cuma beban (komisi petugas) — bukan "belum bayar";
                 // badge cukup menunjukkan status PENCATATAN METER supaya tidak ada yang kelewatan
                 statusMiniHtml = isMeterEntered
-                    ? `<span class="pel-mini pel-mini-dicatat">📝 Dicatat</span>`
-                    : `<span class="pel-mini pel-mini-meter">⏳ Belum Dicatat</span>`;
+                    ? `<span class="pel-mini pel-mini-dicatat">${IK.pencil}Dicatat</span>`
+                    : `<span class="pel-mini pel-mini-meter">${IK.clock}Belum Dicatat</span>`;
             } else if (isMeterEntered) {
-                statusMiniHtml = `<span class="pel-mini pel-mini-dicatat">📝 Dicatat</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-dicatat">${IK.pencil}Dicatat</span>`;
             } else {
-                statusMiniHtml = `<span class="pel-mini pel-mini-belum">🔴 Belum</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-belum">${IK.alert}Belum</span>`;
             }
 
             let labelAksi = 'Catat';
@@ -1074,8 +1113,8 @@
 
             // meter: tampil "?" bila belum dicatat (bukan 0 yang membingungkan)
             let meterTeks = isMeterEntered
-                ? `${item.METER_AWAL} ➔ ${item.METER_AKHIR}`
-                : `${item.METER_AWAL} ➔ ?`;
+                ? `${item.METER_AWAL} → ${item.METER_AKHIR}`
+                : `${item.METER_AWAL} → ?`;
 
             // saldo sebagai teks inline berwarna (tanpa badge besar)
             let saldoTeks = '';
@@ -1176,7 +1215,7 @@
         let periodeSekarang = getPeriodeText();
 
         let konfirmasi1 = confirm(
-            `⚠️ PERINGATAN KRUSIAL! ⚠️\n\n` +
+            `PERINGATAN KRUSIAL!\n\n` +
             `Apakah Anda yakin ingin MELAKUKAN TUTUP BUKU untuk periode "${periodeSekarang}"?\n\n` +
             `• Meter Akhir akan terkunci dan menjadi Meter Awal bulan depan.\n` +
             `• Sisa Deposit / Tunggakan akan otomatis dialihkan ke bulan berikutnya.\n\n` +
@@ -1186,7 +1225,7 @@
         if (!konfirmasi1) return;
 
         let konfirmasi2 = confirm(
-            `🔴 KONFIRMASI TERAKHIR 🔴\n\n` +
+            `KONFIRMASI TERAKHIR\n\n` +
             `Proses penguncian data untuk periode ${periodeSekarang} akan dieksekusi.\n\n` +
             `Apakah Anda benar-benar yakin seluruh data transaksi periode ini sudah 100% valid?`
         );
@@ -1233,9 +1272,9 @@
 
             simpanPeriodeAktif();
             await loadDataPeriodeIni();
-            alert(`🎉 BERHASIL!\nTutup Buku Selesai. Selamat Bekerja di Periode Baru: ${periodeBaruKey}`);
+            alert(`BERHASIL!\nTutup Buku Selesai. Selamat Bekerja di Periode Baru: ${periodeBaruKey}`);
         } catch (e) {
-            alert("❌ Gagal Tutup Buku: " + pesanErrorDB(e));
+            alert("Gagal Tutup Buku: " + pesanErrorDB(e));
             currentBulanIndex = bulanSekarang;
             currentTahun = tahunSekarang;
         }
@@ -1286,14 +1325,14 @@
             '<span class="stitik"></span><span class="shg' + (dikurangi ? ' shg-minus' : '') + '">' + (dikurangi ? '− ' : '') + rp(angka) + '</span></div>';
 
         let strukHtml = '';
-        if (biayaAir > 0) strukHtml += barisStruk('💧', 'Pakai air', pemakaian + ' m³ × ' + rp(TARIF_PER_M3), biayaAir);
-        strukHtml += barisStruk('📦', 'Beban bulan ini', '', beban);
-        if (utangLalu > 0) strukHtml += barisStruk('📥', 'Utang bulan lalu', '', utangLalu);
+        if (biayaAir > 0) strukHtml += barisStruk(IK.droplet, 'Pakai air', pemakaian + ' m³ × ' + rp(TARIF_PER_M3), biayaAir);
+        strukHtml += barisStruk(IK.box, 'Beban bulan ini', '', beban);
+        if (utangLalu > 0) strukHtml += barisStruk(IK.inbox, 'Utang bulan lalu', '', utangLalu);
         // deposit terpakai hanya sebesar yang benar-benar dipakai menutup tagihan,
         // sisanya tetap deposit dan muncul sebagai "Sisa deposit" di kotak keputusan
         if (depositLalu > 0) {
             const depositDipakai = sisaDepositAwal > 0 ? (depositLalu - sisaDepositAwal) : depositLalu;
-            strukHtml += barisStruk('🏦', 'Deposit bulan lalu', sisaDepositAwal > 0 ? 'dipakai ' + rp(depositDipakai) : 'dikurangkan', depositDipakai, true);
+            strukHtml += barisStruk(IK.card, 'Deposit bulan lalu', sisaDepositAwal > 0 ? 'dipakai ' + rp(depositDipakai) : 'dikurangkan', depositDipakai, true);
         }
         document.getElementById('uiStruk').innerHTML = strukHtml;
 
@@ -1305,20 +1344,20 @@
         let kotak = (kelas, isi) => { elStatus.innerHTML = '<div class="struk-hasil ' + kelas + '">' + isi + '</div>'; };
 
         if (sisaDepositAwal > 0) {
-            kotak('hasil-lunas', '🏦 <b>LUNAS</b> — ditutup pakai deposit bulan lalu.<br>➜ Sisa deposit: <b>' + rp(sisaDepositAwal + cash) + '</b>');
+            kotak('hasil-lunas', IK.card + ' <b>LUNAS</b> — ditutup pakai deposit bulan lalu.<br>→ Sisa deposit: <b>' + rp(sisaDepositAwal + cash) + '</b>');
         } else if (totalHarusBayar === 0) {
-            kotak('hasil-netral', '😌 Tidak ada tagihan bulan ini.');
+            kotak('hasil-netral', IK.minus + ' Tidak ada tagihan bulan ini.');
         } else if (cash === 0) {
-            kotak('hasil-tunggu', '💵 Cash: <b>Rp 0</b> — belum ada uang masuk.<br>➜ Yang harus diterima petugas: <b>' + rp(totalHarusBayar) + '</b>');
+            kotak('hasil-tunggu', IK.wallet + ' Cash: <b>Rp 0</b> — belum ada uang masuk.<br>→ Yang harus diterima petugas: <b>' + rp(totalHarusBayar) + '</b>');
         } else if (selisihCash === 0) {
-            kotak('hasil-lunas', '✅ Uang <b>pas</b> ' + rp(cash) + ' — <b>LUNAS</b> 🎉');
+            kotak('hasil-lunas', IK.check + ' Uang <b>pas</b> ' + rp(cash) + ' — <b>LUNAS</b>');
         } else if (selisihCash > 0) {
-            kotak('hasil-lunas', '✅ <b>LUNAS</b> — lebih <b>' + rp(selisihCash) + '</b> masuk deposit.');
+            kotak('hasil-lunas', IK.check + ' <b>LUNAS</b> — lebih <b>' + rp(selisihCash) + '</b> masuk deposit.');
         } else if (Math.abs(selisihCash) <= beban) {
             // kekurangan masih di area biaya beban (komisi petugas) — bukan utang air
-            kotak('hasil-netral', '📝 Air lunas — kurang beban <b>' + rp(selisihCash) + '</b>.');
+            kotak('hasil-netral', IK.minus + ' Air lunas — kurang beban <b>' + rp(selisihCash) + '</b>.');
         } else {
-            kotak('hasil-kurang', '🙏 Kurang <b>' + rp(selisihCash) + '</b> — boleh nyusul, otomatis jadi utang bulan depan.');
+            kotak('hasil-kurang', IK.clock + ' Kurang <b>' + rp(selisihCash) + '</b> — boleh nyusul, otomatis jadi utang bulan depan.');
         }
 
         // Bagian 3: rincian penyelesaian per komponen (tersembunyi di balik "Lihat rincian")
@@ -1329,17 +1368,17 @@
             pot -= tertutup;
             let sisa = tagih - tertutup;
             let kanan, cls;
-            if (sisa === 0)          { kanan = '✔ Lunas';                       cls = 'v2-ok'; }
+            if (sisa === 0)          { kanan = IK.check + ' Lunas';                       cls = 'v2-ok'; }
             else if (tertutup > 0)   { kanan = 'Dibayar ' + rp(tertutup) + ', sisa ' + rp(sisa); cls = 'v2-wait'; }
-            else if (cash === 0)     { kanan = '🕒 menunggu cash';              cls = 'v2-info'; }
+            else if (cash === 0)     { kanan = IK.clock + ' menunggu cash';              cls = 'v2-info'; }
             else                     { kanan = 'belum tercukupi';               cls = 'v2-wait'; }
             return '<div class="baris-ringkas"><span>' + label + ' <span style="color:#94a3b8;">(' + rp(tagih) + ')</span></span><b class="' + cls + '">' + kanan + '</b></div>';
         };
 
-        let rincianAlokasi = '<div class="baris-ringkas"><span>💵 Cash diterima</span><b>' + rp(cash) + '</b></div>'
-            + barisKomponen('💧 Biaya air', biayaAir);
-        if (utangLalu > 0) rincianAlokasi += barisKomponen('📥 Utang lalu', utangLalu);
-        rincianAlokasi += barisKomponen('📦 Beban bulan ini', beban);
+        let rincianAlokasi = '<div class="baris-ringkas"><span>' + IK.wallet + ' Cash diterima</span><b>' + rp(cash) + '</b></div>'
+            + barisKomponen(IK.droplet + ' Biaya air', biayaAir);
+        if (utangLalu > 0) rincianAlokasi += barisKomponen(IK.inbox + ' Utang lalu', utangLalu);
+        rincianAlokasi += barisKomponen(IK.box + ' Beban bulan ini', beban);
 
         if (sisaDepositAwal > 0) {
             rincianAlokasi += '<div class="baris-ringkas"><span><b>Deposit akhir:</b></span><b class="v2-ok">' + rp(sisaDepositAwal + cash) + '</b></div>';
@@ -1389,9 +1428,9 @@
             await dbSimpan(payload);
             await loadDataPeriodeIni();
             tutupModal();
-            showToast("✅ " + item.NAMA + " tersimpan — Sudah Bayar");
+            showToast(IK.check + " " + item.NAMA + " tersimpan — Sudah Bayar");
         } catch (e) {
-            alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
+            alert("Gagal Menyimpan: " + pesanErrorDB(e));
         }
     }
 
@@ -1417,9 +1456,9 @@
             await dbSimpan(payload);
             await loadDataPeriodeIni();
             tutupModal();
-            showToast("📝 " + item.NAMA + " tersimpan — Belum Bayar");
+            showToast(IK.pencil + " " + item.NAMA + " tersimpan — Belum Bayar");
         } catch (e) {
-            alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
+            alert("Gagal Menyimpan: " + pesanErrorDB(e));
         }
     }
 
@@ -1655,18 +1694,18 @@
             }
 
             showToast(mode === "sql"
-                ? "🗂️ Backup .sql terunduh (" + ringkas + ")"
+                ? IK.file + " Backup .sql terunduh (" + ringkas + ")"
                 : (pakaiFileDb
-                    ? "💾 Backup .db terunduh (" + ringkas + ")"
-                    : "💾 Export .db gagal — backup .sql terunduh (" + ringkas + ")"));
+                    ? IK.db + " Backup .db terunduh (" + ringkas + ")"
+                    : IK.db + " Export .db gagal — backup .sql terunduh (" + ringkas + ")"));
             if (info) {
-                info.innerHTML = "✅ <b>Backup terakhir:</b> " + namaFileBackup(pakaiFileDb ? "db" : "sql") +
+                info.innerHTML = IK.check + " <b>Backup terakhir:</b> " + namaFileBackup(pakaiFileDb ? "db" : "sql") +
                     " (" + ringkas + ") — format <b>." + (pakaiFileDb ? "db" : "sql") + "</b>." +
                     (mode === "db" && pakaiFileDb
-                        ? "<br>💾 " + sumberDb + "."
+                        ? "<br>" + IK.db + " " + sumberDb + "."
                         : "") +
                     (mode === "db" && !pakaiFileDb
-                        ? "<br>⚠️ " + (alasanFallback || "Export .db tidak bisa dilakukan") +
+                        ? "<br>" + IK.alert + " " + (alasanFallback || "Export .db tidak bisa dilakukan") +
                           " — yang diunduh: backup <b>.sql</b> (data tetap lengkap &amp; terbaru)."
                         : "") +
                     "<br>" + (pakaiFileDb
@@ -1674,8 +1713,8 @@
                         : "Memulihkan: letakkan file .sql ini di folder aplikasi (boleh diganti nama jadi pam.sql), lalu Menu Admin &gt; Import pam.sql.");
             }
         } catch (e) {
-            alert("❌ Gagal Export Database: " + pesanErrorDB(e));
-            showToast("❌ Export database gagal", "gagal");
+            alert("Gagal Export Database: " + pesanErrorDB(e));
+            showToast(IK.x + " Export database gagal", "gagal");
         } finally {
             if (btnDb) btnDb.disabled = false;
             if (btnSql) btnSql.disabled = false;
@@ -1799,14 +1838,14 @@
         const info = document.getElementById('infoImport');
         if (!confirm("Import data dari pam.sql?\n\nBaris yang belum ada akan DITAMBAHKAN, baris yang sudah ada akan DIPERBARUI (data periode lain tetap aman).")) return;
 
-        info.innerText = "⏳ Membaca pam.sql...";
+        info.innerText = "Membaca pam.sql...";
         try {
             // parameter acak agar browser tidak memakai pam.sql versi lama dari cache
             const res = await fetch("pam.sql?v=" + Date.now());
             if (!res.ok) throw new Error("FILE_SQL_TIDAK_ADA");
             const raw = await res.text();
 
-            info.innerText = "⏳ Memproses " + raw.length.toLocaleString('id-ID') + " byte...";
+            info.innerText = "Memproses " + raw.length.toLocaleString('id-ID') + " byte...";
             const stmts = ekstrakInserts(raw);
             if (stmts.length === 0) throw new Error("TIDAK_ADA_INSERT");
 
@@ -1827,14 +1866,14 @@
             barisSemua.forEach(r => { (perPeriode[r.periode] = perPeriode[r.periode] || []).push(r); });
             let totalSisip = 0, totalUbah = 0;
             for (const periode of Object.keys(perPeriode)) {
-                info.innerText = "⏳ Mengimpor " + periode + "...";
+                info.innerText = "Mengimpor " + periode + "...";
                 const hasil = await dbUpsertPeriode(periode, perPeriode[periode], null);
                 totalSisip += hasil.sisip; totalUbah += hasil.ubah;
             }
 
-            info.innerHTML = "✅ <b>Import BERHASIL</b> — " + totalSisip + " baris baru, " + totalUbah + " diperbarui. Memuat ulang...";
+            info.innerHTML = IK.check + " <b>Import BERHASIL</b> — " + totalSisip + " baris baru, " + totalUbah + " diperbarui. Memuat ulang...";
             await loadDataPeriodeIni();
-            alert("🎉 Import selesai!\n" + totalSisip + " baris baru ditambahkan, " + totalUbah + " baris diperbarui.");
+            alert("Import selesai!\n" + totalSisip + " baris baru ditambahkan, " + totalUbah + " baris diperbarui.");
         } catch (e) {
             const m = String(e.message || e);
             let pesan = m;
@@ -1842,28 +1881,28 @@
             else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk transaksi_pelanggan.";
             else if (m.includes("SQL_ERR")) pesan = "Database menolak: " + m.replace("SQL_ERR: ", "").slice(0, 150);
             else pesan = pesanErrorDB(e);
-            info.innerHTML = "❌ <b>Import gagal:</b> " + pesan;
-            alert("❌ Import gagal: " + pesan);
+            info.innerHTML = IK.x + " <b>Import gagal:</b> " + pesan;
+            alert("Import gagal: " + pesan);
         }
     }
 
     async function kosongkanData() {
         const info = document.getElementById('infoImport');
-        if (!confirm("⚠️ PERINGATAN!\n\nSemua data transaksi (semua periode) akan DIHAPUS PERMANEN dari database.\nLanjutkan?")) return;
-        if (!confirm("🔴 KONFIRMASI TERAKHIR\n\nYakin 100%? Ada baiknya Export Database (backup) dulu sekarang.")) return;
+        if (!confirm("PERINGATAN!\n\nSemua data transaksi (semua periode) akan DIHAPUS PERMANEN dari database.\nLanjutkan?")) return;
+        if (!confirm("KONFIRMASI TERAKHIR\n\nYakin 100%? Ada baiknya Export Database (backup) dulu sekarang.")) return;
         try {
-            info.innerText = "⏳ Mengosongkan...";
+            info.innerText = "Mengosongkan...";
             await dbHapusSemua();
             try { localStorage.removeItem(KUNCI_PENDING); } catch (e) {}
-            info.innerHTML = "✅ <b>Data dikosongkan.</b>";
+            info.innerHTML = IK.check + " <b>Data dikosongkan.</b>";
             await loadDataPeriodeIni();
         } catch (e) {
-            info.innerHTML = "❌ Gagal: " + pesanErrorDB(e);
+            info.innerHTML = IK.x + " Gagal: " + pesanErrorDB(e);
         }
     }
 
     /* ============================================================
-       MANAJEMEN PELANGGAN (dipanggil dari panel 👥)
+       MANAJEMEN PELANGGAN (dipanggil dari panel Manajemen)
        ============================================================ */
     function isiPilihanPelanggan() {
         ["pilihNamaLama", "pilihNamaHapus"].forEach(id => {
@@ -1926,12 +1965,12 @@
             await dbHapusSemua();
             await dbInsertUrut(p.baris);
             localStorage.removeItem(KUNCI_PENDING);
-            showToast("✅ Penyusunan ulang daftar pelanggan yang tertunda berhasil dipulihkan (" + p.baris.length + " baris).", "info");
+            showToast(IK.check + " Penyusunan ulang daftar pelanggan yang tertunda berhasil dipulihkan (" + p.baris.length + " baris).", "info");
             return true;
         } catch (e) {
             const coba = (Number(p.coba) || 0) + 1;
             try { localStorage.setItem(KUNCI_PENDING, JSON.stringify({ baris: p.baris, coba: coba })); } catch (e2) {}
-            showToast("⚠️ Ada penyusunan ulang daftar yang belum selesai — akan dicoba lagi otomatis. Pastikan toggle <b>Enable API to modify tables data</b> aktif.", "gagal");
+            showToast(IK.alert + " Ada penyusunan ulang daftar yang belum selesai — akan dicoba lagi otomatis. Pastikan toggle <b>Enable API to modify tables data</b> aktif.", "gagal");
             return false;
         }
     }
@@ -1992,8 +2031,8 @@
 
     async function tambahPelangganBaru() {
         const nama = (document.getElementById("inputNamaBaru").value || "").trim().toUpperCase();
-        if (!nama) { infoPelangganTeks("❌ Tulis nama pelanggan baru dulu."); return; }
-        if (daftarPelanggan.includes(nama)) { infoPelangganTeks("❌ Nama <b>" + nama + "</b> sudah ada di daftar."); return; }
+        if (!nama) { infoPelangganTeks(IK.x + " Tulis nama pelanggan baru dulu."); return; }
+        if (daftarPelanggan.includes(nama)) { infoPelangganTeks(IK.x + " Nama <b>" + nama + "</b> sudah ada di daftar."); return; }
         const total = daftarPelanggan.length;
         const rencana = hitungRencanaTambah(document.getElementById("inputNoBaru").value, total);
         const periode = getPeriodeText();
@@ -2002,7 +2041,7 @@
             : `Tambah pelanggan baru "${nama}"?\n\nMulai dicatat pada periode ${periode} (di akhir daftar, No. ${rencana.posisi}).`;
         if (!confirm(pesan)) return;
         try {
-            infoPelangganTeks(rencana.sisip ? "⏳ Menyisipkan & mengatur ulang nomor..." : "⏳ Menambahkan...");
+            infoPelangganTeks(rencana.sisip ? "Menyisipkan & mengatur ulang nomor..." : "Menambahkan...");
             if (rencana.sisip) {
                 await sisipkanPelangganPosisi(nama, rencana.posisi);
             } else {
@@ -2011,27 +2050,27 @@
             document.getElementById("inputNamaBaru").value = "";
             document.getElementById("inputNoBaru").value = "";
             await loadDataPeriodeIni();
-            infoPelangganTeks(`✅ <b>${nama}</b> ditambahkan di No. ${rencana.posisi}${rencana.sisip ? " (pelanggan di bawahnya bergeser turun)" : ""}. Total sekarang: ${daftarPelanggan.length} pelanggan.`);
+            infoPelangganTeks(IK.check + ` <b>${nama}</b> ditambahkan di No. ${rencana.posisi}${rencana.sisip ? " (pelanggan di bawahnya bergeser turun)" : ""}. Total sekarang: ${daftarPelanggan.length} pelanggan.`);
         } catch (e) {
             // Bila penyusunan ulang terputus, coba pulihkan otomatis sekali
             if (rencana.sisip && bacaPending()) {
                 try { await pulihkanOperasiTertunda(); await loadDataPeriodeIni(); } catch (e2) {}
             }
-            infoPelangganTeks("❌ Gagal menambah: " + pesanErrorDB(e));
+            infoPelangganTeks(IK.x + " Gagal menambah: " + pesanErrorDB(e));
         }
     }
 
     async function gantiNamaPelanggan() {
         const lama = (document.getElementById("pilihNamaLama").value || "").trim();
         const baru = (document.getElementById("inputNamaGanti").value || "").trim().toUpperCase();
-        if (!lama) { infoPelangganTeks("❌ Pilih pelanggan yang mau diganti namanya."); return; }
-        if (!baru) { infoPelangganTeks("❌ Tulis nama barunya."); return; }
-        if (baru === lama) { infoPelangganTeks("❌ Nama baru sama dengan nama lama."); return; }
-        if (daftarPelanggan.includes(baru)) { infoPelangganTeks("❌ Nama <b>" + baru + "</b> sudah dipakai pelanggan lain."); return; }
+        if (!lama) { infoPelangganTeks(IK.x + " Pilih pelanggan yang mau diganti namanya."); return; }
+        if (!baru) { infoPelangganTeks(IK.x + " Tulis nama barunya."); return; }
+        if (baru === lama) { infoPelangganTeks(IK.x + " Nama baru sama dengan nama lama."); return; }
+        if (daftarPelanggan.includes(baru)) { infoPelangganTeks(IK.x + " Nama <b>" + baru + "</b> sudah dipakai pelanggan lain."); return; }
         const nBaris = hitungPelanggan.get(lama) || 0;
-        if (!confirm(`Ganti nama pemilik rumah:\n"${lama}" ➔ "${baru}"\n\nSeluruh riwayatnya (${nBaris} baris, semua periode) akan memakai nama baru.`)) return;
+        if (!confirm(`Ganti nama pemilik rumah:\n"${lama}" → "${baru}"\n\nSeluruh riwayatnya (${nBaris} baris, semua periode) akan memakai nama baru.`)) return;
         try {
-            infoPelangganTeks("⏳ Mengganti nama...");
+            infoPelangganTeks("Mengganti nama...");
             const n = await dbUpdateNama(lama, baru);
             const idx = daftarPelanggan.indexOf(lama);
             if (idx >= 0) daftarPelanggan[idx] = baru;
@@ -2041,29 +2080,29 @@
             simpanCacheDaftarPelanggan();
             document.getElementById("inputNamaGanti").value = "";
             await loadDataPeriodeIni();
-            infoPelangganTeks(`✅ Berhasil. ${n} baris riwayat kini atas nama <b>${baru}</b>.`);
+            infoPelangganTeks(IK.check + ` Berhasil. ${n} baris riwayat kini atas nama <b>${baru}</b>.`);
         } catch (e) {
-            infoPelangganTeks("❌ Gagal mengganti nama: " + pesanErrorDB(e));
+            infoPelangganTeks(IK.x + " Gagal mengganti nama: " + pesanErrorDB(e));
         }
     }
 
     async function hapusPelanggan() {
         const nama = (document.getElementById("pilihNamaHapus").value || "").trim();
-        if (!nama) { infoPelangganTeks("❌ Pilih pelanggan yang mau dihapus."); return; }
+        if (!nama) { infoPelangganTeks(IK.x + " Pilih pelanggan yang mau dihapus."); return; }
         const nBaris = hitungPelanggan.get(nama) || 0;
-        if (!confirm(`🔴 HAPUS PELANGGAN "${nama}"\n\n${nBaris} baris riwayat (SEMUA periode) akan dihapus PERMANEN.\nSebaiknya Export Database (backup) dulu sekarang.`)) return;
+        if (!confirm(`HAPUS PELANGGAN "${nama}"\n\n${nBaris} baris riwayat (SEMUA periode) akan dihapus PERMANEN.\nSebaiknya Export Database (backup) dulu sekarang.`)) return;
         if (!confirm(`KONFIRMASI TERAKHIR:\nYakin 100% hapus "${nama}" dari daftar?`)) return;
         try {
-            infoPelangganTeks("⏳ Menghapus...");
+            infoPelangganTeks("Menghapus...");
             await dbHapusPelanggan(nama);
             const idx = daftarPelanggan.indexOf(nama);
             if (idx >= 0) daftarPelanggan.splice(idx, 1);
             hitungPelanggan.delete(nama);
             simpanCacheDaftarPelanggan();
             await loadDataPeriodeIni();
-            infoPelangganTeks(`✅ <b>${nama}</b> dihapus. Total sekarang: ${daftarPelanggan.length} pelanggan.`);
+            infoPelangganTeks(IK.check + ` <b>${nama}</b> dihapus. Total sekarang: ${daftarPelanggan.length} pelanggan.`);
         } catch (e) {
-            infoPelangganTeks("❌ Gagal menghapus: " + pesanErrorDB(e));
+            infoPelangganTeks(IK.x + " Gagal menghapus: " + pesanErrorDB(e));
         }
     }
 
