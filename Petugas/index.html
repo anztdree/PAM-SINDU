@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0369a1">
     <title>BPSPAMS TIRTA MAKMUR - SINDUHARJO 08/04</title>
-    <!-- Library jsPDF (struk pembayaran individu) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
@@ -239,6 +237,31 @@
         .v2-wait { color: #b45309; }
         .v2-no   { color: #dc2626; }
         .v2-info { color: #64748b; }
+        /* Task 27: STRUK JUJUR (mix Varian A + B — hasil diskusi) */
+        /* Baris struk gaya struk belanja: nama + titik-titik + angka */
+        .struk-baris { display: flex; align-items: baseline; gap: 8px; font-size: .95rem; line-height: 2.05; }
+        .struk-baris .snm { color: var(--teks); font-weight: 700; white-space: nowrap; }
+        .struk-baris .snm small { color: #94a3b8; font-weight: 700; font-size: .76rem; }
+        .struk-baris .stitik { flex: 1; border-bottom: 2px dotted #cbd5e1; transform: translateY(-4px); min-width: 12px; }
+        .struk-baris .shg { font-weight: 800; color: var(--teks); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .struk-baris .shg-minus { color: #047857; }
+        /* Total besar satu-satunya — jawaban "bayar berapa" */
+        .struk-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 5px; padding-top: 8px; border-top: 2px solid var(--biru-tua); }
+        .struk-total-lbl { font-size: 1rem; font-weight: 800; letter-spacing: .5px; color: var(--biru-tua); }
+        .struk-total-ang { font-size: 1.8rem; font-weight: 800; color: var(--biru-tua); font-variant-numeric: tabular-nums; line-height: 1.15; }
+        /* Kotak keputusan cash: 1 kotak = 1 kesimpulan, warna halus (bukan alarm) */
+        .struk-hasil { border-radius: 10px; padding: 10px 12px; font-size: .9rem; line-height: 1.6; margin-top: 10px; }
+        .struk-hasil b { font-variant-numeric: tabular-nums; }
+        .hasil-netral { background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
+        .hasil-tunggu { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+        .hasil-lunas  { background: var(--hijau-muda); border: 1px solid #a7f3d0; color: #065f46; }
+        .hasil-kurang { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+        /* Rincian penyelesaian per komponen — tersembunyi balik tombol ▾ */
+        .struk-rincian { margin-top: 8px; border-top: 1px dashed #bae6fd; }
+        .struk-rincian summary { list-style: none; cursor: pointer; padding: 9px 2px 6px; font-size: .8rem; font-weight: 800; color: var(--biru); user-select: none; }
+        .struk-rincian summary::-webkit-details-marker { display: none; }
+        .struk-rincian[open] summary { color: var(--biru-tua); }
+        .struk-rincian .baris-ringkas { font-size: .88rem; line-height: 1.95; }
         .btn-aksi {
             border: none; border-radius: 999px; padding: 9px 16px; font-size: .95rem; font-weight: 800;
             cursor: pointer; color: #fff; flex: 0 0 auto; min-width: 70px; min-height: 38px;
@@ -330,9 +353,28 @@
         .baris-ringkas { display: flex; justify-content: space-between; gap: 8px; }
         .pemisah-ringkas { border: 0; border-top: 1px dashed #bae6fd; margin: 7px 0; }
         .total-baris { font-size: .95rem; color: var(--biru-tua); font-weight: 800; }
-        .baris-tombol { display: flex; gap: 6px; margin-bottom: 8px; }
-        .baris-tombol .btn { flex: 1; font-size: .78rem; padding: 10px 6px; }
-        .baris-tombol .btn-abu { flex: 0 0 62px; }
+        /* Tombol aksi modal — elegan (Task 29): 2 tombol utama + Batal terpisah di bawah */
+        .baris-tombol { display: flex; gap: 8px; margin-top: 14px; }
+        .baris-tombol .btn {
+            flex: 1; font-size: 1rem; padding: 14px 8px; min-height: 56px; border-radius: 13px;
+            letter-spacing: .5px; text-transform: uppercase;
+        }
+        .baris-tombol .btn-hijau {
+            background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 55%),
+                        linear-gradient(135deg, #047857, #059669);
+            box-shadow: 0 6px 16px -8px rgba(4,120,87,.55);
+        }
+        .baris-tombol .btn-amber {
+            background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 55%),
+                        linear-gradient(135deg, #d97706, #f59e0b);
+            box-shadow: 0 6px 16px -8px rgba(217,119,6,.5);
+        }
+        .tombol-batal {
+            width: 100%; margin-top: 12px; min-height: 46px;
+            background: #fff; color: #64748b; border: 1.5px solid var(--garis);
+            box-shadow: none; font-size: .9rem; font-weight: 700; letter-spacing: .3px;
+        }
+        .tombol-batal:active { background: #f1f5f9; }
 
         /* ===== TOAST ===== */
         .toast-wrap {
@@ -521,22 +563,23 @@
                 </div>
 
                 <div class="ringkasan">
-                    <div class="baris-ringkas"><span>Pemakaian Air:</span><b id="uiPemakaian">0 m&sup3;</b></div>
-                    <div class="baris-ringkas"><span>Biaya Air (x Rp 2.500):</span><b id="uiBiayaAir">Rp 0</b></div>
-                    <div class="baris-ringkas"><span>Beban per bulan:</span><b id="uiBiayaBeban">Rp 2.000</b></div>
-                    <div class="baris-ringkas"><span>Saldo Bulan Lalu (+/-):</span><b id="uiSaldoLalu">Rp 0</b></div>
-                    <hr class="pemisah-ringkas">
-                    <div class="baris-ringkas total-baris"><span>Total Bulan Ini:</span><b id="uiTotalHarusBayar">Rp 0</b></div>
-                    <div style="margin-top:6px;" id="uiCashStatus"></div>
+                    <div id="uiStruk"></div>
+                    <div class="struk-total">
+                        <span class="struk-total-lbl">TOTAL BAYAR</span>
+                        <b class="struk-total-ang" id="uiTotalHarusBayar">Rp 0</b>
+                    </div>
+                    <div id="uiCashStatus"></div>
+                    <details class="struk-rincian">
+                        <summary>🔍 Lihat rincian penyelesaian ▾</summary>
+                        <div id="uiRincianAlokasi" style="padding:0 2px 8px;"></div>
+                    </details>
                 </div>
 
                 <div class="baris-tombol">
                     <button class="btn btn-hijau" onclick="simpanSudahBayar()">Sudah Bayar ✅</button>
                     <button class="btn btn-amber" onclick="simpanBelumBayar()">Catat Saja 📝</button>
-                    <button class="btn btn-abu" onclick="tutupModal()">Batal</button>
                 </div>
-
-                <button class="btn btn-ungu btn-blok" onclick="cetakStrukPDF()">📄 Cetak Struk Individu PDF</button>
+                <button class="btn tombol-batal" onclick="tutupModal()">Batal</button>
             </div>
         </div>
     </div>
@@ -983,9 +1026,11 @@
 
             let saldoAktif = item.STATUS === 'Sudah Bayar' ? info.selisihAset : info.saldoLalu;
 
-            // Aturan tampilan: kalau satu-satunya yang belum dibayar HANYA biaya beban
-            // (maks. sebesar beban sebulan), kartu diperlakukan seperti pelanggan biasa —
-            // tanpa badge merah "Belum", tanpa background merah, tanpa teks "Utang Rp".
+            // Aturan warna kartu (Task 29):
+            //   1) Pakai air (meteran jalan) tapi belum ditandai bayar -> MERAH seperti tunggakan
+            //   2) Hanya beban (0 m3) & sisa saldo kecil (<= beban)    -> polos tanpa gradient
+            //   3) Deposit beneran (saldoAktif > beban)                -> HIJAU
+            //   4) Tunggakan beneran (saldo minus > beban)             -> MERAH
             let bebanItem = parseFloat(item.BIAYA_BEBAN) || BIAYA_BEBAN_STANDAR;
             let hanyaBeban;
             if (item.STATUS === 'Sudah Bayar') {
@@ -997,8 +1042,13 @@
             }
 
             let kelasSaldo = '';
-            if (saldoAktif > 0) kelasSaldo = 'kartu-deposit';
-            else if (saldoAktif < 0 && !hanyaBeban) kelasSaldo = 'kartu-tunggakan';
+            if (item.STATUS !== 'Sudah Bayar' && info.pemakaian > 0) {
+                kelasSaldo = 'kartu-tunggakan';
+            } else if (saldoAktif > 0) {
+                kelasSaldo = (info.pemakaian === 0 && saldoAktif <= bebanItem) ? '' : 'kartu-deposit';
+            } else if (saldoAktif < 0 && !hanyaBeban) {
+                kelasSaldo = 'kartu-tunggakan';
+            }
 
             let statusMiniHtml = '';
             let isMeterEntered = item.METER_AKHIR > 0 && item.METER_AKHIR >= item.METER_AWAL;
@@ -1226,77 +1276,81 @@
 
         let selisihCash = cash - totalHarusBayar;
 
-        document.getElementById('uiPemakaian').innerText = pemakaian + " m³";
-        document.getElementById('uiBiayaAir').innerText = "Rp " + biayaAir.toLocaleString('id-ID');
-        document.getElementById('uiBiayaBeban').innerText = "Rp " + beban.toLocaleString('id-ID');
-        
-        let elSaldo = document.getElementById('uiSaldoLalu');
-        if (saldoLalu > 0) {
-            elSaldo.innerHTML = `<span style="color:#16a34a;">(+) Rp ${saldoLalu.toLocaleString('id-ID')} (Deposit)</span>`;
-        } else if (saldoLalu < 0) {
-            elSaldo.innerHTML = `<span style="color:#dc2626;">(-) Rp ${Math.abs(saldoLalu).toLocaleString('id-ID')} (Utang)</span>`;
-        } else {
-            elSaldo.innerText = "Rp 0";
+        // ===== Task 27: STRUK JUJUR (mix Varian A + B — hasil diskusi) =====
+        // Bagian 1: baris struk gaya struk belanja — kenapa totalnya segitu
+        let utangLalu = saldoLalu < 0 ? Math.abs(saldoLalu) : 0;
+        let depositLalu = saldoLalu > 0 ? saldoLalu : 0;
+        let rp = n => 'Rp ' + Math.abs(n).toLocaleString('id-ID');
+        let barisStruk = (ikon, label, ket, angka, dikurangi) =>
+            '<div class="struk-baris"><span class="snm">' + ikon + ' ' + label + (ket ? ' <small>' + ket + '</small>' : '') + '</span>' +
+            '<span class="stitik"></span><span class="shg' + (dikurangi ? ' shg-minus' : '') + '">' + (dikurangi ? '− ' : '') + rp(angka) + '</span></div>';
+
+        let strukHtml = '';
+        if (biayaAir > 0) strukHtml += barisStruk('💧', 'Pakai air', pemakaian + ' m³ × ' + rp(TARIF_PER_M3), biayaAir);
+        strukHtml += barisStruk('📦', 'Beban bulan ini', '', beban);
+        if (utangLalu > 0) strukHtml += barisStruk('📥', 'Utang bulan lalu', '', utangLalu);
+        // deposit terpakai hanya sebesar yang benar-benar dipakai menutup tagihan,
+        // sisanya tetap deposit dan muncul sebagai "Sisa deposit" di kotak keputusan
+        if (depositLalu > 0) {
+            const depositDipakai = sisaDepositAwal > 0 ? (depositLalu - sisaDepositAwal) : depositLalu;
+            strukHtml += barisStruk('🏦', 'Deposit bulan lalu', sisaDepositAwal > 0 ? 'dipakai ' + rp(depositDipakai) : 'dikurangkan', depositDipakai, true);
         }
+        document.getElementById('uiStruk').innerHTML = strukHtml;
 
         document.getElementById('uiTotalHarusBayar').innerText = "Rp " + totalHarusBayar.toLocaleString('id-ID');
 
-        // Task 26: keterangan uang cash jadi pill berwarna (gaya A — bahasa lapangan)
-        // Task 26b: + rincian penyelesaian per komponen (Varian 2 — pilihan user)
+        // ===== Task 27 lanjutan: kotak keputusan + rincian penyelesaian tersembunyi =====
+        // Bagian 2: kotak keputusan — SELALU satu kesimpulan yang sama: diterima berapa / kurang / lebih
         let elStatus = document.getElementById('uiCashStatus');
-        let ketPill = (warna, teks) => `<span class="ket-pill ket-${warna}">${teks}</span>`;
-
-        let pillHtml = '';
+        let kotak = (kelas, isi) => { elStatus.innerHTML = '<div class="struk-hasil ' + kelas + '">' + isi + '</div>'; };
 
         if (sisaDepositAwal > 0) {
-            let depositAkhir = sisaDepositAwal + cash;
-            pillHtml = ketPill('lunas', `🏦 Lunas — potong deposit, sisa Rp ${depositAkhir.toLocaleString('id-ID')}`);
+            kotak('hasil-lunas', '🏦 <b>LUNAS</b> — ditutup pakai deposit bulan lalu.<br>➜ Sisa deposit: <b>' + rp(sisaDepositAwal + cash) + '</b>');
+        } else if (totalHarusBayar === 0) {
+            kotak('hasil-netral', '😌 Tidak ada tagihan bulan ini.');
         } else if (cash === 0) {
-            pillHtml = ketPill('netral', '🕒 Belum ada cash');
+            kotak('hasil-tunggu', '💵 Cash: <b>Rp 0</b> — belum ada uang masuk.<br>➜ Yang harus diterima petugas: <b>' + rp(totalHarusBayar) + '</b>');
         } else if (selisihCash === 0) {
-            pillHtml = ketPill('lunas', '✅ Pas — Lunas');
+            kotak('hasil-lunas', '✅ Uang <b>pas</b> ' + rp(cash) + ' — <b>LUNAS</b> 🎉');
         } else if (selisihCash > 0) {
-            pillHtml = ketPill('lunas', `💰 Lebih Rp ${selisihCash.toLocaleString('id-ID')} — masuk deposit`);
+            kotak('hasil-lunas', '✅ <b>LUNAS</b> — lebih <b>' + rp(selisihCash) + '</b> masuk deposit.');
         } else if (Math.abs(selisihCash) <= beban) {
             // kekurangan masih di area biaya beban (komisi petugas) — bukan utang air
-            pillHtml = ketPill('netral', `📝 Air lunas — kurang beban Rp ${Math.abs(selisihCash).toLocaleString('id-ID')}`);
+            kotak('hasil-netral', '📝 Air lunas — kurang beban <b>' + rp(selisihCash) + '</b>.');
         } else {
-            pillHtml = ketPill('kurang', `🙏 Kurang Rp ${Math.abs(selisihCash).toLocaleString('id-ID')} — boleh nyusul`);
+            kotak('hasil-kurang', '🙏 Kurang <b>' + rp(selisihCash) + '</b> — boleh nyusul, otomatis jadi utang bulan depan.');
         }
 
+        // Bagian 3: rincian penyelesaian per komponen (tersembunyi di balik "Lihat rincian")
         // urutan penyelesaian dana: air dulu -> utang lalu -> beban/komisi terakhir
-        let utangLalu = saldoLalu < 0 ? Math.abs(saldoLalu) : 0;
-        let pot = cash + Math.max(saldoLalu, 0);
-        let rp = n => 'Rp ' + Math.abs(n).toLocaleString('id-ID');
+        let pot = cash + depositLalu;
         let barisKomponen = (label, tagih) => {
             let tertutup = Math.min(pot, tagih);
             pot -= tertutup;
             let sisa = tagih - tertutup;
-            let kanan, cls, ikon;
-            if (sisa === 0)      { kanan = 'Lunas';                  cls = 'v2-ok';   ikon = '✔'; }
-            else if (tertutup > 0) { kanan = `Tertutup ${rp(tertutup)}`; cls = 'v2-wait'; ikon = '⏳'; }
-            else                 { kanan = 'Belum';                  cls = 'v2-no';   ikon = '⏳'; }
-            return `<div class="baris-ringkas"><span>${ikon} ${label} <span style="color:#94a3b8;">(${rp(tagih)})</span></span><b class="${cls}">${kanan}</b></div>`;
+            let kanan, cls;
+            if (sisa === 0)          { kanan = '✔ Lunas';                       cls = 'v2-ok'; }
+            else if (tertutup > 0)   { kanan = 'Dibayar ' + rp(tertutup) + ', sisa ' + rp(sisa); cls = 'v2-wait'; }
+            else if (cash === 0)     { kanan = '🕒 menunggu cash';              cls = 'v2-info'; }
+            else                     { kanan = 'belum tercukupi';               cls = 'v2-wait'; }
+            return '<div class="baris-ringkas"><span>' + label + ' <span style="color:#94a3b8;">(' + rp(tagih) + ')</span></span><b class="' + cls + '">' + kanan + '</b></div>';
         };
 
-        let rincian = `<div class="v2-detail">`
-            + `<div class="baris-ringkas"><span>Cash diterima:</span><b>${rp(cash)}</b></div>`
-            + barisKomponen('Biaya air', biayaAir);
-        if (utangLalu > 0) rincian += barisKomponen('Utang lalu', utangLalu);
-        rincian += barisKomponen('Beban per bulan', beban);
+        let rincianAlokasi = '<div class="baris-ringkas"><span>💵 Cash diterima</span><b>' + rp(cash) + '</b></div>'
+            + barisKomponen('💧 Biaya air', biayaAir);
+        if (utangLalu > 0) rincianAlokasi += barisKomponen('📥 Utang lalu', utangLalu);
+        rincianAlokasi += barisKomponen('📦 Beban bulan ini', beban);
 
         if (sisaDepositAwal > 0) {
-            rincian += `<div class="baris-ringkas"><span><b>Deposit akhir:</b></span><b class="v2-ok">${rp(sisaDepositAwal + cash)}</b></div>`;
+            rincianAlokasi += '<div class="baris-ringkas"><span><b>Deposit akhir:</b></span><b class="v2-ok">' + rp(sisaDepositAwal + cash) + '</b></div>';
         } else if (selisihCash > 0) {
-            rincian += `<div class="baris-ringkas"><span><b>Sisa cash → deposit baru:</b></span><b class="v2-ok">${rp(selisihCash)}</b></div>`;
+            rincianAlokasi += '<div class="baris-ringkas"><span><b>Sisa cash → deposit baru:</b></span><b class="v2-ok">' + rp(selisihCash) + '</b></div>';
         } else if (selisihCash === 0) {
-            rincian += `<div class="baris-ringkas"><span><b>Sisa cash:</b></span><b class="v2-info">Rp 0</b></div>`;
+            rincianAlokasi += '<div class="baris-ringkas"><span><b>Sisa cash:</b></span><b class="v2-info">Rp 0</b></div>';
         } else {
-            rincian += `<div class="baris-ringkas"><span><b>Kurang (nyusul):</b></span><b class="v2-no">${rp(selisihCash)}</b></div>`;
+            rincianAlokasi += '<div class="baris-ringkas"><span><b>Kurang — boleh nyusul:</b></span><b class="v2-wait">' + rp(selisihCash) + '</b></div>';
         }
-        rincian += `</div>`;
-
-        elStatus.innerHTML = pillHtml + rincian;
+        document.getElementById('uiRincianAlokasi').innerHTML = rincianAlokasi;
     }
 
     async function simpanSudahBayar() {
@@ -1367,71 +1421,6 @@
         } catch (e) {
             alert("❌ Gagal Menyimpan: " + pesanErrorDB(e));
         }
-    }
-
-    function cetakStrukPDF() {
-        if (selectedIndex === null) return;
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [95, 160] });
-
-        let item = excelData[selectedIndex];
-        let info = hitungDetailPelanggan(item);
-
-        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.8); doc.rect(4, 4, 152, 87);
-        doc.setFillColor(30, 64, 175); doc.rect(4, 4, 152, 16, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-        doc.text("BUKTI PEMBAYARAN AIR - BPSPAMS TIRTA MAKMUR", 80, 11, { align: 'center' });
-        doc.setFontSize(8); doc.setFont("helvetica", "normal");
-        doc.text("SINDUHARJO 08/04, SOMOPURO, JOGONALAN", 80, 16, { align: 'center' });
-
-        doc.setTextColor(30, 41, 59); doc.setFontSize(8.5);
-        doc.setFont("helvetica", "bold"); doc.text("Nama Pelanggan", 8, 25);
-        doc.setFont("helvetica", "normal"); doc.text(": " + item.NAMA, 36, 25);
-        doc.setFont("helvetica", "bold"); doc.text("Periode / Bulan", 8, 30);
-        doc.setFont("helvetica", "normal"); doc.text(": " + getPeriodeText(), 36, 30);
-
-        doc.setFont("helvetica", "bold"); doc.text("Status Bayar", 100, 25);
-        doc.setFont("helvetica", "normal"); doc.text(": " + item.STATUS, 122, 25);
-        doc.setFont("helvetica", "bold"); doc.text("Angka Meteran", 100, 30);
-        doc.setFont("helvetica", "normal"); doc.text(`: ${item.METER_AWAL} (Awal) - ${item.METER_AKHIR} (Akhir)`, 122, 30);
-
-        doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.4); doc.line(8, 33, 152, 33);
-
-        let startY = 38;
-        doc.text("1. Pemakaian Air (" + info.pemakaian + " m³ x Rp " + TARIF_PER_M3.toLocaleString('id-ID') + ")", 8, startY);
-        doc.text("Rp " + info.biayaAir.toLocaleString('id-ID'), 152, startY, { align: 'right' });
-
-        doc.text("2. Biaya Beban Administrasi", 8, startY + 5);
-        doc.text("Rp " + info.beban.toLocaleString('id-ID'), 152, startY + 5, { align: 'right' });
-
-        doc.text("3. Saldo Bulan Lalu (Deposit / Tunggakan)", 8, startY + 10);
-        let saldoTxt = (info.saldoLalu >= 0 ? "(+) Rp " : "(-) Rp ") + Math.abs(info.saldoLalu).toLocaleString('id-ID');
-        doc.text(saldoTxt, 152, startY + 10, { align: 'right' });
-
-        doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.5); doc.line(8, startY + 14, 152, startY + 14);
-
-        doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(30, 64, 175);
-        doc.text("TOTAL HARUS DIBAYAR", 8, startY + 19);
-        doc.text("Rp " + info.totalHarusBayar.toLocaleString('id-ID'), 152, startY + 19, { align: 'right' });
-
-        doc.setFillColor(248, 250, 252); doc.rect(8, startY + 23, 90, 16, 'F');
-        doc.setDrawColor(203, 213, 225); doc.rect(8, startY + 23, 90, 16, 'S');
-
-        doc.setFontSize(8); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
-        doc.text("Uang Diterima (Cash) : Rp " + info.cash.toLocaleString('id-ID'), 10, startY + 28);
-        
-        let ketKelebihan = "";
-        if (info.selisihAset > 0) ketKelebihan = "(+) Deposit: Rp " + info.selisihAset.toLocaleString('id-ID');
-        else if (info.selisihAset < 0) ketKelebihan = "(-) Utang: Rp " + Math.abs(info.selisihAset).toLocaleString('id-ID');
-        else ketKelebihan = "Lunas (Uang Pas)";
-        
-        doc.setFont("helvetica", "bold"); doc.text("Keterangan Saldo    : " + ketKelebihan, 10, startY + 34);
-
-        doc.setTextColor(30, 41, 59); doc.setFont("helvetica", "normal");
-        doc.text("Petugas Pemungut,", 120, startY + 27, { align: 'center' });
-        doc.setFont("helvetica", "bold"); doc.text("( " + NAMA_PETUGAS + " )", 120, startY + 36, { align: 'center' });
-
-        doc.save(`STRUK_${item.NAMA}_${getPeriodeText()}.pdf`);
     }
 
         /* ============================================================
