@@ -339,11 +339,11 @@
             </span>
         </div>
         <div class="header-export">
-            <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')" title="Backup berupa file database utuh (.db)">
+            <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')" title="Backup file database SQLite (.db) — selalu terbaru dari data live">
                 <span class="ik" aria-hidden="true">💾</span>
-                <span class="tx"><b>Export .db</b><small>File database utuh</small></span>
+                <span class="tx"><b>Export .db</b><small>Database — selalu terbaru</small></span>
             </button>
-            <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')" title="Backup berupa dump teks SQL (.sql)">
+            <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')" title="Backup dump teks SQL (.sql) untuk Import di petugas / upload ke website">
                 <span class="ik" aria-hidden="true">🗂️</span>
                 <span class="tx"><b>Export .sql</b><small>Dump teks SQL</small></span>
             </button>
@@ -1455,15 +1455,21 @@
     /* ============================================================
        EXPORT DATABASE (BACKUP LENGKAP) - 2 MODE
        Tombolnya ada di HEADER (di bawah judul):
-       mode "db"  : unduh file pam.db ASLI dari folder aplikasi
-                    (byte-perfect, bisa dipasang ulang lewat
-                    "Attach existing database"). Bila file tidak
-                    bisa diambil / terindikasi basi, fallback:
-                    dump .sql dari data live (data tetap lengkap).
+       mode "db"  : file pam.db SEGAR DIBANGUN DARI DATA LIVE via
+                    sql.js (SQLite asli untuk browser): struktur
+                    tabel + index + trigger persis pam.db asli,
+                    isinya data terbaru saat tombol ditekan.
+                    Jadi export .db SELALU berhasil dan SELALU
+                    mutakhir - tidak tergantung file pam.db di
+                    folder. Bila pustaka sql.js tidak tersedia,
+                    fallback: unduh file pam.db asli di folder
+                    (divalidasi dulu); bila itu pun gagal:
+                    dump .sql (data tetap lengkap).
        mode "sql" : dump teks .sql LANGSUNG dari data live lewat
                     API baca gratis - selalu terbaru, formatnya
                     sama dengan pam.sql sehingga bisa dipulihkan
-                    lewat tombol Import.
+                    lewat tombol Import (petugas) dan diupload
+                    ke website (Menu Import).
        ============================================================ */
     function namaFileBackup(ext) {
         const d = new Date();
@@ -1508,9 +1514,74 @@
             nilai + ";\n";
     }
 
+    // Muat pustaka sql.js sesuai kebutuhan (sql-wasm.js + sql-wasm.wasm
+    // diletakkan di folder yang sama dengan index.html). Hasilnya
+    // di-cache agar export berikutnya lebih cepat.
+    let sqlJsPromise = null;
+    function muatSqlJs() {
+        if (sqlJsPromise) return sqlJsPromise;
+        sqlJsPromise = new Promise((resolve, reject) => {
+            if (typeof initSqlJs === "function") { resolve(); return; }
+            const s = document.createElement("script");
+            s.src = "sql-wasm.js";
+            s.onload = () => {
+                if (typeof initSqlJs === "function") resolve();
+                else reject(new Error("sql-wasm.js dimuat tetapi pustaka tidak dikenal"));
+            };
+            s.onerror = () => reject(new Error("pustaka sql-wasm.js / sql-wasm.wasm tidak ditemukan di folder aplikasi"));
+            document.head.appendChild(s);
+        });
+        return sqlJsPromise;
+    }
+
+    // Bangun file database SQLite LENGKAP dari data live:
+    // struktur (tabel + index unik + trigger updated_at) persis pam.db asli.
+    // Hasilnya file .db sungguhan yang bisa dipasang ulang lewat
+    // "Attach existing database".
+    function bangunDbDariBaris(SQL, baris) {
+        const db = new SQL.Database();
+        db.exec("CREATE TABLE transaksi_pelanggan (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "periode TEXT NOT NULL," +
+            "nama TEXT NOT NULL," +
+            "meter_awal INTEGER DEFAULT 0," +
+            "meter_akhir INTEGER DEFAULT 0," +
+            "cash INTEGER DEFAULT 0," +
+            "biaya_beban INTEGER DEFAULT 2000," +
+            "saldo_lalu INTEGER DEFAULT 0," +
+            "status TEXT NOT NULL DEFAULT 'Belum Bayar' CHECK (status IN ('Belum Bayar','Sudah Bayar'))," +
+            "updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')))");
+        db.exec("CREATE UNIQUE INDEX unique_pelanggan_periode ON transaksi_pelanggan (periode, nama)");
+        db.exec("CREATE TRIGGER trg_transaksi_updated_at AFTER UPDATE ON transaksi_pelanggan BEGIN " +
+            "UPDATE transaksi_pelanggan SET updated_at = datetime('now','localtime') WHERE id = NEW.id; END");
+        const stmt = db.prepare(
+            "INSERT INTO transaksi_pelanggan (id, periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status, updated_at) " +
+            "VALUES (?,?,?,?,?,?,?,?,?,?)"
+        );
+        let maxId = 0;
+        baris.forEach(r => {
+            const id = Number(r.id) || 0;
+            stmt.run([
+                id > 0 ? id : null,
+                String(r.periode || ""),
+                String(r.nama || ""),
+                num(r.meter_awal), num(r.meter_akhir), num(r.cash),
+                num(r.biaya_beban), num(r.saldo_lalu),
+                r.status === "Sudah Bayar" ? "Sudah Bayar" : "Belum Bayar",
+                String(r.updated_at || "") || null
+            ]);
+            if (id > maxId) maxId = id;
+        });
+        stmt.free();
+        if (maxId > 0) db.run("UPDATE sqlite_sequence SET seq = ? WHERE name = 'transaksi_pelanggan'", [maxId]);
+        const bytes = db.export();
+        db.close();
+        return bytes;
+    }
+
     async function exportDatabase(mode) {
-        // mode "db"  : unduh file pam.db ASLI dari folder aplikasi
-        //              (fallback otomatis ke .sql bila file tak bisa dipakai)
+        // mode "db"  : bangun pam.db SEGAR dari data live via sql.js
+        //              (fallback: file pam.db asli, lalu .sql)
         // mode "sql" : dump teks .sql langsung dari data live (selalu terbaru)
         mode = (mode === "sql") ? "sql" : "db";
         const btnDb = document.getElementById("btnExportDb");
@@ -1532,48 +1603,60 @@
             const ringkas = baris.length + " baris, " + periodeUnik.length + " periode";
 
             let pakaiFileDb = false;
-            // 2) Mode "db": coba ambil file pam.db asli dari folder aplikasi
+            let sumberDb = "";
+            // 2) Mode "db" - JALUR UTAMA: bangun file .db SEGAR dari data
+            //    live via sql.js. Selalu terbaru & selalu valid.
             if (mode === "db") {
                 try {
-                    const res = await fetch("pam.db?v=" + Date.now());
-                    if (res.ok) {
-                        const buf = await res.arrayBuffer();
-                        const bytes = new Uint8Array(buf);
-                        // Validasi: harus file SQLite asli ("SQLite format 3")
-                        let valid = bytes.length > 100;
-                        const tanda = "SQLite format 3";
-                        for (let i = 0; i < tanda.length && valid; i++) {
-                            if (bytes[i] !== tanda.charCodeAt(i)) valid = false;
-                        }
-                        if (!valid) alasanFallback = "file pam.db di folder bukan database SQLite yang valid";
-                        // Guard kebaruan: waktu file pam.db di server tidak boleh
-                        // lebih TUA dari tulisan terakhir di database live
-                        // (toleransi 60 menit). Kalau lebih tua, kemungkinan besar
-                        // file pam.db di folder BUKAN database yang sedang aktif.
-                        if (valid) {
-                            const lm = res.headers.get("Last-Modified");
-                            let maxUpd = 0;
-                            baris.forEach(r => {
-                                const t = Date.parse(String(r.updated_at || "").replace(" ", "T"));
-                                if (!isNaN(t) && t > maxUpd) maxUpd = t;
-                            });
-                            if (lm && maxUpd) {
-                                const tFile = Date.parse(lm);
-                                if (!isNaN(tFile) && tFile + 3600000 < maxUpd) {
-                                    valid = false;
-                                    alasanFallback = "file pam.db di folder lebih lama dari data terbaru (kemungkinan bukan database yang sedang aktif)";
+                    await muatSqlJs();
+                    const SQL = await initSqlJs({ locateFile: f => f });
+                    const bytes = bangunDbDariBaris(SQL, baris);
+                    unduhBlob(new Blob([bytes], { type: "application/octet-stream" }), namaFileBackup("db"));
+                    pakaiFileDb = true;
+                    sumberDb = "database segar dibangun dari data live (" + baris.length + " baris) - selalu terbaru";
+                } catch (e) {
+                    sqlJsPromise = null; // boleh coba muat ulang nanti
+                    alasanFallback = String((e && e.message) ? e.message : e);
+                    // 2b) FALLBACK: file pam.db asli di folder aplikasi.
+                    //     Validasi: harus file SQLite asli ("SQLite format 3")
+                    //     dan tidak lebih tua dari data terbaru (toleransi 60 menit).
+                    try {
+                        const res = await fetch("pam.db?v=" + Date.now());
+                        if (res.ok) {
+                            const buf = await res.arrayBuffer();
+                            const bytes = new Uint8Array(buf);
+                            let valid = bytes.length > 100;
+                            const tanda = "SQLite format 3";
+                            for (let i = 0; i < tanda.length && valid; i++) {
+                                if (bytes[i] !== tanda.charCodeAt(i)) valid = false;
+                            }
+                            if (!valid) alasanFallback += " - file pam.db di folder bukan database SQLite yang valid";
+                            if (valid) {
+                                const lm = res.headers.get("Last-Modified");
+                                let maxUpd = 0;
+                                baris.forEach(r => {
+                                    const t = Date.parse(String(r.updated_at || "").replace(" ", "T"));
+                                    if (!isNaN(t) && t > maxUpd) maxUpd = t;
+                                });
+                                if (lm && maxUpd) {
+                                    const tFile = Date.parse(lm);
+                                    if (!isNaN(tFile) && tFile + 3600000 < maxUpd) {
+                                        valid = false;
+                                        alasanFallback += " - file pam.db di folder lebih lama dari data terbaru (kemungkinan bukan database yang sedang aktif)";
+                                    }
                                 }
                             }
+                            if (valid) {
+                                unduhBlob(new Blob([buf], { type: "application/octet-stream" }), namaFileBackup("db"));
+                                pakaiFileDb = true;
+                                sumberDb = "file pam.db asli dari folder (pustaka sql.js tidak tersedia)";
+                            }
+                        } else {
+                            alasanFallback += " - file pam.db juga tidak ditemukan di folder aplikasi";
                         }
-                        if (valid) {
-                            unduhBlob(new Blob([buf], { type: "application/octet-stream" }), namaFileBackup("db"));
-                            pakaiFileDb = true;
-                        }
-                    } else {
-                        alasanFallback = "file pam.db tidak ditemukan di folder aplikasi";
+                    } catch (e2) {
+                        alasanFallback += " - file pam.db juga tidak bisa diambil dari folder aplikasi";
                     }
-                } catch (e) {
-                    alasanFallback = "file pam.db tidak bisa diambil dari folder aplikasi";
                 }
             }
 
@@ -1587,12 +1670,15 @@
                 ? "🗂️ Backup .sql terunduh (" + ringkas + ")"
                 : (pakaiFileDb
                     ? "💾 Backup .db terunduh (" + ringkas + ")"
-                    : "💾 File .db tak tersedia — backup .sql terunduh (" + ringkas + ")"));
+                    : "💾 Export .db gagal — backup .sql terunduh (" + ringkas + ")"));
             if (info) {
                 info.innerHTML = "✅ <b>Backup terakhir:</b> " + namaFileBackup(pakaiFileDb ? "db" : "sql") +
                     " (" + ringkas + ") — format <b>." + (pakaiFileDb ? "db" : "sql") + "</b>." +
+                    (mode === "db" && pakaiFileDb
+                        ? "<br>💾 " + sumberDb + "."
+                        : "") +
                     (mode === "db" && !pakaiFileDb
-                        ? "<br>⚠️ " + (alasanFallback || "File pam.db tidak bisa dipakai") +
+                        ? "<br>⚠️ " + (alasanFallback || "Export .db tidak bisa dilakukan") +
                           " — yang diunduh: backup <b>.sql</b> (data tetap lengkap &amp; terbaru)."
                         : "") +
                     "<br>" + (pakaiFileDb
