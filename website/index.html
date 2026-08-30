@@ -63,6 +63,24 @@
             box-shadow: 0 3px 10px rgba(2,32,71,.28);
         }
         .status-pill .lbl { color: var(--teks-samar); font-weight: 700; }
+        /* indikator status: LED denyut + spinner (pengganti emoji) */
+        .st-led {
+            width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+            margin-right: 3px; vertical-align: 0;
+            animation: denyutLed 1.8s ease-out infinite;
+        }
+        @keyframes denyutLed {
+            0% { box-shadow: 0 0 0 0 rgba(2,32,71,.28); }
+            70% { box-shadow: 0 0 0 7px rgba(2,32,71,0); }
+            100% { box-shadow: 0 0 0 0 rgba(2,32,71,0); }
+        }
+        .st-spinner {
+            width: 11px; height: 11px; border-radius: 50%; display: inline-block;
+            margin-right: 3px; vertical-align: -1px;
+            border: 2px solid rgba(2,32,71,.14); border-top-color: currentColor;
+            animation: putarStatus .8s linear infinite;
+        }
+        @keyframes putarStatus { to { transform: rotate(360deg); } }
         .ombak { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 30px; display: block; z-index: 1; }
         .btn-impor {
             margin-left: auto; flex: 0 0 auto;
@@ -216,8 +234,19 @@
         }
         input.field:focus, select.field:focus { border-color: var(--biru-terang); box-shadow: 0 0 0 3px rgba(2,132,199,.14); }
         .kotak-cari { position: relative; }
-        .ikon-cari { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: .95rem; opacity: .55; }
-        .kotak-cari input.field { padding-left: 42px; border-radius: 999px; }
+        .ikon-cari {
+            position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+            width: 32px; height: 32px; border-radius: 10px; background: var(--cyan-muda);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--biru-tua); pointer-events: none;
+        }
+        .kotak-cari input.field { padding-left: 48px; border-radius: 999px; }
+        /* wadah ikon pastel (senada ikon menu Setting) */
+        .wadah-ikon {
+            flex: 0 0 30px; height: 30px; border-radius: 10px; background: var(--cyan-muda);
+            display: inline-flex; align-items: center; justify-content: center; color: var(--biru-tua);
+        }
+        .wadah-ikon.hijau { background: var(--hijau-muda); color: #047857; }
 
         /* ===== DAFTAR PELANGGAN (REFERENSI B — nama & tagihan besar, tanpa label kapital kecil) ===== */
         .daftar-pelanggan { display: flex; flex-direction: column; gap: 10px; }
@@ -232,16 +261,39 @@
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .pel-info {
-            display: block; margin-top: 4px; text-align: center;
+            display: block; margin-top: 4px; text-align: left;
+            padding-left: 40px; /* sejajar kolom nama — tidak menempel ke zona badge */
             font-size: .95rem; font-weight: 600; color: #64748b;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .pel-info b { color: var(--teks); font-weight: 800; font-variant-numeric: tabular-nums; }
+        /* panah meter vektor tipis (pengganti karakter ➔) */
+        .panah-meter { width: 14px; height: 14px; vertical-align: -2px; color: #94a3b8; margin: 0 1px; }
+        .nota-baris .panah-meter { width: 12px; height: 12px; vertical-align: -2px; }
         .pel-mini {
             display: inline-flex; align-items: center; flex: 0 0 auto; padding: 6px 14px;
             border-radius: 999px; font-size: .9rem; font-weight: 800; white-space: nowrap;
         }
-        .pel-mini-lunas { background: var(--hijau-muda); color: #047857; border: 1px solid #a7f3d0; }
+        /* Badge LUNAS — fusi gradasi + glow + kilau + sentuhan stempel miring (diperbesar) */
+        .pel-mini-lunas {
+            position: relative; overflow: hidden;
+            padding: 8px 20px 8px 16px;
+            border-radius: 10px;
+            font-size: 1rem; letter-spacing: .5px;
+            color: #fff;
+            background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+            border: 1.6px dashed rgba(255,255,255,.75);
+            box-shadow: 0 0 0 3px rgba(16,185,129,.15), 0 5px 16px rgba(16,185,129,.42);
+            transform: rotate(-2.5deg);
+        }
+        .pel-mini-lunas svg { flex: 0 0 auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
+        .pel-mini-lunas::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 36%; left: -55%;
+            background: linear-gradient(105deg, transparent, rgba(255,255,255,.6), transparent);
+            transform: skewX(-18deg);
+            animation: kilauLunas 3s ease-in-out infinite;
+        }
+        @keyframes kilauLunas { 0% { left: -55%; } 55%, 100% { left: 135%; } }
         .pel-bawah {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
             margin-top: 9px; padding-top: 9px; border-top: 2px solid #eef2f7;
@@ -281,7 +333,7 @@
         .nota-banner { border-radius: 9px; text-align: center; padding: 10px 12px; margin-bottom: 10px; }
         .nota-banner-merah { background: #fef2f2; border: 1.5px solid #fecaca; color: #b91c1c; }
         .nota-banner-hijau { background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #047857; }
-        .nota-banner .banner-utama { font-size: .8rem; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+        .nota-banner .banner-utama { font-size: .8rem; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .nota-banner .banner-angka { font-size: 1.5rem; font-weight: 900; line-height: 1.25; font-variant-numeric: tabular-nums; }
         .nota-banner .banner-sub { font-size: .74rem; font-weight: 700; opacity: .9; margin-top: 2px; }
         .nota-bulan { padding: 8px 10px; border: 1px dashed #cbd5e1; border-radius: 9px; margin-bottom: 8px; background: #fbfdff; }
@@ -332,6 +384,8 @@
             transition: border-color .15s ease, background .15s ease; margin-bottom: 8px;
         }
         .dropzone.dragover { border-color: var(--biru-terang); background: var(--cyan-muda); color: var(--biru-tua); }
+        .dropzone svg { vertical-align: -3px; margin-right: 2px; }
+        .kosong-cari svg { vertical-align: -3px; margin-right: 3px; color: #94a3b8; }
 
         /* ===== MODAL ===== */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8,47,73,.55); z-index: 100; overflow-y: auto; backdrop-filter: blur(3px); }
@@ -345,7 +399,7 @@
             background: linear-gradient(135deg, var(--biru-tua), var(--biru-terang));
             color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
         }
-        .modal-kepala h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+        .modal-kepala h3 { margin: 0; font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
         .tombol-tutup {
             background: rgba(255,255,255,.2); border: none; color: #fff; width: 30px; height: 30px;
             border-radius: 999px; font-size: .85rem; cursor: pointer; line-height: 1; flex: 0 0 30px;
@@ -426,7 +480,7 @@
                         </svg>
                         Setting
                     </b>
-                    <button class="popup-tutup" onclick="tutupPopupImpor()" aria-label="Tutup">✕</button>
+                    <button class="popup-tutup" onclick="tutupPopupImpor()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
                 </div>
 
                 <!-- GERBANG PASSWORD (muncul duluan saat klik SETTING) -->
@@ -472,8 +526,8 @@
                     <button class="btn-kembali" onclick="kembaliMenuSetting()">&lsaquo; Menu Setting</button>
                     <div id="isiImpor">
                         <p class="catatan" style="margin:4px 0 8px;">Ambil file dari aplikasi utama (<b>Export .sql</b>). Periode di file mengganti periode yang sama di database — periode lain tetap aman.</p>
-                        <div class="dropzone" id="dropZone">⬇️ Seret &amp; letakkan file .sql di sini</div>
-                        <button class="btn btn-ungu btn-blok" onclick="document.getElementById('fileSql').click()">📁 Pilih File .sql</button>
+                        <div class="dropzone" id="dropZone"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg> Seret &amp; letakkan file .sql di sini</div>
+                        <button class="btn btn-ungu btn-blok" onclick="document.getElementById('fileSql').click()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg> Pilih File .sql</button>
                         <input type="file" id="fileSql" accept=".sql,.txt" style="display:none;">
                         <div id="infoMuat" class="info-inline"></div>
                     </div>
@@ -483,14 +537,14 @@
                 <div id="panelLaporan" style="display:none;">
                     <button class="btn-kembali" onclick="kembaliMenuSetting()">&lsaquo; Menu Setting</button>
                     <p class="catatan" style="margin:4px 0 8px;">Laporan PDF untuk <b>bulan ini saja</b>: <b id="lblPeriodeLaporan">—</b>. Isi seperti buku catatan: nomor, nama pelanggan, meteran awal–akhir, pemakaian air, dan iuran air. <b>Beban tidak dicantumkan</b> — yang hanya bayar beban ditulis kosong; yang belum bayar (meteran berjalan) diblok kuning <b>tanpa angka rupiah</b>.</p>
-                    <button class="btn btn-primer btn-blok" onclick="exportLaporanPDF()">📄 Buat Laporan PDF</button>
+                    <button class="btn btn-primer btn-blok" onclick="exportLaporanPDF()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Buat Laporan PDF</button>
                 </div>
             </div>
         </div>
         <div class="header-status">
             <span class="status-pill">
                 <span class="lbl">Status :</span>
-                <span id="statusSumber" style="color:#d97706;">⏳ Memuat data...</span>
+                <span id="statusSumber" style="color:#d97706;"><span class="st-spinner"></span>Memuat data...</span>
             </span>
         </div>
         <svg class="ombak" viewBox="0 0 1440 44" preserveAspectRatio="none" aria-hidden="true">
@@ -547,16 +601,16 @@
     <!-- PENCARIAN -->
     <div class="card">
         <div class="kotak-cari">
-            <span class="ikon-cari">🔍</span>
+            <span class="ikon-cari"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
             <input type="text" id="searchInput" class="field" oninput="cariPelanggan()" placeholder="Cari nama pelanggan...">
         </div>
     </div>
 
     <!-- DAFTAR PELANGGAN -->
     <div class="card">
-        <div class="judul-kartu">🏠 Daftar Pelanggan<span class="mj-sub" id="hitungDaftar"></span></div>
+        <div class="judul-kartu"><span class="wadah-ikon hijau"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 8.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5"/><path d="M9 21v-6h6v6"/></svg></span>Daftar Pelanggan<span class="mj-sub" id="hitungDaftar"></span></div>
         <div id="tabelBody" class="daftar-pelanggan"></div>
-        <div id="kosongPencarian" class="kosong-cari" style="display:none;">😕 Tidak ada pelanggan yang cocok dengan pencarian.</div>
+        <div id="kosongPencarian" class="kosong-cari" style="display:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="m8.5 8.5 5 5"/><path d="m13.5 8.5-5 5"/></svg>Tidak ada pelanggan yang cocok dengan pencarian.</div>
         <div id="kosongData" style="display:none;">
             <div class="catatan" style="text-align:center;">Belum ada data yang bisa ditampilkan.</div>
             <div class="info-inline">
@@ -580,8 +634,8 @@
     <div class="modal-content-wrapper">
         <div class="form-box">
             <div class="modal-kepala">
-                <h3>🧾 Nota Pelanggan</h3>
-                <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup">✕</button>
+                <h3><span class="wadah-ikon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M13 16H8"/></svg></span>Nota Pelanggan</h3>
+                <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             </div>
             <div class="modal-isi">
                 <div id="notaIsi"><!-- nota digenerate oleh JS --></div>
@@ -607,6 +661,9 @@
 
     const TARIF_PER_M3 = 2500;        // sama seperti aplikasi utama
     const BIAYA_BEBAN_STANDAR = 2000; // sama seperti aplikasi utama
+
+    // panah meter vektor tipis (pengganti karakter ➔)
+    const PANAH = '<svg class="panah-meter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
 
     let semuaBaris = [];    // seluruh baris hasil parse (urutan sesuai file)
     let daftarPeriode = []; // teks periode unik, urut kronologis
@@ -748,9 +805,15 @@
     }
 
     /* ---------- STATUS SUMBER DATA ---------- */
-    function setStatusSumber(teks, warna) {
+    function setStatusSumber(teks, warna, ikon) {
         const el = document.getElementById("statusSumber");
-        if (el) { el.innerText = teks; el.style.color = warna; }
+        if (el) {
+            const ik = ikon === "putar" ? '<span class="st-spinner"></span>'
+                     : ikon === "led" ? '<span class="st-led" style="background:' + warna + '"></span>'
+                     : "";
+            el.innerHTML = ik + teks;
+            el.style.color = warna;
+        }
     }
 
     /* ---------- MUAT DATA (utama: DATABASE via api.php) ---------- */
@@ -773,7 +836,7 @@
         // default tampil: periode TERBARU yang ada datanya
         idxPeriode = daftarPeriode.length ? daftarPeriode.length - 1 : 0;
         renderSemua();
-        setStatusSumber(dariDb ? "🟢 Terhubung" : "🟡 Terhubung (cadangan)", dariDb ? "#059669" : "#d97706");
+        setStatusSumber(dariDb ? "Terhubung" : "Terhubung (cadangan)", dariDb ? "#059669" : "#d97706", "led");
         const info = document.getElementById("infoMuat");
         if (info) info.innerHTML = "Sumber aktif: <b>" + namaSumber + "</b> — <b>" + semuaBaris.length +
             "</b> baris, " + daftarPeriode.length + " periode: " + (daftarPeriode.join(" • ") || "-");
@@ -790,7 +853,7 @@
     }
 
     async function muatData() {
-        setStatusSumber("⏳ Memuat data...", "#d97706");
+        setStatusSumber("Memuat data...", "#d97706", "putar");
 
         // 1) UTAMA: database MySQL via api.php
         try {
@@ -821,7 +884,7 @@
         modeSumber = "db";
         semuaBaris = []; daftarPeriode = []; excelData = [];
         renderSemua();
-        setStatusSumber("🔴 Terputus", "#dc2626");
+        setStatusSumber("Terputus", "#dc2626", "led");
         showToast("Database tidak terjangkau dan pam.sql tidak ditemukan", "gagal");
     }
 
@@ -859,7 +922,7 @@
                 "Periode yang ada di file akan DIGANTI dengan isi file (tidak dobel).\n" +
                 "Periode lain di database tetap aman.")) return;
 
-            setStatusSumber("⏳ Mengirim ke database...", "#d97706");
+            setStatusSumber("Mengirim ke database...", "#d97706", "putar");
             fetch("api.php?action=import_rows", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -873,7 +936,7 @@
                 muatData(); // baca ulang isi database terbaru
             })
             .catch(err => {
-                setStatusSumber("🔴 Data tidak tersimpan", "#dc2626");
+                setStatusSumber("Data tidak tersimpan", "#dc2626", "led");
                 showToast("Gagal kirim ke database: " + err.message, "gagal");
             });
         };
@@ -969,15 +1032,15 @@
             let isMeterEntered = item.meter_akhir > 0 && item.meter_akhir >= item.meter_awal;
 
             if (item.status === 'Sudah Bayar') {
-                statusMiniHtml = `<span class="pel-mini pel-mini-lunas">✅ Lunas</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-lunas"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Lunas</span>`;
             } else {
                 // Yang belum bayar TIDAK diberi badge apapun — hanya yang lunas yang bertanda (keputusan user)
                 statusMiniHtml = '';
             }
 
             let meterTeks = isMeterEntered
-                ? `${item.meter_awal} ➔ ${item.meter_akhir}`
-                : `${item.meter_awal} ➔ ?`;
+                ? `${item.meter_awal} ${PANAH} ${item.meter_akhir}`
+                : `${item.meter_awal} ${PANAH} ?`;
 
             // Biaya beban (pelanggan tanpa pemakaian air) TIDAK ditampilkan di dashboard —
             // lengkapnya baru muncul lewat tombol LIHAT (modal rincian).
@@ -1125,11 +1188,11 @@
                         <div><b>Nama Pelanggan</b> : ${item.nama}</div>
                     </div>
                     <div class="nota-banner nota-banner-hijau">
-                        <div class="banner-utama">✅ Pembayaran Diterima</div>
+                        <div class="banner-utama"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.3 2.4 2.4 4.8-5"/></svg>Pembayaran Diterima</div>
                         <div class="banner-angka">${rp(info.totalHarusBayar)}</div>
                         <div class="banner-sub">Terima kasih sudah membayar!</div>
                     </div>
-                    <div class="nota-baris"><span>Meteran</span><b>${item.meter_awal} ➔ ${item.meter_akhir} (pakai ${info.pemakaian} m&sup3;)</b></div>
+                    <div class="nota-baris"><span>Meteran</span><b>${item.meter_awal} ${PANAH} ${item.meter_akhir} (pakai ${info.pemakaian} m&sup3;)</b></div>
                     <div class="nota-baris"><span>Pemakaian air (${info.pemakaian} m&sup3; &times; Rp ${TARIF_PER_M3.toLocaleString('id-ID')})</span><b>${rp(info.biayaAir)}</b></div>
                     <div class="nota-baris"><span>Biaya beban</span><b>${rp(info.beban)}</b></div>
                     <div class="nota-baris"><span>${ketSaldo}</span><b>${info.saldoLalu < 0 ? '' : info.saldoLalu > 0 ? '\u2212 ' : ''}${rp(info.saldoLalu)}</b></div>
@@ -1155,7 +1218,7 @@
                 blokBulan += `
                 <div class="nota-bulan">
                     <div class="nota-bulan-judul">&#9656; ${b.periode} &mdash; belum dibayar</div>
-                    <div class="nota-baris"><span>Meteran</span><b>${b.meter_awal} ➔ ${b.meter_akhir}</b></div>
+                    <div class="nota-baris"><span>Meteran</span><b>${b.meter_awal} ${PANAH} ${b.meter_akhir}</b></div>
                     <div class="nota-baris"><span>Pemakaian ${i.pemakaian} m&sup3; &times; Rp ${TARIF_PER_M3.toLocaleString('id-ID')}</span><b>${rp(i.biayaAir)}</b></div>
                     <div class="nota-baris"><span>Biaya beban</span><b>${rp(i.beban)}</b></div>
                     <div class="nota-baris nota-jumlah"><span>Jumlah ${namaBulan(b.periode)}</span><b>${rp(jumlahBulan)}</b></div>
@@ -1176,7 +1239,7 @@
                         <div><b>Nama Pelanggan</b> : ${item.nama}</div>
                     </div>
                     <div class="nota-banner nota-banner-merah">
-                        <div class="banner-utama">🔴 Total Harus Dibayar Sekarang</div>
+                        <div class="banner-utama"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V13"/><path d="M12 16.5h.01"/></svg>Total Harus Dibayar Sekarang</div>
                         <div class="banner-angka">${rp(total)}</div>
                         <div class="banner-sub">${rantai.length} bulan belum dibayar: ${rentang} (${totalM3} m&sup3;)</div>
                     </div>
