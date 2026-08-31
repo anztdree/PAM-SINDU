@@ -274,26 +274,28 @@
             display: inline-flex; align-items: center; flex: 0 0 auto; padding: 6px 14px;
             border-radius: 999px; font-size: .9rem; font-weight: 800; white-space: nowrap;
         }
-        /* Badge LUNAS — fusi gradasi + glow + kilau + sentuhan stempel miring (diperbesar) */
+        /* Badge LUNAS — frosted glass (kaca buram) + karakter stempel miring (diperbesar) */
         .pel-mini-lunas {
-            position: relative; overflow: hidden;
-            padding: 8px 20px 8px 16px;
+            position: relative;
+            padding: 8px 15px 8px 18px;
             border-radius: 10px;
             font-size: 1rem; letter-spacing: .5px;
-            color: #fff;
-            background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
-            border: 1.6px dashed rgba(255,255,255,.75);
-            box-shadow: 0 0 0 3px rgba(16,185,129,.15), 0 5px 16px rgba(16,185,129,.42);
+            color: #047857;
+            background: rgba(209,250,229,.62);
+            backdrop-filter: blur(9px) saturate(1.15);
+            -webkit-backdrop-filter: blur(9px) saturate(1.15);
+            border: 1.5px solid rgba(5,150,105,.4);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 0 0 1px rgba(255,255,255,.35), 0 3px 9px rgba(5,150,105,.16);
             transform: rotate(-2.5deg);
         }
-        .pel-mini-lunas svg { flex: 0 0 auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
-        .pel-mini-lunas::after {
-            content: ''; position: absolute; top: 0; bottom: 0; width: 36%; left: -55%;
-            background: linear-gradient(105deg, transparent, rgba(255,255,255,.6), transparent);
-            transform: skewX(-18deg);
-            animation: kilauLunas 3s ease-in-out infinite;
+        .pel-mini-lunas > span { position: relative; z-index: 1; white-space: nowrap; }
+        /* centang watermark natural (pilihan user: R3) — di belakang kata, geser kanan sedikit */
+        .pel-mini-lunas .wm {
+            position: absolute; z-index: 0; right: 0; top: 50%;
+            width: 38px; height: 38px;
+            transform: translateY(-52%) rotate(-10deg);
+            opacity: .45; color: #059669;
         }
-        @keyframes kilauLunas { 0% { left: -55%; } 55%, 100% { left: 135%; } }
         .pel-bawah {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
             margin-top: 9px; padding-top: 9px; border-top: 2px solid #eef2f7;
@@ -1032,7 +1034,7 @@
             let isMeterEntered = item.meter_akhir > 0 && item.meter_akhir >= item.meter_awal;
 
             if (item.status === 'Sudah Bayar') {
-                statusMiniHtml = `<span class="pel-mini pel-mini-lunas"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Lunas</span>`;
+                statusMiniHtml = `<span class="pel-mini pel-mini-lunas"><span>Lunas</span><svg class="wm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 13.4 C 6.8 14.8, 8.4 16.4, 9.6 18.4 C 12.4 14.6, 16.6 9.4, 20.6 5.6"/></svg></span>`;
             } else {
                 // Yang belum bayar TIDAK diberi badge apapun — hanya yang lunas yang bertanda (keputusan user)
                 statusMiniHtml = '';
