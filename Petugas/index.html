@@ -1075,11 +1075,13 @@
 
             let saldoAktif = item.STATUS === 'Sudah Bayar' ? info.selisihAset : info.saldoLalu;
 
-            // Aturan warna kartu (Task 29):
-            //   1) Pakai air (meteran jalan) tapi belum ditandai bayar -> MERAH seperti tunggakan
+            // Aturan warna kartu (Task 29, direvisi permintaan pengelola):
+            //   1) Pakai air (meteran jalan) tapi belum ditandai bayar -> MERAH
             //   2) Hanya beban (0 m3) & sisa saldo kecil (<= beban)    -> polos tanpa gradient
             //   3) Deposit beneran (saldoAktif > beban)                -> HIJAU
-            //   4) Tunggakan beneran (saldo minus > beban)             -> MERAH
+            //   4) Tunggakan beban saja (0 m3, saldo minus > beban,    -> polos TANPA gradient;
+            //      contoh BOWO & ATIK) tapi teks "Utang Rp ..."
+            //      tetap tampil sebagai keterangan
             let bebanItem = parseFloat(item.BIAYA_BEBAN) || BIAYA_BEBAN_STANDAR;
             let hanyaBeban;
             if (item.STATUS === 'Sudah Bayar') {
@@ -1095,9 +1097,10 @@
                 kelasSaldo = 'kartu-tunggakan';
             } else if (saldoAktif > 0) {
                 kelasSaldo = (info.pemakaian === 0 && saldoAktif <= bebanItem) ? '' : 'kartu-deposit';
-            } else if (saldoAktif < 0 && !hanyaBeban) {
-                kelasSaldo = 'kartu-tunggakan';
             }
+            // (revisi pengelola) gradient merah HANYA untuk pelanggan yang memakai air
+            // dan belum bayar (aturan pertama). Tunggakan beban saja (0 m3, contoh
+            // BOWO & ATIK) tetap kartu polos — teks "Utang Rp ..." di kanan tetap tampil.
 
             let statusMiniHtml = '';
             let isMeterEntered = item.METER_AKHIR > 0 && item.METER_AKHIR >= item.METER_AWAL;
