@@ -1,5 +1,5 @@
 -- Backup Database BPSPAMS Tirta Makmur - Sinduharjo 08/04
--- Dibuat: 30/8/2026, 22.15.07
+-- Dibuat: 31/8/2026, 17.02.37
 -- Total baris: 135
 -- Cara memulihkan: letakkan file ini sebagai pam.sql di folder aplikasi,
 -- lalu buka Menu Admin > Import pam.sql (baris lama diperbarui, tidak dobel).
@@ -113,20 +113,20 @@ INSERT INTO `transaksi_pelanggan` (`periode`, `nama`, `meter_awal`, `meter_akhir
 ('Agustus 2026', 'BOWO', 1, 1, 0, 2000, 0, 'Belum Bayar'),
 ('Agustus 2026', 'SUGINO', 116, 116, 2000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'MADRIM', 585, 627, 107000, 2000, 0, 'Sudah Bayar'),
-('Agustus 2026', '<S>[PINDAH]</S>', 883, 883, 0, 2000, -22000, 'Belum Bayar'),
+('Agustus 2026', '<S>[PINDAH]</S>', 883, 883, 24000, 2000, -22000, 'Sudah Bayar'),
 ('Agustus 2026', 'GAGAN (BENGKEL)', 171, 192, 54500, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'SUCI ( PIJAT)', 460, 465, 0, 2000, 42500, 'Sudah Bayar'),
 ('Agustus 2026', 'ATIK', 22, 22, 2000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'RINI', 693, 706, 34500, 2000, 0, 'Sudah Bayar'),
-('Agustus 2026', 'SUKINO', 100, 101, 0, 2000, -2000, 'Belum Bayar'),
+('Agustus 2026', 'SUKINO', 100, 100, 0, 2000, -2000, 'Belum Bayar'),
 ('Agustus 2026', 'AGUS', 57, 57, 2000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'TRI W', 720, 729, 0, 2000, 0, 'Belum Bayar'),
 ('Agustus 2026', 'DAKIMAH', 789, 802, 34500, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'NARTI', 214, 234, 94000, 2000, -42000, 'Sudah Bayar'),
 ('Agustus 2026', 'WAGIYO', 25, 25, 2000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'KATIYO', 495, 513, 47000, 2000, 0, 'Sudah Bayar'),
-('Agustus 2026', 'ANI', 598, 617, 0, 2000, 0, 'Belum Bayar'),
-('Agustus 2026', 'ABDULLAH', 46, 46, 0, 2000, 0, 'Belum Bayar'),
+('Agustus 2026', 'ANI', 598, 617, 49500, 2000, 0, 'Sudah Bayar'),
+('Agustus 2026', 'ABDULLAH', 46, 46, 2000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'ISKAK KISNO', 278, 284, 17000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'BAMBANG PARLIS', 175, 181, 17000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'MULYONO', 150, 157, 19500, 2000, 0, 'Sudah Bayar'),
@@ -134,7 +134,7 @@ INSERT INTO `transaksi_pelanggan` (`periode`, `nama`, `meter_awal`, `meter_akhir
 ('Agustus 2026', 'SARPAN', 282, 288, 17000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'SUHAR (ADEK)', 1883, 1925, 107000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'SUPRIYONO (TAMBAL BAN)', 170, 170, 2000, 2000, 0, 'Sudah Bayar'),
-('Agustus 2026', 'GALIH [LAMPU]', 255, 277, 0, 2000, 0, 'Belum Bayar'),
+('Agustus 2026', 'GALIH [LAMPU]', 255, 277, 57000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'NGATIRAN', 96, 100, 24000, 2000, -12000, 'Sudah Bayar'),
 ('Agustus 2026', 'CANDRA', 1326, 1350, 62000, 2000, 0, 'Sudah Bayar'),
 ('Agustus 2026', 'ISBAROH', 261, 265, 12000, 2000, 0, 'Sudah Bayar'),
