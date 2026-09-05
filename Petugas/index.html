@@ -55,7 +55,7 @@
         .header-teks { min-width: 0; }
         .header-teks h2 { margin: 0; font-size: 1.12rem; font-weight: 800; letter-spacing: .3px; }
         .header-teks p { margin: 3px 0 0; font-size: .78rem; opacity: .88; }
-        .header-status { margin-top: 13px; display: flex; position: relative; z-index: 2; }
+        .header-status { margin-top: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; position: relative; z-index: 2; }
         .status-pill {
             display: inline-flex; align-items: center; gap: 6px;
             background: rgba(255,255,255,.96); color: var(--teks);
@@ -69,6 +69,29 @@
             100% { box-shadow: 0 3px 10px rgba(2,32,71,.28), 0 0 0 0 rgba(5,150,105,0); }
         }
         .status-pill.status-ok { animation: denyutStatus 2.6s ease-out infinite; }
+        /* ===== LOG KONEKSI — pill jadi bisa diketuk + tombol sambung ulang ===== */
+        .status-pill { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .btn-sambung {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: linear-gradient(135deg, #b91c1c, #dc2626); color: #fff;
+            border: none; border-radius: 999px; padding: 7px 13px;
+            font-size: .74rem; font-weight: 800; font-family: inherit; cursor: pointer;
+            box-shadow: 0 3px 10px rgba(2,32,71,.28);
+        }
+        .btn-sambung:active { transform: scale(.96); }
+        .btn-sambung:disabled { opacity: .55; cursor: wait; }
+        .log-lista { max-height: 46vh; overflow-y: auto; border: 1.5px solid var(--garis); border-radius: 11px; background: #f8fafc; }
+        .log-item { padding: 8px 11px; border-bottom: 1px dashed var(--garis); font-size: .78rem; line-height: 1.6; }
+        .log-item:last-child { border-bottom: 0; }
+        .log-item .log-jam { font-weight: 800; color: var(--teks-samar); font-variant-numeric: tabular-nums; }
+        .log-item .log-tag { display: inline-block; min-width: 44px; text-align: center; border-radius: 6px; padding: 1px 5px; margin: 0 7px 0 8px; font-weight: 800; font-size: .66rem; color: #fff; vertical-align: 1px; }
+        .log-ok .log-tag { background: #16a34a; }
+        .log-gagal .log-tag { background: #dc2626; }
+        .log-info .log-tag { background: #64748b; }
+        .log-item.log-ok { color: #14532d; }
+        .log-item.log-gagal { color: #7f1d1d; }
+        .log-item.log-info { color: #334155; }
+        .log-kosong { padding: 24px 12px; text-align: center; color: var(--teks-samar); font-size: .8rem; }
         .btn-export {
             display: flex; align-items: center; gap: 9px; text-align: left;
             background: rgba(255,255,255,.95); color: var(--biru-tua);
@@ -133,6 +156,25 @@
         .periode-tengah { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
         .periode-label { font-size: .66rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--teks-samar); }
         .periode-nilai { font-size: 1.32rem; font-weight: 800; color: var(--biru-tua); line-height: 1.3; }
+
+        /* ===== PEMILIH RT (REV-4) — tombol RT 08 / RT 09 tepat di atas Periode Aktif ===== */
+        .rt-switch { display: flex; gap: 8px; margin-bottom: 12px; }
+        .rt-btn {
+            flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            min-height: 48px; padding: 9px 12px;
+            border-radius: 14px; border: 1.5px solid #d3ecfb;
+            background: #fff; color: var(--teks-samar);
+            font-family: inherit; font-size: .9rem; font-weight: 800; letter-spacing: .4px;
+            cursor: pointer; box-shadow: var(--bayang-kartu);
+            transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+        .rt-btn svg { width: 19px; height: 19px; flex: 0 0 19px; }
+        .rt-btn:active { transform: scale(.97); }
+        .rt-btn.rt-aktif {
+            background: linear-gradient(135deg, var(--biru-tua), var(--biru));
+            color: #fff; border-color: transparent;
+            box-shadow: 0 8px 18px -8px rgba(3,105,161,.65);
+        }
 
         /* ===== TOMBOL ===== */
         .btn {
@@ -435,7 +477,7 @@
             </div>
             <div class="header-teks">
                 <h2>BPSPAMS TIRTA MAKMUR</h2>
-                <p>&bull; Sinduharjo 08 / 04 &bull; <br>&bull; Petugas: <b>ANDRI</b></p>
+                <p>&bull; <span id="headerRT">Sinduharjo 08 / 04</span> &bull; <br>&bull; Petugas: <b>ANDRI</b></p>
             </div>
             <button class="tombol-backup" id="btnBukaBackup" onclick="bukaModalBackup()" title="Backup & Export — file .db / .sql, Import, Reset (tanpa password)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
@@ -443,15 +485,31 @@
             </button>
         </div>
         <div class="header-status">
-            <span class="status-pill">
+            <span class="status-pill" onclick="bukaModalLogKoneksi()" title="Ketuk untuk melihat Log Koneksi — biar jelas errornya di mana">
                 <span class="lbl">Database:</span>
                 <span id="statusKoneksiText" style="color:#d97706;"><span class="dot-koneksi" style="background:#f59e0b;"></span>Memeriksa Koneksi...</span>
             </span>
+            <button class="btn-sambung" id="btnSambungUlang" style="display:none;" onclick="sambungUlang()" title="Ulangi koneksi ke server SHTTPS">
+                <svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+                Coba Sambung
+            </button>
         </div>
         <svg class="ombak" viewBox="0 0 1440 44" preserveAspectRatio="none" aria-hidden="true">
             <path d="M0,26 C180,44 360,4 560,16 C760,28 900,8 1100,18 C1260,26 1360,14 1440,22 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.14)"/>
             <path d="M0,34 C220,20 420,40 640,30 C860,20 1040,38 1240,30 C1340,26 1400,32 1440,30 L1440,44 L0,44 Z" fill="rgba(255,255,255,0.20)"/>
         </svg>
+    </div>
+
+    <!-- PEMILIH RT (REV-4): pemisah data RT 08 / RT 09 — tepat di atas Periode Aktif -->
+    <div class="rt-switch" role="tablist" aria-label="Pilih RT">
+        <button class="rt-btn" id="rtBtn08" onclick="pilihRT('rt08')" title="Beralih ke data RT 08">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+            RT 08
+        </button>
+        <button class="rt-btn" id="rtBtn09" onclick="pilihRT('rt09')" title="Beralih ke data RT 09">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+            RT 09
+        </button>
     </div>
 
     <!-- PANEL PERIODE -->
@@ -551,7 +609,7 @@
     </div>
 
     <footer class="kaki-app">
-        BPSPAMS TIRTA MAKMUR &bull; SINDUHARJO 08/04<br>
+        BPSPAMS TIRTA MAKMUR &bull; <span id="footerRT">SINDUHARJO 08/04</span><br>
     </footer>
 </div>
 
@@ -652,6 +710,29 @@
     </div>
 </div>
 
+<!-- MODAL LOG KONEKSI — diagnostik koneksi database, dibuka dengan mengetuk pill status -->
+<div id="modalLogKoneksi" class="modal" onclick="if(event.target===this) tutupModalLogKoneksi()">
+    <div class="modal-content-wrapper">
+        <div class="form-box">
+            <div class="modal-kepala">
+                <h3><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l3-9 4 18 3-9h6"/></svg> Log Koneksi</h3>
+                <button class="tombol-tutup" onclick="tutupModalLogKoneksi()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-isi">
+                <p style="margin:0 0 10px; font-size:.75rem; color:#64748b; line-height:1.6;">
+                    Catatan setiap percobaan menyambung ke server SHTTPS — <b>terbaru di atas</b>.
+                    Lihat baris berlabel <b style="color:#dc2626;">GAGAL</b> untuk tahu errornya di mana.
+                </p>
+                <div class="log-lista" id="logKoneksiList"></div>
+                <div class="baris-tombol">
+                    <button class="btn btn-hijau" onclick="sambungUlang()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Coba Sambung</button>
+                    <button class="btn tombol-batal" style="margin-top:0;" onclick="bersihkanLogKoneksi()">Bersihkan Log</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- WADAH TOAST NOTIFIKASI -->
 <div id="toastWrap" class="toast-wrap"></div>
 <script>
@@ -660,11 +741,34 @@
     const NAMA_PETUGAS = "ANDRI";
 
     // ====== LAPISAN DATABASE SHTTPS (API /api/db/* — TANPA PHP) ======
-    const DB_TABLE = "transaksi_pelanggan";
-    const KOLOM = "nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status";
+    // REV-4: satu aplikasi melayani DUA RT di halaman yang sama. Pemisahan
+    // data lewat TABEL berbeda (keputusan pemilik): RT 08 memakai tabel lama
+    // yang tidak pernah disentuh, RT 09 memakai tabel sendiri berstruktur
+    // sama. Menambah RT baru nanti cukup menambah satu baris di DAFTAR_RT.
+    // Catatan lapangan pemilik: SHTTPS hanya mendukung SATU database — maka
+    // kedua tabel TINGGAL di SATU file pam.db yang sama (lihat export).
+    const DAFTAR_RT = [
+        { id: "rt08", label: "RT 08", tabel: "transaksi_pelanggan",      judul: "Sinduharjo 08 / 04", judulFile: "SINDUHARJO 08/04" },
+        { id: "rt09", label: "RT 09", tabel: "transaksi_pelanggan_rt09", judul: "Sinduharjo 09 / 04", judulFile: "SINDUHARJO 09/04" }
+    ];
+    // RT aktif HIDUP DI MEMORI SAJA — TIDAK ada kunci localStorage baru
+    // (keputusan pemilik). Setiap kali aplikasi dibuka selalu mulai dari
+    // RT 08; petugas tinggal mengetuk tombol RT 09 bila mau pindah.
+    // Satu-satunya pengecualian: bila jaring penyelamat susun ulang
+    // (KUNCI_PENDING) ternyata milik RT tertentu, aplikasi mulai di RT itu
+    // supaya pemulihannya menulis ke tabel yang benar (payload membawa rt).
+    let rtAktif = "rt08";
     // Kunci localStorage: jaring penyelamat saat penyusunan ulang nomor
-    // (sisip pelanggan di tengah) terputus di tengah jalan.
+    // (sisip pelanggan di tengah) terputus di tengah jalan. Kuncinya TETAP
+    // SATU — payload kini membawa field "rt" pemiliknya, bukan kunci baru.
     const KUNCI_PENDING = "pamSusunUlangTertunda";
+    try {
+        const p = JSON.parse(localStorage.getItem(KUNCI_PENDING) || "null");
+        if (p && DAFTAR_RT.some(r => r.id === p.rt)) rtAktif = p.rt;
+    } catch (e) {}
+    function infoRT() { return DAFTAR_RT.find(r => r.id === rtAktif) || DAFTAR_RT[0]; }
+    function tabelAktif() { return infoRT().tabel; }
+    const KOLOM = "nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status";
 
     // Pastikan nilai numerik murni
     function num(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
@@ -699,7 +803,7 @@
     // urutKolom meminta server mengurutkan hasil (didukung SHTTPS baru,
     // diabaikan tanpa efek di versi lama).
     async function dbBaca(kolom, filters, limit, urutKolom) {
-        const qs = { table: DB_TABLE, rowsAsObjects: "true", columns: kolom, limit: String(limit || 500) };
+        const qs = { table: tabelAktif(), rowsAsObjects: "true", columns: kolom, limit: String(limit || 500) };
         if (filters) qs.filters = JSON.stringify(filters);
         if (urutKolom) { qs.sort = urutKolom; qs["sort-order"] = "asc"; }
         const res = await fetch("/api/db/table?" + new URLSearchParams(qs).toString());
@@ -719,7 +823,7 @@
     // belum mendukung array (jawaban 400), sisip satu per satu.
     async function dbInsertBanyak(daftarBaris) {
         const params = new URLSearchParams();
-        params.append("table", DB_TABLE);
+        params.append("table", tabelAktif());
         params.append("values", JSON.stringify(daftarBaris));
         try {
             return await dbForm("POST", "/api/db/insert", params);
@@ -727,7 +831,7 @@
             if (String(e.message || e).includes("HTTP 400")) {
                 for (const r of daftarBaris) {
                     const p = new URLSearchParams();
-                    p.append("table", DB_TABLE);
+                    p.append("table", tabelAktif());
                     p.append("values", JSON.stringify(r));
                     await dbForm("POST", "/api/db/insert", p);
                 }
@@ -740,7 +844,7 @@
     // Ubah baris yang cocok filter (periode + nama) — PUT /api/db/update
     async function dbUpdateBaris(periode, nama, nilai) {
         const params = new URLSearchParams();
-        params.append("table", DB_TABLE);
+        params.append("table", tabelAktif());
         params.append("filters", JSON.stringify({ clauses: ["periode=", "nama="], args: [periode, nama] }));
         params.append("values", JSON.stringify(nilai));
         return dbForm("PUT", "/api/db/update", params);
@@ -749,7 +853,7 @@
     // Hapus SELURUH baris tabel ini (tanpa filters = semua baris)
     async function dbHapusSemua() {
         const params = new URLSearchParams();
-        params.append("table", DB_TABLE);
+        params.append("table", tabelAktif());
         return dbForm("DELETE", "/api/db/delete", params);
     }
 
@@ -757,7 +861,7 @@
     // satu permintaan PUT, filter nama lama, nilai = nama baru.
     async function dbUpdateNama(namaLama, namaBaru) {
         const params = new URLSearchParams();
-        params.append("table", DB_TABLE);
+        params.append("table", tabelAktif());
         params.append("filters", JSON.stringify({ clauses: ["nama="], args: [namaLama] }));
         params.append("values", JSON.stringify({ nama: namaBaru }));
         const hasil = await dbForm("PUT", "/api/db/update", params);
@@ -767,7 +871,7 @@
     // Hapus seluruh riwayat satu pelanggan (semua periode)
     async function dbHapusPelanggan(nama) {
         const params = new URLSearchParams();
-        params.append("table", DB_TABLE);
+        params.append("table", tabelAktif());
         params.append("filters", JSON.stringify({ clauses: ["nama="], args: [nama] }));
         const hasil = await dbForm("DELETE", "/api/db/delete", params);
         return (hasil && Number(hasil.deleted_rows)) || 0;
@@ -810,12 +914,39 @@
         return { sisip: sisip.length, ubah: ubah.length };
     }
 
-    // Cek database aktif & tabel ada (baca schema tidak butuh saklar apa pun)
+    // Cek database aktif & tabel ada (baca schema tidak butuh saklar apa pun).
+    // Setiap langkah dicatat ke Log Koneksi supaya jelas errornya di mana:
+    // server mati, HTTP 404 (DB belum aktif), 401 (perlu login), tabel tidak ada.
     async function dbCek() {
-        let res = await fetch("/api/db/schema");
-        if (res.status === 401) return { dbAktif: true, auth: true };
-        if (!res.ok) return { dbAktif: false };
-        res = await fetch("/api/db/schema?table=" + DB_TABLE);
+        let res;
+        try {
+            res = await fetch("/api/db/schema");
+        } catch (e) {
+            catatLogKoneksi("gagal", "Fetch /api/db/schema gagal: " + (e.message || e) + " — server SHTTPS tidak merespons (server mati / salah alamat / halaman dibuka bukan lewat http://)");
+            throw e;
+        }
+        if (res.status === 401) {
+            catatLogKoneksi("gagal", "HTTP 401 /api/db/schema — perlu login ke SHTTPS dulu (username & password)");
+            return { dbAktif: true, auth: true };
+        }
+        if (!res.ok) {
+            catatLogKoneksi("gagal", "HTTP " + res.status + " /api/db/schema — 'Enable SQLite database' belum aktif di SHTTPS");
+            return { dbAktif: false };
+        }
+        catatLogKoneksi("info", "HTTP 200 /api/db/schema — database aktif, memeriksa tabel " + infoRT().label + "...");
+        const tabelCek = tabelAktif();
+        try {
+            res = await fetch("/api/db/schema?table=" + tabelCek);
+        } catch (e) {
+            catatLogKoneksi("gagal", "Fetch /api/db/schema?table=" + tabelCek + " gagal: " + (e.message || e) + " — server putus di tengah pengecekan");
+            throw e;
+        }
+        if (!res.ok) {
+            catatLogKoneksi("gagal", "HTTP " + res.status + " — tabel '" + tabelCek + "' belum ada (matikan lalu nyalakan 'Enable SQLite database', pilih ATTACH EXISTING DATABASE file pam.db)");
+            if (rtAktif === "rt09") catatLogKoneksi("info", "Tabel RT 09 belum siap — caranya: saat RT 08 aktif & terhubung, buka Backup > Export Database (.db). File pam.db hasil export sudah berisi tabel kosong RT 09, lalu pasang ulang di SHTTPS lewat Attach existing database.");
+        } else {
+            catatLogKoneksi("ok", "Tabel '" + tabelCek + "' ditemukan — koneksi lengkap (" + infoRT().label + ")");
+        }
         return { dbAktif: true, tabelAda: res.ok };
     }
 
@@ -829,41 +960,18 @@
         ? parseInt(localStorage.getItem('activeTahun')) 
         : 2026;
 
-    // URUTAN PATEN SESUAI PERMINTAAN
-    const defaultNames = [
-        "HARTOYO", "SUPOYO", "HERU", "LEGIMAN / TINAH", "SUWARNI", "TRIYANTO", 
-        "BU SITI", "KISWANTO", "MARNI SATE", "ENI ( OUTLET)", "ERTA", "SUTOPO", 
-        "SUPRAPTI", "SUMARNO", "NUR W", "ADIT", "BOWO", "SUGINO", "MADRIM", 
-        "GALIH (LAMPU)", "GAGAN (BENGKEL)", "SUCI ( PIJAT)", "ATIK", "RINI", 
-        "SUKINO", "AGUS", "TRI W", "DAKIMAH", "NARTI", "WAGIYO", "KATIYO", 
-        "ANI", "ABDULLAH", "ISKAK KISNO", "BAMBANG PARLIS", "MULYONO", "SUTARNO", 
-        "SARPAN", "SUHAR (ADEK)", "SUPRIYONO (TAMBAL BAN)", "GITO", "NGATIRAN", 
-        "CANDRA", "ISBAROH", "BU IS (TOL)"
-    ];
-
     /* ============================================================
-       DAFTAR PELANGGAN DINAMIS — MURNI DARI DATABASE
-       Urutan rumah = urutan kemunculan pertama menurut kolom id.
-       Daftar 45 nama bawah hanya dipakai sebagai cadangan saat
-       database tidak terbaca (offline); cache localStorage hanya
-       cadangan offline juga. Dengan begitu pelanggan yang dihapus
-       / berganti nama tidak menjadi "hantu" di perangkat lain,
-       dan urutan tata letak rumah tetap konsisten di mana pun.
+       DAFTAR PELANGGAN — MURNI DARI DATABASE SQLITE
+       Keputusan pemilik: TIDAK ADA daftar nama hardcode dan TIDAK ADA
+       cache nama di localStorage. Nama pelanggan itu fleksibel (bisa
+       berganti kapan saja) — salinan statis berisiko jadul dan justru
+       menyesatkan petugas. Urutan rumah = urutan kemunculan pertama
+       menurut kolom id. Saat server tidak terbaca, daftar tampil
+       KOSONG dengan pesan yang jelas (lihat catch di loadDataPeriodeIni)
+       — lebih jujur daripada menampilkan nama yang mungkin sudah berganti.
        ============================================================ */
-    let daftarPelanggan = [...defaultNames];
+    let daftarPelanggan = [];
     let hitungPelanggan = new Map(); // nama -> jumlah baris riwayat di database
-
-    function muatCacheDaftarPelanggan() {
-        try {
-            const c = JSON.parse(localStorage.getItem('daftarPelanggan') || 'null');
-            if (Array.isArray(c) && c.length > 0) daftarPelanggan = c;
-        } catch (e) {}
-    }
-    muatCacheDaftarPelanggan();
-
-    function simpanCacheDaftarPelanggan() {
-        try { localStorage.setItem('daftarPelanggan', JSON.stringify(daftarPelanggan)); } catch (e) {}
-    }
 
     // Susun nama unik dari baris database. Urutan hasil SQL tanpa ORDER BY
     // TIDAK dijamin (bisa urut indeks, bukan urutan id), maka baris yang
@@ -906,12 +1014,59 @@
         return `${daftarBulan[currentBulanIndex]} ${currentTahun}`;
     }
 
+    /* ============================================================
+       PEMILIH RT (REV-4) — tombol RT 08 / RT 09 tepat di atas kartu
+       Periode Aktif. Pindah RT = ganti tabel sumber data lalu muat
+       ulang seluruh tampilan. Pengaman: selama masih ada operasi
+       susun ulang tertunda (jaring penyelamat renumbering), pindah
+       RT DIBLOKIR supaya baris pemulihan tidak pernah tertulis ke
+       tabel RT yang salah.
+       ============================================================ */
+    function terapkanIdentitasRT() {
+        const info = infoRT();
+        const h = document.getElementById("headerRT");
+        if (h) h.innerHTML = info.judul;
+        const f = document.getElementById("footerRT");
+        if (f) f.innerHTML = info.judulFile;
+        document.title = "BPSPAMS TIRTA MAKMUR - " + info.judulFile;
+        DAFTAR_RT.forEach(r => {
+            const btn = document.getElementById("rtBtn" + r.id.slice(-2));
+            if (btn) btn.classList.toggle("rt-aktif", r.id === rtAktif);
+        });
+    }
+
+    function pilihRT(id) {
+        if (id === rtAktif || !DAFTAR_RT.some(r => r.id === id)) return;
+        if (bacaPending()) {
+            catatLogKoneksi("gagal", "Pindah RT diblokir — masih ada penyusunan ulang tertunda milik " + infoRT().label);
+            showToast(IK.alert + " Ada penyusunan ulang daftar pelanggan yang belum selesai. Biarkan aplikasi memulihkannya dulu (ketuk <b>Coba Sambung</b>) sebelum pindah RT.", "gagal");
+            return;
+        }
+        rtAktif = id;
+        // Kosongkan seluruh state memori milik RT sebelumnya supaya tidak
+        // ada sisa data yang terbawa ke tampilan RT baru
+        excelData = [];
+        daftarPelanggan = [];
+        hitungPelanggan = new Map();
+        selectedIndex = null;
+        const inpCari = document.getElementById("searchInput");
+        if (inpCari) inpCari.value = "";
+        const kosongCari = document.getElementById("kosongPencarian");
+        if (kosongCari) kosongCari.style.display = "none";
+        const modalInput = document.getElementById("modalInput");
+        if (modalInput) modalInput.style.display = "none";
+        catatLogKoneksi("info", "Beralih ke " + infoRT().label + " — tabel \"" + tabelAktif() + "\"");
+        terapkanIdentitasRT();
+        renderTabel();
+        loadDataPeriodeIni();
+    }
+
     function updateStatusKoneksi(terhubung, pesan = "") {
         const el = document.getElementById('statusKoneksiText');
         if (!el) return;
         const pill = el.closest ? el.closest('.status-pill') : null;
         if (pill && pill.classList) pill.classList.toggle('status-ok', !!terhubung);
-        
+
         if (terhubung) {
             el.style.color = "#16a34a";
             el.innerHTML = '<span class="dot-koneksi" style="background:#16a34a;"></span>Terhubung';
@@ -919,17 +1074,94 @@
             el.style.color = "#dc2626";
             el.innerHTML = '<span class="dot-koneksi" style="background:#dc2626;"></span>Terputus ' + (pesan ? '(' + pesan + ')' : '');
         }
+
+        // Tombol "Coba Sambung" hanya tampil saat terputus
+        const btn = document.getElementById('btnSambungUlang');
+        if (btn) btn.style.display = terhubung ? 'none' : 'inline-flex';
     }
 
     // Terjemahkan kode error SHTTPS jadi pesan yang bisa ditindaklanjuti
     function pesanErrorDB(err) {
         const m = String(err.message || err);
         if (m.includes("DB_OFF")) return "Database belum aktif - aktifkan 'Enable SQLite database' di Pengaturan SHTTPS lalu pilih 'Attach existing database' dengan file pam.db";
-        if (m.includes("TABEL_TIDAK_ADA")) return "Tabel belum ada di database. Matikan lalu nyalakan lagi 'Enable SQLite database' di SHTTPS, lalu pilih ATTACH EXISTING DATABASE dengan file pam.db (jangan Create new - versi gratis tidak bisa membuat tabel dari aplikasi ini)";
+        if (m.includes("TABEL_TIDAK_ADA")) return (rtAktif === "rt09"
+            ? "Tabel RT 09 (" + tabelAktif() + ") belum ada di database. Cara menyiapkan: saat RT 08 aktif & terhubung, buka Backup > Export Database (.db) — file pam.db hasil export sudah berisi tabel kosong RT 09 — lalu di SHTTPS matikan 'Enable SQLite database', ganti file pam.db, nyalakan lagi dan pilih ATTACH EXISTING DATABASE."
+            : "Tabel belum ada di database. Matikan lalu nyalakan lagi 'Enable SQLite database' di SHTTPS, lalu pilih ATTACH EXISTING DATABASE dengan file pam.db (jangan Create new - versi gratis tidak bisa membuat tabel dari aplikasi ini)");
         if (m.includes("EDIT_OFF")) return "Aktifkan toggle 'Enable API to modify tables data' di Pengaturan > Database SHTTPS (fitur GRATIS, bukan PLUS)";
         if (m.includes("AUTH")) return "Perlu login - masuk dulu ke SHTTPS (username & password)";
         if (m.includes("SQL_ERR")) return "Kesalahan SQL: " + m.replace("SQL_ERR: ", "").slice(0, 100);
         return "Server tidak merespons - pastikan server START dan halaman dibuka lewat http://";
+    }
+
+    /* ============================================================
+       LOG KONEKSI — pencatat diagnostik di memori (BUKAN localStorage).
+       Semua kejadian koneksi database dicatat supaya terlihat jelas
+       errornya di mana. Log hilang saat halaman ditutup — sengaja,
+       ini hanya alat bantu diagnostik sesi aktif, tidak membebani
+       penyimpanan. Buka lewat mengetuk pill status di header.
+       ============================================================ */
+    const LOG_MAKS = 60;
+    let logKoneksi = [];
+    let modalLogTerbuka = false;
+
+    function catatLogKoneksi(jenis, pesan) {
+        const d = new Date();
+        const jam = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + ":" + String(d.getSeconds()).padStart(2, "0");
+        logKoneksi.unshift({ jam: jam, jenis: jenis, pesan: String(pesan) });
+        if (logKoneksi.length > LOG_MAKS) logKoneksi.length = LOG_MAKS;
+        if (modalLogTerbuka) renderLogKoneksi();
+    }
+
+    function renderLogKoneksi() {
+        const wadah = document.getElementById("logKoneksiList");
+        if (!wadah) return;
+        if (!logKoneksi.length) {
+            wadah.innerHTML = '<div class="log-kosong">Belum ada catatan. Log muncul otomatis saat aplikasi mencoba menyambung ke server SHTTPS.</div>';
+            return;
+        }
+        wadah.innerHTML = logKoneksi.map(item => {
+            const cls = item.jenis === "ok" ? "log-ok" : (item.jenis === "gagal" ? "log-gagal" : "log-info");
+            const tag = item.jenis === "ok" ? "OK" : (item.jenis === "gagal" ? "GAGAL" : "INFO");
+            return '<div class="log-item ' + cls + '"><span class="log-jam">' + item.jam + '</span><span class="log-tag">' + tag + '</span>' + item.pesan + '</div>';
+        }).join("");
+    }
+
+    function bukaModalLogKoneksi() {
+        modalLogTerbuka = true;
+        renderLogKoneksi();
+        document.getElementById("modalLogKoneksi").style.display = "block";
+    }
+
+    function tutupModalLogKoneksi() {
+        modalLogTerbuka = false;
+        document.getElementById("modalLogKoneksi").style.display = "none";
+    }
+
+    function bersihkanLogKoneksi() {
+        logKoneksi = [];
+        renderLogKoneksi();
+    }
+
+    // Sambung ulang manual (tombol header & modal log).
+    // Ulangi cek koneksi dari nol lalu muat ulang data periode aktif.
+    // Guard sedangSambungUlang mencegah dobel klik beruntun.
+    let sedangSambungUlang = false;
+    async function sambungUlang() {
+        if (sedangSambungUlang) return;
+        sedangSambungUlang = true;
+        const btn = document.getElementById("btnSambungUlang");
+        if (btn) { btn.disabled = true; btn.textContent = "Menyambung..."; }
+        catatLogKoneksi("info", "Sambung ulang manual dimulai — memeriksa server SHTTPS...");
+        window._dbSiapTabel = null; // paksa cek ulang, jangan pakai hasil sesi lama
+        try {
+            await loadDataPeriodeIni();
+        } finally {
+            sedangSambungUlang = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Coba Sambung';
+            }
+        }
     }
 
     async function loadDataPeriodeIni() {
@@ -939,13 +1171,14 @@
         document.getElementById('labelPeriodeAktif').innerText = key;
 
         try {
-            // Pastikan database aktif & tabel tersedia (sekali saja per sesi)
-            if (!window._dbSiap) {
+            // Pastikan database aktif & tabel tersedia (sekali per tabel RT;
+            // pindah RT memicu pengecekan ulang untuk tabel RT yang baru)
+            if (window._dbSiapTabel !== tabelAktif()) {
                 const cek = await dbCek();
                 if (!cek.dbAktif) throw new Error("DB_OFF");
                 if (cek.auth) throw new Error("AUTH");
                 if (!cek.tabelAda) throw new Error("TABEL_TIDAK_ADA");
-                window._dbSiap = true;
+                window._dbSiapTabel = tabelAktif();
             }
 
             // Bila ada penyusunan ulang (sisip nomor) yang terputus di tengah
@@ -953,16 +1186,16 @@
             await pulihkanOperasiTertunda();
 
             // Daftar pelanggan = MURNI dari database (urut kemunculan
-            // pertama menurut id = urutan tata letak rumah). Cache
-            // lokal hanya cadangan offline, tidak digabungkan lagi.
+            // pertama menurut id = urutan tata letak rumah). Tidak ada
+            // cache nama di localStorage — keputusan pemilik.
             const semuaBaris = await dbBaca("id,nama", null, 2000, "id");
             const baris = await dbBacaPeriode(key);
             const susun = susunDaftarDariBaris(semuaBaris, baris);
             daftarPelanggan = susun.urut;
             hitungPelanggan = susun.hitung;
-            simpanCacheDaftarPelanggan();
 
             updateStatusKoneksi(true);
+            catatLogKoneksi("ok", "[" + infoRT().label + "] Data " + key + " termuat (" + daftarPelanggan.length + " pelanggan, " + baris.length + " baris periode)");
 
             // Susun data periode ini mengikuti urutan daftar pelanggan;
             // pelanggan tanpa catatan di periode ini tampil kosong (nol).
@@ -995,18 +1228,13 @@
             renderTabel();
         } catch (err) {
             console.error("Gagal mengambil data dari database SHTTPS:", err);
+            catatLogKoneksi("gagal", "Gagal memuat data periode \"" + key + "\" — kode: " + (err.message || err));
             updateStatusKoneksi(false, pesanErrorDB(err));
-            // Tetap tampilkan daftar pelanggan (mode offline) agar UI tidak kosong
-            excelData = daftarPelanggan.map(nama => ({
-                NAMA: nama,
-                METER_AWAL: 0,
-                METER_AKHIR: 0,
-                CASH: 0,
-                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
-                SALDO_LALU: 0,
-                STATUS: 'Belum Bayar'
-            }));
+            // Keputusan pemilik: tanpa daftar nama cadangan — saat server
+            // tidak terbaca, daftar tampil KOSONG (tidak ada nama jadul).
+            excelData = [];
             renderTabel();
+            showToast(IK.alert + " Server tidak terbaca — daftar pelanggan hanya muncul saat server SHTTPS aktif. Setelah server siap, ketuk <b>Coba Sambung</b>.", "gagal");
         }
     }
 
@@ -1229,7 +1457,7 @@
 
         let konfirmasi1 = confirm(
             `PERINGATAN KRUSIAL!\n\n` +
-            `Apakah Anda yakin ingin MELAKUKAN TUTUP BUKU untuk periode "${periodeSekarang}"?\n\n` +
+            `Apakah Anda yakin ingin MELAKUKAN TUTUP BUKU untuk periode "${periodeSekarang}" (${infoRT().label})?\n\n` +
             `• Meter Akhir akan terkunci dan menjadi Meter Awal bulan depan.\n` +
             `• Sisa Deposit / Tunggakan akan otomatis dialihkan ke bulan berikutnya.\n\n` +
             `Klik [OK] untuk Ya (Lanjut) atau [Cancel] untuk Batal.`
@@ -1513,9 +1741,10 @@
        ============================================================ */
     function namaFileBackup(ext) {
         const d = new Date();
-        // Format: pam-backup-[tahun]-[bulan].ext — contoh: pam-backup-2026-agustus.sql
-        // Nama bulan memakai daftarBulan (Indonesia), dijadikan huruf kecil agar rapi di nama file
-        return "pam-backup-" + d.getFullYear() + "-" + daftarBulan[d.getMonth()].toLowerCase() + "." + ext;
+        // Format: pam-backup-[rt]-[tahun]-[bulan].ext — RT 09 memakai akhiran
+        // -rt09 (contoh: pam-backup-rt09-2026-september.sql); RT 08 tanpa
+        // akhiran supaya nama file backup lama tidak berubah.
+        return "pam-backup" + (rtAktif === "rt09" ? "-rt09" : "") + "-" + d.getFullYear() + "-" + daftarBulan[d.getMonth()].toLowerCase() + "." + ext;
     }
 
     function unduhBlob(blob, namaFile) {
@@ -1536,7 +1765,7 @@
 
     function buatDumpSql(baris) {
         const kop = [
-            "-- Backup Database BPSPAMS Tirta Makmur - Sinduharjo 08/04",
+            "-- Backup Database BPSPAMS Tirta Makmur - " + infoRT().judulFile + " (tabel " + tabelAktif() + ")",
             "-- Dibuat: " + new Date().toLocaleString('id-ID'),
             "-- Total baris: " + baris.length,
             "-- Cara memulihkan: letakkan file ini sebagai pam.sql di folder aplikasi,",
@@ -1550,7 +1779,7 @@
             num(r.biaya_beban) + ", " + num(r.saldo_lalu) + ", '" + sqlEscape(r.status) + "')"
         ).join(",\n");
         return kop +
-            "INSERT INTO `transaksi_pelanggan` (`periode`, `nama`, `meter_awal`, `meter_akhir`, `cash`, `biaya_beban`, `saldo_lalu`, `status`) VALUES\n" +
+            "INSERT INTO `" + tabelAktif() + "` (`periode`, `nama`, `meter_awal`, `meter_akhir`, `cash`, `biaya_beban`, `saldo_lalu`, `status`) VALUES\n" +
             nilai + ";\n";
     }
 
@@ -1574,13 +1803,12 @@
         return sqlJsPromise;
     }
 
-    // Bangun file database SQLite LENGKAP dari data live:
-    // struktur (tabel + index unik + trigger updated_at) persis pam.db asli.
-    // Hasilnya file .db sungguhan yang bisa dipasang ulang lewat
-    // "Attach existing database".
-    function bangunDbDariBaris(SQL, baris) {
-        const db = new SQL.Database();
-        db.exec("CREATE TABLE transaksi_pelanggan (" +
+    // Buat struktur satu tabel transaksi di file .db (tabel + index unik +
+    // trigger updated_at). Dipakai untuk tabel RT aktif maupun tabel
+    // pasangannya; nama index/trigger diberi akhiran supaya tidak bentrok.
+    function buatStrukturTabelTransaksi(db, nama) {
+        const suf = (nama === "transaksi_pelanggan_rt09") ? "_rt09" : "";
+        db.exec("CREATE TABLE " + nama + " (" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "periode TEXT NOT NULL," +
             "nama TEXT NOT NULL," +
@@ -1591,11 +1819,28 @@
             "saldo_lalu INTEGER DEFAULT 0," +
             "status TEXT NOT NULL DEFAULT 'Belum Bayar' CHECK (status IN ('Belum Bayar','Sudah Bayar'))," +
             "updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')))");
-        db.exec("CREATE UNIQUE INDEX unique_pelanggan_periode ON transaksi_pelanggan (periode, nama)");
-        db.exec("CREATE TRIGGER trg_transaksi_updated_at AFTER UPDATE ON transaksi_pelanggan BEGIN " +
-            "UPDATE transaksi_pelanggan SET updated_at = datetime('now','localtime') WHERE id = NEW.id; END");
+        db.exec("CREATE UNIQUE INDEX unique_pelanggan_periode" + suf + " ON " + nama + " (periode, nama)");
+        db.exec("CREATE TRIGGER trg_transaksi" + suf + "_updated_at AFTER UPDATE ON " + nama + " BEGIN " +
+            "UPDATE " + nama + " SET updated_at = datetime('now','localtime') WHERE id = NEW.id; END");
+    }
+
+    // Bangun file database SQLite LENGKAP dari data live:
+    // struktur (tabel + index unik + trigger updated_at) persis pam.db asli.
+    // REV-4: file .db berisi TABEL MILIK RT AKTIF (diisi baris live) plus
+    // tabel pasangan RT lain dalam keadaan KOSONG — jadi export dari RT 08
+    // sekaligus MENYIAPKAN tabel RT 09 di file pam.db yang dipasang ulang
+    // lewat "Attach existing database" (versi gratis SHTTPS tidak bisa
+    // membuat tabel lewat API).
+    // Hasilnya file .db sungguhan yang bisa dipasang ulang lewat
+    // "Attach existing database".
+    function bangunDbDariBaris(SQL, baris) {
+        const db = new SQL.Database();
+        const tabelData = tabelAktif();
+        const tabelPasangan = (rtAktif === "rt09") ? "transaksi_pelanggan" : "transaksi_pelanggan_rt09";
+        buatStrukturTabelTransaksi(db, tabelData);
+        buatStrukturTabelTransaksi(db, tabelPasangan);
         const stmt = db.prepare(
-            "INSERT INTO transaksi_pelanggan (id, periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status, updated_at) " +
+            "INSERT INTO " + tabelData + " (id, periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status, updated_at) " +
             "VALUES (?,?,?,?,?,?,?,?,?,?)"
         );
         let maxId = 0;
@@ -1613,7 +1858,7 @@
             if (id > maxId) maxId = id;
         });
         stmt.free();
-        if (maxId > 0) db.run("UPDATE sqlite_sequence SET seq = ? WHERE name = 'transaksi_pelanggan'", [maxId]);
+        if (maxId > 0) db.run("UPDATE sqlite_sequence SET seq = ? WHERE name = ?", [maxId, tabelData]);
         const bytes = db.export();
         db.close();
         return bytes;
@@ -1723,7 +1968,12 @@
                         : "") +
                     "<br>" + (pakaiFileDb
                         ? "Memulihkan: SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file backup .db ini."
-                        : "Memulihkan: letakkan file .sql ini di folder aplikasi (boleh diganti nama jadi pam.sql), lalu Menu Admin &gt; Import pam.sql.");
+                        : "Memulihkan: letakkan file .sql ini di folder aplikasi (boleh diganti nama jadi pam.sql), lalu Menu Admin &gt; Import pam.sql.") +
+                    "<br><b>Catatan " + infoRT().label + ":</b> backup ini hanya berisi data " + infoRT().label +
+                    " (tabel " + tabelAktif() + "). Data RT lain tidak ikut — lakukan export terpisah saat RT tersebut aktif." +
+                    (rtAktif === "rt08"
+                        ? " File .db ini sudah berisi tabel kosong RT 09 — pasang ulang lewat Attach existing database untuk menyiapkan RT 09."
+                        : "");
             }
         } catch (e) {
             alert("Gagal Export Database: " + pesanErrorDB(e));
@@ -1749,10 +1999,12 @@
 
     // ============ IMPORT DATA LAMA DARI pam.sql (client-side) ============
 
-    // Scanner sadar-kutip: ambil statement INSERT utk tabel transaksi_pelanggan
+    // Scanner sadar-kutip: ambil statement INSERT untuk tabel RT mana pun
+    // (transaksi_pelanggan ATAU transaksi_pelanggan_rt09 — dua-duanya
+    // diterima); baris hasil parse selalu ditulis ke tabel RT AKTIF.
     function ekstrakInserts(sqlText) {
         const hasil = [];
-        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan`?\s*\(/gi;
+        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan(?:_rt09)?`?\s*\(/gi;
         let m;
         while ((m = re.exec(sqlText)) !== null) {
             let i = m.index, stmt = "", inStr = false;
@@ -1849,7 +2101,7 @@
 
     async function importDataLama() {
         const info = document.getElementById('infoImport');
-        if (!confirm("Import data dari pam.sql?\n\nBaris yang belum ada akan DITAMBAHKAN, baris yang sudah ada akan DIPERBARUI (data periode lain tetap aman).")) return;
+        if (!confirm("Import data dari pam.sql ke " + infoRT().label + " (tabel " + tabelAktif() + ")?\n\nBaris yang belum ada akan DITAMBAHKAN, baris yang sudah ada akan DIPERBARUI (data periode lain tetap aman).")) return;
 
         info.innerText = "Membaca pam.sql...";
         try {
@@ -1866,12 +2118,12 @@
             if (barisSemua.length === 0) throw new Error("TIDAK_ADA_INSERT");
 
             // Pastikan database aktif & tabel ada
-            if (!window._dbSiap) {
+            if (window._dbSiapTabel !== tabelAktif()) {
                 const cek = await dbCek();
                 if (!cek.dbAktif) throw new Error("DB_OFF");
                 if (cek.auth) throw new Error("AUTH");
                 if (!cek.tabelAda) throw new Error("TABEL_TIDAK_ADA");
-                window._dbSiap = true;
+                window._dbSiapTabel = tabelAktif();
             }
 
             // Kelompokkan per periode lalu upsert per periode
@@ -1891,7 +2143,7 @@
             const m = String(e.message || e);
             let pesan = m;
             if (m.includes("FILE_SQL_TIDAK_ADA")) pesan = "File pam.sql tidak ditemukan. Letakkan pam.sql di folder yang sama dengan index.html, lalu coba lagi.";
-            else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk transaksi_pelanggan.";
+            else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk tabel transaksi_pelanggan / transaksi_pelanggan_rt09.";
             else if (m.includes("SQL_ERR")) pesan = "Database menolak: " + m.replace("SQL_ERR: ", "").slice(0, 150);
             else pesan = pesanErrorDB(e);
             info.innerHTML = IK.x + " <b>Import gagal:</b> " + pesan;
@@ -1901,12 +2153,17 @@
 
     async function kosongkanData() {
         const info = document.getElementById('infoImport');
-        if (!confirm("PERINGATAN!\n\nSemua data transaksi (semua periode) akan DIHAPUS PERMANEN dari database.\nLanjutkan?")) return;
+        if (!confirm("PERINGATAN!\n\nSemua data transaksi (semua periode) milik " + infoRT().label + " akan DIHAPUS PERMANEN dari tabel " + tabelAktif() + ".\nData RT lain TIDAK tersentuh.\nLanjutkan?")) return;
         if (!confirm("KONFIRMASI TERAKHIR\n\nYakin 100%? Ada baiknya Export Database (backup) dulu sekarang.")) return;
         try {
             info.innerText = "Mengosongkan...";
             await dbHapusSemua();
-            try { localStorage.removeItem(KUNCI_PENDING); } catch (e) {}
+            // Lepas jaring penyelamat HANYA bila milik RT ini; milik RT lain
+            // tidak boleh ikut terbuang (bisa jadi satu-satunya salinan data).
+            const pJaring = bacaPending();
+            if (!pJaring || !pJaring.rt || pJaring.rt === rtAktif) {
+                try { localStorage.removeItem(KUNCI_PENDING); } catch (e) {}
+            }
             info.innerHTML = IK.check + " <b>Data dikosongkan.</b>";
             await loadDataPeriodeIni();
         } catch (e) {
@@ -1974,6 +2231,14 @@
     async function pulihkanOperasiTertunda() {
         const p = bacaPending();
         if (!p) return true;
+        // Jaring penyelamat membawa RT pemiliknya: bila milik RT lain,
+        // JANGAN disentuh di sini — ditunggu sampai aplikasi berada di RT
+        // pemiliknya (pemulihan otomatis jalan di sana).
+        if (p.rt && p.rt !== rtAktif) {
+            const milik = DAFTAR_RT.find(r => r.id === p.rt);
+            catatLogKoneksi("info", "Penyusunan ulang tertunda milik " + (milik ? milik.label : p.rt) + " — dilewati di " + infoRT().label + ", tidak ada data yang diubah.");
+            return true;
+        }
         try {
             await dbHapusSemua();
             await dbInsertUrut(p.baris);
@@ -1982,7 +2247,7 @@
             return true;
         } catch (e) {
             const coba = (Number(p.coba) || 0) + 1;
-            try { localStorage.setItem(KUNCI_PENDING, JSON.stringify({ baris: p.baris, coba: coba })); } catch (e2) {}
+            try { localStorage.setItem(KUNCI_PENDING, JSON.stringify({ baris: p.baris, coba: coba, rt: p.rt || rtAktif })); } catch (e2) {}
             showToast(IK.alert + " Ada penyusunan ulang daftar yang belum selesai — akan dicoba lagi otomatis. Pastikan toggle <b>Enable API to modify tables data</b> aktif.", "gagal");
             return false;
         }
@@ -2031,7 +2296,8 @@
         });
 
         // 6) Jaring penyelamat: simpan rencana final SEBELUM menghapus
-        try { localStorage.setItem(KUNCI_PENDING, JSON.stringify({ baris: barisAkhir, coba: 0 })); } catch (e) {}
+        //    (membawa RT pemiliknya supaya tak pernah dipulihkan ke tabel salah)
+        try { localStorage.setItem(KUNCI_PENDING, JSON.stringify({ baris: barisAkhir, coba: 0, rt: rtAktif })); } catch (e) {}
 
         // 7) Hapus semua lalu sisipkan ulang sesuai urutan rumah
         await dbHapusSemua();
@@ -2090,7 +2356,6 @@
             const c = hitungPelanggan.get(lama) || 0;
             hitungPelanggan.delete(lama);
             hitungPelanggan.set(baru, c);
-            simpanCacheDaftarPelanggan();
             document.getElementById("inputNamaGanti").value = "";
             await loadDataPeriodeIni();
             infoPelangganTeks(IK.check + ` Berhasil. ${n} baris riwayat kini atas nama <b>${baru}</b>.`);
@@ -2111,7 +2376,6 @@
             const idx = daftarPelanggan.indexOf(nama);
             if (idx >= 0) daftarPelanggan.splice(idx, 1);
             hitungPelanggan.delete(nama);
-            simpanCacheDaftarPelanggan();
             await loadDataPeriodeIni();
             infoPelangganTeks(IK.check + ` <b>${nama}</b> dihapus. Total sekarang: ${daftarPelanggan.length} pelanggan.`);
         } catch (e) {
@@ -2119,6 +2383,7 @@
         }
     }
 
+    terapkanIdentitasRT();
     loadDataPeriodeIni();
 </script>
 
