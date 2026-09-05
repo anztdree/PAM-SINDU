@@ -160,15 +160,15 @@
         /* ===== PEMILIH RT (REV-4) — tombol RT 08 / RT 09 tepat di atas Periode Aktif ===== */
         .rt-switch { display: flex; gap: 8px; margin-bottom: 12px; }
         .rt-btn {
-            flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            min-height: 48px; padding: 9px 12px;
+            flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            min-height: 56px; padding: 11px 14px;
             border-radius: 14px; border: 1.5px solid #d3ecfb;
             background: #fff; color: var(--teks-samar);
-            font-family: inherit; font-size: .9rem; font-weight: 800; letter-spacing: .4px;
+            font-family: inherit; font-size: 1.05rem; font-weight: 800; letter-spacing: .4px;
             cursor: pointer; box-shadow: var(--bayang-kartu);
             transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
         }
-        .rt-btn svg { width: 19px; height: 19px; flex: 0 0 19px; }
+        .rt-btn svg { width: 26px; height: 26px; flex: 0 0 26px; stroke-width: 2.4; }
         .rt-btn:active { transform: scale(.97); }
         .rt-btn.rt-aktif {
             background: linear-gradient(135deg, var(--biru-tua), var(--biru));
@@ -441,6 +441,55 @@
             margin-right: 6px; vertical-align: 1px; box-shadow: 0 0 0 3px rgba(148,163,184,.18);
         }
 
+        /* ===== BADGE KONTEKS RT & PERIODE ===== */
+        .badge-konteks { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
+            border-radius: 999px; font-size: .68rem; font-weight: 800; letter-spacing: .3px;
+            background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.32); color: #fff;
+            line-height: 1.4; white-space: nowrap; }
+        .badge-konteks .dot { width: 7px; height: 7px; border-radius: 999px; background: #fff;
+            box-shadow: 0 0 0 2px rgba(255,255,255,.4); }
+        .badge-konteks.badge-rt { background: linear-gradient(135deg, rgba(8,145,178,.96), rgba(3,105,161,.96)); border-color: rgba(255,255,255,.5); }
+        .badge-konteks.badge-periode { background: linear-gradient(135deg, rgba(5,150,105,.96), rgba(4,120,87,.96)); border-color: rgba(255,255,255,.5); }
+
+        /* Badge ringan untuk panel summary (di latar putih) */
+        .badge-rt-ringan { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px;
+            padding: 2px 8px; border-radius: 999px; font-size: .64rem; font-weight: 800;
+            background: #e0f2fe; color: var(--biru-tua); border: 1px solid #bae6fd; letter-spacing: .3px; }
+        .badge-rt-ringan .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--biru-terang); }
+        .badge-jumlah-ringan { display: inline-flex; align-items: center; gap: 5px; margin-left: 4px;
+            padding: 2px 8px; border-radius: 999px; font-size: .64rem; font-weight: 800;
+            background: #f1f5f9; color: var(--teks-samar); border: 1px solid var(--garis); }
+
+        /* Baris badge di kepala modal */
+        .modal-badge-baris { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0 16px 10px;
+            background: linear-gradient(180deg, rgba(8,71,107,.18), rgba(8,71,107,0)); }
+
+        /* ===== MODAL KONFIRMASI KUSTOM ===== */
+        .konfirmasi-ikon { display: flex; align-items: center; justify-content: center;
+            width: 56px; height: 56px; border-radius: 999px; margin: 0 auto 8px; }
+        .konfirmasi-ikon .svgi { width: 28px; height: 28px; color: #fff; stroke-width: 2.4; }
+        .ikon-tambah { background: linear-gradient(135deg, #047857, #059669); box-shadow: 0 8px 22px -8px rgba(5,150,105,.6); }
+        .ikon-ganti { background: linear-gradient(135deg, var(--biru), var(--biru-terang)); box-shadow: 0 8px 22px -8px rgba(3,105,161,.6); }
+        .ikon-hapus { background: linear-gradient(135deg, #b91c1c, #dc2626); box-shadow: 0 8px 22px -8px rgba(220,38,38,.6); }
+        .konfirmasi-judul { text-align: center; font-size: 1.05rem; font-weight: 800; color: var(--biru-tua); margin: 0 0 6px; }
+        .konfirmasi-sub { text-align: center; font-size: .74rem; color: var(--teks-samar); margin: 0 0 12px; line-height: 1.5; }
+        .konfirmasi-konten { background: #f8fafc; border: 1px solid var(--garis); border-radius: 12px;
+            padding: 12px 14px; font-size: .82rem; color: var(--teks); line-height: 1.6; margin-bottom: 12px; }
+        .konfirmasi-konten b { color: var(--biru-tua); }
+        .konfirmasi-konten .baris-detail { display: flex; justify-content: space-between; gap: 10px;
+            padding: 4px 0; border-bottom: 1px dashed #e2e8f0; }
+        .konfirmasi-konten .baris-detail:last-child { border-bottom: 0; }
+        .konfirmasi-konten .baris-detail .k { color: var(--teks-samar); font-size: .74rem; font-weight: 700; }
+        .konfirmasi-konten .baris-detail .v { font-weight: 800; color: var(--teks); text-align: right; }
+        .konfirmasi-peringatan { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+            border-radius: 10px; padding: 8px 11px; font-size: .74rem; line-height: 1.55; margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start; }
+        .konfirmasi-peringatan .svgi { color: #dc2626; flex: 0 0 16px; width: 16px; height: 16px; margin-top: 1px; }
+        .baris-tombol .btn-merah-konfirmasi {
+            background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 55%),
+                        linear-gradient(135deg, #b91c1c, #dc2626);
+            box-shadow: 0 6px 16px -8px rgba(185,28,28,.55);
+        }
+
         /* ===== TOAST ===== */
         .toast-wrap {
             position: fixed; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
@@ -562,7 +611,7 @@
     <!-- MANAJEMEN PELANGGAN (tepat di atas pencarian) -->
     <div class="card">
         <details class="panel" id="panelManajemen">
-            <summary class="panel-summary"><span class="panel-chevron">▶</span><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Manajemen Pelanggan<span class="mj-sub">Tambah · Ganti Nama · Hapus</span></summary>
+            <summary class="panel-summary"><span class="panel-chevron">▶</span><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> <span id="judulManajemen">Manajemen Pelanggan RT 08</span></summary>
             <div class="panel-isi">
                 <div class="mj-blok">
                     <div class="mj-label"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Tambah Pelanggan</div>
@@ -620,6 +669,10 @@
             <div class="modal-kepala">
                 <h3><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pencatatan Meteran</h3>
                 <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-badge-baris">
+                <span class="badge-konteks badge-rt"><span class="dot"></span><span id="modalBadgeRT">RT 08</span></span>
+                <span class="badge-konteks badge-periode"><span class="dot"></span><span id="modalBadgePeriode">Juni 2026</span></span>
             </div>
             <div class="modal-isi">
                 <div class="form-group">
@@ -710,6 +763,38 @@
     </div>
 </div>
 
+<!-- MODAL KONFIRMASI KUSTOM — dipakai oleh Manajemen Pelanggan (tambah/ganti/hapus) -->
+<div id="modalKonfirmasi" class="modal" onclick="if(event.target===this) tutupModalKonfirmasi(false)">
+    <div class="modal-content-wrapper">
+        <div class="form-box">
+            <div class="modal-kepala">
+                <h3><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg> <span id="konfirmasiHeader">Konfirmasi</span></h3>
+                <button class="tombol-tutup" onclick="tutupModalKonfirmasi(false)" aria-label="Batal"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-badge-baris">
+                <span class="badge-konteks badge-rt"><span class="dot"></span><span id="konfirmasiBadgeRT">RT 08</span></span>
+                <span class="badge-konteks badge-periode"><span class="dot"></span><span id="konfirmasiBadgePeriode">Juni 2026</span></span>
+            </div>
+            <div class="modal-isi">
+                <div class="konfirmasi-ikon" id="konfirmasiIkon">
+                    <svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+                </div>
+                <h4 class="konfirmasi-judul" id="konfirmasiJudul">Konfirmasi Aksi</h4>
+                <p class="konfirmasi-sub" id="konfirmasiSub">Pastikan data berikut sudah benar sebelum lanjut.</p>
+                <div class="konfirmasi-konten" id="konfirmasiKonten"></div>
+                <div class="konfirmasi-peringatan" id="konfirmasiPeringatan" style="display:none;">
+                    <svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                    <span id="konfirmasiTeksPeringatan"></span>
+                </div>
+                <div class="baris-tombol">
+                    <button class="btn" id="konfirmasiBtnYa" onclick="tutupModalKonfirmasi(true)"><span id="konfirmasiBtnYaTeks">Ya, Lanjutkan</span></button>
+                </div>
+                <button class="btn tombol-batal" onclick="tutupModalKonfirmasi(false)">Batal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL LOG KONEKSI — diagnostik koneksi database, dibuka dengan mengetuk pill status -->
 <div id="modalLogKoneksi" class="modal" onclick="if(event.target===this) tutupModalLogKoneksi()">
     <div class="modal-content-wrapper">
@@ -748,7 +833,7 @@
     // Catatan lapangan pemilik: SHTTPS hanya mendukung SATU database — maka
     // kedua tabel TINGGAL di SATU file pam.db yang sama (lihat export).
     const DAFTAR_RT = [
-        { id: "rt08", label: "RT 08", tabel: "transaksi_pelanggan",      judul: "Sinduharjo 08 / 04", judulFile: "SINDUHARJO 08/04" },
+        { id: "rt08", label: "RT 08", tabel: "transaksi_pelanggan_rt08", judul: "Sinduharjo 08 / 04", judulFile: "SINDUHARJO 08/04" },
         { id: "rt09", label: "RT 09", tabel: "transaksi_pelanggan_rt09", judul: "Sinduharjo 09 / 04", judulFile: "SINDUHARJO 09/04" }
     ];
     // RT aktif HIDUP DI MEMORI SAJA — TIDAK ada kunci localStorage baru
@@ -1033,6 +1118,12 @@
             const btn = document.getElementById("rtBtn" + r.id.slice(-2));
             if (btn) btn.classList.toggle("rt-aktif", r.id === rtAktif);
         });
+        // Judul panel Manajemen Pelanggan langsung tunjuk RT aktif — sebelumnya
+        // pakai beberapa badge terpisah ("RT 08" + "0 pelanggan" + sub teks
+        // "Tambah · Ganti Nama · Hapus") yang membuat summary terlalu panjang.
+        // Sekarang cukup: [icon-orang] Manajemen Pelanggan RT 08 (atau RT 09).
+        const judulMj = document.getElementById("judulManajemen");
+        if (judulMj) judulMj.textContent = "Manajemen Pelanggan " + info.label;
     }
 
     function pilihRT(id) {
@@ -1055,6 +1146,15 @@
         if (kosongCari) kosongCari.style.display = "none";
         const modalInput = document.getElementById("modalInput");
         if (modalInput) modalInput.style.display = "none";
+        // Saat ganti RT, dropdown <select> "pilihNamaLama" & "pilihNamaHapus"
+        // harus dikosongkan dulu — bila tidak, opsi dari RT sebelumnya masih
+        // tertinggal dan bisa dipilih salah. Reset juga infoPelanggan
+        // supaya teks "Berhasil menambah" dari RT lama tidak menetap di RT baru.
+        ["pilihNamaLama", "pilihNamaHapus"].forEach(selId => {
+            const el = document.getElementById(selId);
+            if (el) el.innerHTML = '<option value="">Memuat…</option>';
+        });
+        infoPelangganTeks("");
         catatLogKoneksi("info", "Beralih ke " + infoRT().label + " — tabel \"" + tabelAktif() + "\"");
         terapkanIdentitasRT();
         renderTabel();
@@ -1226,6 +1326,11 @@
                 };
             });
             renderTabel();
+            // Setelah data termuat & daftarPelanggan terisi, segarkan dropdown
+            // Manajemen Pelanggan (Ganti Nama / Hapus) supaya opsinya cocok RT
+            // aktif — sebelumnya dropdown tetap pakai daftar RT lama sampai
+            // fungsi manajemen lain dipanggil, bikin petugas bingung.
+            isiPilihanPelanggan();
         } catch (err) {
             console.error("Gagal mengambil data dari database SHTTPS:", err);
             catatLogKoneksi("gagal", "Gagal memuat data periode \"" + key + "\" — kode: " + (err.message || err));
@@ -1234,6 +1339,12 @@
             // tidak terbaca, daftar tampil KOSONG (tidak ada nama jadul).
             excelData = [];
             renderTabel();
+            // Saat gagal muat, kosongkan dropdown supaya petugas tidak salah
+            // pilih opsi dari RT lama.
+            ["pilihNamaLama", "pilihNamaHapus"].forEach(selId => {
+                const el = document.getElementById(selId);
+                if (el) el.innerHTML = '<option value="">— server tidak terbaca —</option>';
+            });
             showToast(IK.alert + " Server tidak terbaca — daftar pelanggan hanya muncul saat server SHTTPS aktif. Setelah server siap, ketuk <b>Coba Sambung</b>.", "gagal");
         }
     }
@@ -1454,24 +1565,45 @@
 
     async function prosesTutupBukuDanLanjut() {
         let periodeSekarang = getPeriodeText();
+        const r = infoRT();
+        const totalPelanggan = excelData.length;
 
-        let konfirmasi1 = confirm(
-            `PERINGATAN KRUSIAL!\n\n` +
-            `Apakah Anda yakin ingin MELAKUKAN TUTUP BUKU untuk periode "${periodeSekarang}" (${infoRT().label})?\n\n` +
-            `• Meter Akhir akan terkunci dan menjadi Meter Awal bulan depan.\n` +
-            `• Sisa Deposit / Tunggakan akan otomatis dialihkan ke bulan berikutnya.\n\n` +
-            `Klik [OK] untuk Ya (Lanjut) atau [Cancel] untuk Batal.`
-        );
+        // Hitung ringkasan periode yang akan ditutup
+        let sudahBayar = 0, belumBayar = 0, totalUang = 0;
+        excelData.forEach(it => {
+            if (it.STATUS === "Sudah Bayar") sudahBayar++; else belumBayar++;
+            totalUang += parseFloat(it.CASH) || 0;
+        });
 
-        if (!konfirmasi1) return;
+        // Hitung periode baru (sebelum ubah state — pure preview)
+        let bulanBaru = currentBulanIndex + 1;
+        let tahunBaru = currentTahun;
+        if (bulanBaru > 11) { bulanBaru = 0; tahunBaru++; }
+        const periodeBaruPreview = daftarBulan[bulanBaru] + " " + tahunBaru;
 
-        let konfirmasi2 = confirm(
-            `KONFIRMASI TERAKHIR\n\n` +
-            `Proses penguncian data untuk periode ${periodeSekarang} akan dieksekusi.\n\n` +
-            `Apakah Anda benar-benar yakin seluruh data transaksi periode ini sudah 100% valid?`
-        );
+        // Modal konfirmasi tunggal (sebelumnya 2x confirm berurutan yang
+        // membingungkan). Tunjuk RT tujuan, periode saat ini, periode baru,
+        // dan ringkasan pembayaran — biar petugas yakin sebelum lanjut.
+        const konten =
+            '<div class="baris-detail"><span class="k">RT Tujuan</span><span class="v">' + r.label + '</span></div>' +
+            '<div class="baris-detail"><span class="k">Periode Saat Ini</span><span class="v"><b>' + periodeSekarang + '</b></span></div>' +
+            '<div class="baris-detail"><span class="k">Periode Baru</span><span class="v">' + periodeBaruPreview + '</span></div>' +
+            '<div class="baris-detail"><span class="k">Total Pelanggan</span><span class="v">' + totalPelanggan + '</span></div>' +
+            '<div class="baris-detail"><span class="k">Sudah Bayar</span><span class="v" style="color:#059669;">' + sudahBayar + ' pelanggan</span></div>' +
+            '<div class="baris-detail"><span class="k">Belum Bayar</span><span class="v" style="color:#dc2626;">' + belumBayar + ' pelanggan</span></div>' +
+            '<div class="baris-detail"><span class="k">Total Uang Masuk</span><span class="v">Rp ' + totalUang.toLocaleString("id-ID") + '</span></div>';
 
-        if (!konfirmasi2) return;
+        const konfirmasi = await tampilkanKonfirmasi({
+            header: "Tutup Buku & Lanjut Periode",
+            judul: "Tutup Buku " + periodeSekarang + "?",
+            sub: "Meter Akhir periode ini akan jadi Meter Awal periode baru, dan sisa deposit/tunggakan otomatis dialihkan.",
+            ikon: "ganti",
+            teksYa: "Ya, Tutup Buku & Lanjut",
+            jenisYa: "hijau",
+            kontenHTML: konten,
+            peringatanHTML: "Proses ini <b>PERMANEN</b> — pastikan seluruh data transaksi periode ini sudah 100% valid. Sebaiknya <b>Export Database (backup)</b> dulu sebelum lanjut."
+        });
+        if (!konfirmasi) return;
 
         let bulanSekarang = currentBulanIndex;
         let tahunSekarang = currentTahun;
@@ -1513,9 +1645,11 @@
 
             simpanPeriodeAktif();
             await loadDataPeriodeIni();
-            alert(`BERHASIL!\nTutup Buku Selesai. Selamat Bekerja di Periode Baru: ${periodeBaruKey}`);
+            // Sebelumnya pakai alert() native yang blokir & polos. Ganti
+            // dengan toast supaya tidak mengganggu alur kerja petugas.
+            showToast(IK.check + " <b>Tutup Buku Selesai.</b> Selamat bekerja di periode <b>" + periodeBaruKey + "</b>.", "info");
         } catch (e) {
-            alert("Gagal Tutup Buku: " + pesanErrorDB(e));
+            showToast(IK.x + " Gagal Tutup Buku: " + pesanErrorDB(e), "gagal");
             currentBulanIndex = bulanSekarang;
             currentTahun = tahunSekarang;
         }
@@ -1528,6 +1662,13 @@
         document.getElementById('mLalu').value = item.METER_AWAL || 0;
         document.getElementById('mKini').value = item.METER_AKHIR || 0;
         document.getElementById('mCash').value = item.CASH || "";
+        // Badge konteks: RT aktif & periode aktif, biar petugas yakin
+        // sedang catat untuk RT mana & bulan apa sebelum tekan "Sudah Bayar".
+        const r = infoRT();
+        const elRT = document.getElementById("modalBadgeRT");
+        const elP = document.getElementById("modalBadgePeriode");
+        if (elRT) elRT.textContent = r.label;
+        if (elP) elP.textContent = getPeriodeText();
         hitungTagihanModal();
         document.getElementById('modalInput').style.display = 'block';
     }
@@ -1536,6 +1677,78 @@
 
     function bukaModalBackup() { document.getElementById('modalBackup').style.display = 'block'; }
     function tutupModalBackup() { document.getElementById('modalBackup').style.display = 'none'; }
+
+    /* ============================================================
+       MODAL KONFIRMASI KUSTOM (reusable)
+       Ganti confirm() native browser — tampilkan RT & Periode aktif
+       biar petugas yakin aksi manajemen pelanggan mengenai RT yang
+       sedang dipilih, bukan RT lain yang kebetulan terlihat di header.
+       ============================================================ */
+    let _resolveKonfirmasi = null;
+
+    function _setBadgeKonfirmasi() {
+        const r = infoRT();
+        const elRT = document.getElementById("konfirmasiBadgeRT");
+        const elP = document.getElementById("konfirmasiBadgePeriode");
+        if (elRT) elRT.textContent = r.label;
+        if (elP) elP.textContent = getPeriodeText();
+    }
+
+    /**
+     * Tampilkan modal konfirmasi kustom.
+     * opts: { judul, sub, header, ikon ("tambah"|"ganti"|"hapus"), kontenHTML,
+     *        peringatanHTML, teksYa, jenisYa ("hijau"|"biru"|"merah") }
+     * Return: Promise<boolean> — true jika Ya, false jika Batal/tutup.
+     */
+    function tampilkanKonfirmasi(opts) {
+        return new Promise(resolve => {
+            _resolveKonfirmasi = resolve;
+            _setBadgeKonfirmasi();
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val || ""; };
+            set("konfirmasiHeader", opts.header || "Konfirmasi");
+            set("konfirmasiJudul", opts.judul || "Konfirmasi Aksi");
+            set("konfirmasiSub", opts.sub || "Pastikan data berikut sudah benar sebelum lanjut.");
+            set("konfirmasiBtnYaTeks", opts.teksYa || "Ya, Lanjutkan");
+            setHTML("konfirmasiKonten", opts.kontenHTML || "");
+            setHTML("konfirmasiTeksPeringatan", opts.peringatanHTML || "");
+            document.getElementById("konfirmasiPeringatan").style.display = opts.peringatanHTML ? "flex" : "none";
+
+            // Ikon
+            const ikonEl = document.getElementById("konfirmasiIkon");
+            ikonEl.className = "konfirmasi-ikon " + (
+                opts.ikon === "tambah" ? "ikon-tambah" :
+                opts.ikon === "ganti" ? "ikon-ganti" :
+                opts.ikon === "hapus" ? "ikon-hapus" : "ikon-ganti"
+            );
+            const svgTambah = '<svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
+            const svgGanti  = '<svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+            const svgHapus  = '<svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+            ikonEl.innerHTML = (
+                opts.ikon === "tambah" ? svgTambah :
+                opts.ikon === "hapus" ? svgHapus : svgGanti
+            );
+
+            // Tombol Ya: warna sesuai jenis aksi
+            const btnYa = document.getElementById("konfirmasiBtnYa");
+            btnYa.className = "btn " + (
+                opts.jenisYa === "merah" ? "btn-merah-konfirmasi" :
+                opts.jenisYa === "biru"  ? "btn-primer" :
+                /* default hijau */ "btn-hijau"
+            );
+
+            document.getElementById("modalKonfirmasi").style.display = "block";
+        });
+    }
+
+    function tutupModalKonfirmasi(ya) {
+        document.getElementById("modalKonfirmasi").style.display = "none";
+        if (_resolveKonfirmasi) {
+            const r = _resolveKonfirmasi;
+            _resolveKonfirmasi = null;
+            r(!!ya);
+        }
+    }
 
     function hitungTagihanModal() {
         let item = excelData[selectedIndex];
@@ -1807,7 +2020,7 @@
     // trigger updated_at). Dipakai untuk tabel RT aktif maupun tabel
     // pasangannya; nama index/trigger diberi akhiran supaya tidak bentrok.
     function buatStrukturTabelTransaksi(db, nama) {
-        const suf = (nama === "transaksi_pelanggan_rt09") ? "_rt09" : "";
+        const suf = nama.endsWith("_rt09") ? "_rt09" : (nama.endsWith("_rt08") ? "_rt08" : "");
         db.exec("CREATE TABLE " + nama + " (" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "periode TEXT NOT NULL," +
@@ -1836,7 +2049,7 @@
     function bangunDbDariBaris(SQL, baris) {
         const db = new SQL.Database();
         const tabelData = tabelAktif();
-        const tabelPasangan = (rtAktif === "rt09") ? "transaksi_pelanggan" : "transaksi_pelanggan_rt09";
+        const tabelPasangan = (rtAktif === "rt09") ? "transaksi_pelanggan_rt08" : "transaksi_pelanggan_rt09";
         buatStrukturTabelTransaksi(db, tabelData);
         buatStrukturTabelTransaksi(db, tabelPasangan);
         const stmt = db.prepare(
@@ -2000,11 +2213,13 @@
     // ============ IMPORT DATA LAMA DARI pam.sql (client-side) ============
 
     // Scanner sadar-kutip: ambil statement INSERT untuk tabel RT mana pun
-    // (transaksi_pelanggan ATAU transaksi_pelanggan_rt09 — dua-duanya
+    // (transaksi_pelanggan_rt08 ATAU transaksi_pelanggan_rt09 — dua-duanya
     // diterima); baris hasil parse selalu ditulis ke tabel RT AKTIF.
+    // Kompatibilitas: juga terima nama lama "transaksi_pelanggan" (tanpa
+    // suffix _rt08) supaya backup .sql lama tetap bisa diimport.
     function ekstrakInserts(sqlText) {
         const hasil = [];
-        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan(?:_rt09)?`?\s*\(/gi;
+        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan(?:_rt08|_rt09)?`?\s*\(/gi;
         let m;
         while ((m = re.exec(sqlText)) !== null) {
             let i = m.index, stmt = "", inStr = false;
@@ -2143,7 +2358,7 @@
             const m = String(e.message || e);
             let pesan = m;
             if (m.includes("FILE_SQL_TIDAK_ADA")) pesan = "File pam.sql tidak ditemukan. Letakkan pam.sql di folder yang sama dengan index.html, lalu coba lagi.";
-            else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk tabel transaksi_pelanggan / transaksi_pelanggan_rt09.";
+            else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk tabel transaksi_pelanggan_rt08 / transaksi_pelanggan_rt09.";
             else if (m.includes("SQL_ERR")) pesan = "Database menolak: " + m.replace("SQL_ERR: ", "").slice(0, 150);
             else pesan = pesanErrorDB(e);
             info.innerHTML = IK.x + " <b>Import gagal:</b> " + pesan;
@@ -2315,10 +2530,38 @@
         const total = daftarPelanggan.length;
         const rencana = hitungRencanaTambah(document.getElementById("inputNoBaru").value, total);
         const periode = getPeriodeText();
-        const pesan = rencana.sisip
-            ? `Tambah pelanggan "${nama}" di posisi No. ${rencana.posisi}?\n\n"${daftarPelanggan[rencana.posisi - 1]}" (No. ${rencana.posisi}) dan ${total - rencana.posisi} pelanggan di bawahnya bergeser turun 1 nomor.\nSeluruh riwayat data tetap aman.`
-            : `Tambah pelanggan baru "${nama}"?\n\nMulai dicatat pada periode ${periode} (di akhir daftar, No. ${rencana.posisi}).`;
-        if (!confirm(pesan)) return;
+        const r = infoRT();
+
+        // Konten detail konfirmasi — pakai "baris-detail" dua kolom supaya
+        // RT & Periode & posisi sisip & nama pelanggan di-geser jelas terbaca,
+        // tidak satu paragraf panjang seperti confirm() native.
+        let konten = '<div class="baris-detail"><span class="k">RT Tujuan</span><span class="v">' + r.label + '</span></div>';
+        if (rencana.sisip) {
+            const namaGeser = daftarPelanggan[rencana.posisi - 1] || "—";
+            const jumlahGeser = total - rencana.posisi;
+            konten += '<div class="baris-detail"><span class="k">Posisi Sisip</span><span class="v">No. ' + rencana.posisi + ' (di tengah)</span></div>';
+            konten += '<div class="baris-detail"><span class="k">Pelanggan No. ' + rencana.posisi + ' Saat Ini</span><span class="v">' + namaGeser + '</span></div>';
+            konten += '<div class="baris-detail"><span class="k">Bergeser Turun</span><span class="v">' + jumlahGeser + ' pelanggan</span></div>';
+            konten += '<div class="baris-detail"><span class="k">Nama Baru</span><span class="v"><b>' + nama + '</b></span></div>';
+        } else {
+            konten += '<div class="baris-detail"><span class="k">Posisi</span><span class="v">No. ' + rencana.posisi + ' (di akhir)</span></div>';
+            konten += '<div class="baris-detail"><span class="k">Mulai Dicatat</span><span class="v">Periode ' + periode + '</span></div>';
+            konten += '<div class="baris-detail"><span class="k">Nama Baru</span><span class="v"><b>' + nama + '</b></span></div>';
+        }
+
+        const konfirmasi = await tampilkanKonfirmasi({
+            header: "Tambah Pelanggan",
+            judul: 'Tambah "' + nama + '" ke ' + r.label + '?',
+            sub: rencana.sisip
+                ? "Pelanggan di bawah posisi ini akan bergeser turun 1 nomor. Riwayat data tetap aman."
+                : "Pelanggan baru akan ditambahkan di akhir daftar untuk periode ini.",
+            ikon: "tambah",
+            teksYa: "Ya, Tambah",
+            jenisYa: "hijau",
+            kontenHTML: konten
+        });
+        if (!konfirmasi) return;
+
         try {
             infoPelangganTeks(rencana.sisip ? "Menyisipkan & mengatur ulang nomor..." : "Menambahkan...");
             if (rencana.sisip) {
@@ -2347,7 +2590,28 @@
         if (baru === lama) { infoPelangganTeks(IK.x + " Nama baru sama dengan nama lama."); return; }
         if (daftarPelanggan.includes(baru)) { infoPelangganTeks(IK.x + " Nama <b>" + baru + "</b> sudah dipakai pelanggan lain."); return; }
         const nBaris = hitungPelanggan.get(lama) || 0;
-        if (!confirm(`Ganti nama pemilik rumah:\n"${lama}" → "${baru}"\n\nSeluruh riwayatnya (${nBaris} baris, semua periode) akan memakai nama baru.`)) return;
+        const r = infoRT();
+
+        // Konfirmasi kustom — tunjuk RT & jumlah baris riwayat yang akan ikut
+        // berubah. Sebelumnya cuma teks "Semua periode akan memakai nama baru"
+        // tanpa menyebut RT mana — petugas ragu apakah ganti nama RT 08 juga
+        // memengaruhi RT 09 atau sebaliknya.
+        const konten =
+            '<div class="baris-detail"><span class="k">RT Tujuan</span><span class="v">' + r.label + '</span></div>' +
+            '<div class="baris-detail"><span class="k">Nama Lama</span><span class="v">' + lama + '</span></div>' +
+            '<div class="baris-detail"><span class="k">Nama Baru</span><span class="v"><b>' + baru + '</b></span></div>' +
+            '<div class="baris-detail"><span class="k">Baris Riwayat Terdampak</span><span class="v">' + nBaris + ' baris (semua periode)</span></div>';
+
+        const konfirmasi = await tampilkanKonfirmasi({
+            header: "Ganti Nama Pelanggan",
+            judul: "Ganti Nama Pemilik Rumah",
+            sub: 'Ubah "' + lama + '" menjadi "' + baru + '"? Seluruh riwayat transaksinya akan memakai nama baru.',
+            ikon: "ganti",
+            teksYa: "Ya, Ganti Nama",
+            jenisYa: "biru",
+            kontenHTML: konten
+        });
+        if (!konfirmasi) return;
         try {
             infoPelangganTeks("Mengganti nama...");
             const n = await dbUpdateNama(lama, baru);
@@ -2368,8 +2632,27 @@
         const nama = (document.getElementById("pilihNamaHapus").value || "").trim();
         if (!nama) { infoPelangganTeks(IK.x + " Pilih pelanggan yang mau dihapus."); return; }
         const nBaris = hitungPelanggan.get(nama) || 0;
-        if (!confirm(`HAPUS PELANGGAN "${nama}"\n\n${nBaris} baris riwayat (SEMUA periode) akan dihapus PERMANEN.\nSebaiknya Export Database (backup) dulu sekarang.`)) return;
-        if (!confirm(`KONFIRMASI TERAKHIR:\nYakin 100% hapus "${nama}" dari daftar?`)) return;
+        const r = infoRT();
+
+        // Konfirmasi tunggal (sebelumnya 2x confirm berurutan yang bikin
+        // petugas bingung). Tampilkan RT tujuan, nama, jumlah baris riwayat,
+        // dan peringatan bahwa aksi ini permanen — disarankan export dulu.
+        const konten =
+            '<div class="baris-detail"><span class="k">RT Tujuan</span><span class="v">' + r.label + '</span></div>' +
+            '<div class="baris-detail"><span class="k">Nama Pelanggan</span><span class="v"><b>' + nama + '</b></span></div>' +
+            '<div class="baris-detail"><span class="k">Baris Riwayat Terhapus</span><span class="v">' + nBaris + ' baris (SEMUA periode)</span></div>';
+
+        const konfirmasi = await tampilkanKonfirmasi({
+            header: "Hapus Pelanggan",
+            judul: 'Hapus "' + nama + '" dari ' + r.label + '?',
+            sub: "Aksi ini PERMANEN — seluruh riwayat transaksi pelanggan ini akan dihapus dan tidak bisa dikembalikan.",
+            ikon: "hapus",
+            teksYa: "Ya, Hapus Permanen",
+            jenisYa: "merah",
+            kontenHTML: konten,
+            peringatanHTML: "Sebaiknya <b>Export Database (backup)</b> dulu sebelum menghapus — begitu data terhapus, tidak bisa dipulihkan."
+        });
+        if (!konfirmasi) return;
         try {
             infoPelangganTeks("Menghapus...");
             await dbHapusPelanggan(nama);
