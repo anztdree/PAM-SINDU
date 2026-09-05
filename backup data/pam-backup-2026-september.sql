@@ -1,5 +1,5 @@
 -- Backup Database BPSPAMS Tirta Makmur - SINDUHARJO 08/04 (tabel transaksi_pelanggan)
--- Dibuat: 6/9/2026, 03.38.36
+-- Dibuat: 6/9/2026, 06.01.07
 -- Total baris: 180
 -- Cara memulihkan: letakkan file ini sebagai pam.sql di folder aplikasi,
 -- lalu buka Menu Admin > Import pam.sql (baris lama diperbarui, tidak dobel).
