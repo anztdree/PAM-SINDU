@@ -490,6 +490,36 @@
             box-shadow: 0 6px 16px -8px rgba(185,28,28,.55);
         }
 
+        /* ===== RINCIAN PER-RT (untuk Tutup Buku global) ===== */
+        /* Gaya konsisten dengan kartu KPI dashboard — background, border,
+           padding — TANPA ikon KPI. Tiap RT satu kartu, angka kunci grid 2 kolom. */
+        .rincian-list { display: grid; gap: 10px; }
+        .rincian-rt {
+            background: #fff; border: 1.5px solid var(--garis); border-radius: 14px;
+            padding: 12px 14px; box-shadow: 0 2px 8px -4px rgba(15,23,42,.08);
+        }
+        .rincian-rt.rincian-gagal { background: #fef2f2; border-color: #fecaca; }
+        .rincian-kepala {
+            display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px;
+            padding-bottom: 8px; border-bottom: 1px dashed var(--garis);
+        }
+        .rincian-kepala b { font-size: .95rem; font-weight: 800; color: var(--biru-tua); letter-spacing: .3px; }
+        .rincian-kepala .rincian-judul { font-size: .72rem; color: var(--teks-samar); font-weight: 700; }
+        .rincian-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px;
+        }
+        .rincian-sel { display: flex; flex-direction: column; gap: 2px; }
+        .rincian-sel-penuh { grid-column: 1 / -1; padding-top: 6px; border-top: 1px dashed var(--garis); }
+        .rincian-sel span {
+            font-size: .62rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: .5px; color: var(--teks-samar);
+        }
+        .rincian-sel b { font-size: .92rem; font-weight: 800; color: var(--teks); font-variant-numeric: tabular-nums; }
+        .rincian-baris-gagal {
+            font-size: .76rem; color: #b91c1c; font-weight: 700; line-height: 1.55;
+        }
+        .teks-merah { color: var(--merah); }
+
         /* ===== TOAST ===== */
         .toast-wrap {
             position: fixed; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
@@ -572,7 +602,7 @@
             <button class="tombol-chevron" onclick="lanjutBulanBerikutnya()" aria-label="Bulan sesudahnya">&#8250;</button>
         </div>
         <div style="margin-top:10px;">
-            <button class="btn btn-hijau btn-blok" onclick="prosesTutupBukuDanLanjut()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Tutup Buku &amp; Buat Periode Baru</button>
+            <button class="btn btn-hijau btn-blok" onclick="prosesTutupBukuDanLanjut()" title="Tutup Buku & Buat Periode Baru — Meter Akhir periode ini menjadi Meter Awal periode baru"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Tutup Buku &amp; Buat Periode Baru</button>
         </div>
     </div>
 
@@ -888,7 +918,15 @@
     // urutKolom meminta server mengurutkan hasil (didukung SHTTPS baru,
     // diabaikan tanpa efek di versi lama).
     async function dbBaca(kolom, filters, limit, urutKolom) {
-        const qs = { table: tabelAktif(), rowsAsObjects: "true", columns: kolom, limit: String(limit || 500) };
+        return dbBacaTabel(tabelAktif(), kolom, filters, limit, urutKolom);
+    }
+
+    // Versi dbBaca yang menerima nama tabel eksplisit. Dipakai saat harus
+    // baca tabel RT yang BUKAN rtAktif — mis. saat Tutup Buku global yang
+    // harus memproses SEMUA RT sekaligus, terlepas dari tombol RT mana
+    // yang sedang ditekan petugas di header.
+    async function dbBacaTabel(tabel, kolom, filters, limit, urutKolom) {
+        const qs = { table: tabel, rowsAsObjects: "true", columns: kolom, limit: String(limit || 500) };
         if (filters) qs.filters = JSON.stringify(filters);
         if (urutKolom) { qs.sort = urutKolom; qs["sort-order"] = "asc"; }
         const res = await fetch("/api/db/table?" + new URLSearchParams(qs).toString());
@@ -978,10 +1016,34 @@
     // baris baru -> INSERT (array = atomik di SHTTPS versi baru),
     // baris yang sudah ada -> UPDATE (kolomUpdate: daftar kolom yang ditimpa)
     async function dbUpsertPeriode(periode, daftarBaris, kolomUpdate) {
-        const ada = new Set((await dbBaca("nama", { clauses: ["periode="], args: [periode] })).map(r => r.nama));
+        return dbUpsertPeriodeTabel(tabelAktif(), periode, daftarBaris, kolomUpdate);
+    }
+
+    // Versi dbUpsertPeriode yang menerima nama tabel eksplisit. Dipakai saat
+    // Tutup Buku global — harus upsert periode baru di tabel RT yang BUKAN
+    // rtAktif (mis. petugas di RT 08 tekan Tutup Buku, aplikasi juga harus
+    // upsert periode baru di tabel RT 09 dengan data RT 09 sendiri).
+    async function dbUpsertPeriodeTabel(tabel, periode, daftarBaris, kolomUpdate) {
+        const ada = new Set((await dbBacaTabel(tabel, "nama", { clauses: ["periode="], args: [periode] })).map(r => r.nama));
         const sisip = [], ubah = [];
         daftarBaris.forEach(r => { (ada.has(r.nama) ? ubah : sisip).push(r); });
-        if (sisip.length > 0) await dbInsertBanyak(sisip);
+        if (sisip.length > 0) {
+            const params = new URLSearchParams();
+            params.append("table", tabel);
+            params.append("values", JSON.stringify(sisip));
+            try {
+                await dbForm("POST", "/api/db/insert", params);
+            } catch (e) {
+                if (String(e.message || e).includes("HTTP 400")) {
+                    for (const r of sisip) {
+                        const p = new URLSearchParams();
+                        p.append("table", tabel);
+                        p.append("values", JSON.stringify(r));
+                        await dbForm("POST", "/api/db/insert", p);
+                    }
+                } else throw e;
+            }
+        }
         for (const r of ubah) {
             let nilai;
             if (kolomUpdate) {
@@ -994,7 +1056,11 @@
                     saldo_lalu: num(r.saldo_lalu), status: r.status
                 };
             }
-            await dbUpdateBaris(periode, r.nama, nilai);
+            const params = new URLSearchParams();
+            params.append("table", tabel);
+            params.append("filters", JSON.stringify({ clauses: ["periode=", "nama="], args: [periode, r.nama] }));
+            params.append("values", JSON.stringify(nilai));
+            await dbForm("PUT", "/api/db/update", params);
         }
         return { sisip: sisip.length, ubah: ubah.length };
     }
@@ -1564,47 +1630,107 @@
     }
 
     async function prosesTutupBukuDanLanjut() {
+        // KOREKSI: Tutup Buku sekarang GLOBAL untuk SEMUA RT sekaligus.
+        // Sebelumnya Tutup Buku hanya memproses RT yang sedang aktif di
+        // header — akibatnya bila petugas di RT 08 tekan Tutup Buku, tabel
+        // RT 09 tidak ikut maju ke periode baru. Sekarang Tutup Buku membaca
+        // data tiap RT langsung dari database (tidak terikat rtAktif),
+        // membuat baris periode baru untuk masing-masing, lalu maju periode.
+        //
+        // TAMPILAN: rincian modal = LIST SEMUA RT. Setiap RT satu kartu
+        // (gaya konsisten dashboard — background, border, padding — TANPA
+        // ikon KPI). Angka tiap RT dihitung dari tabelnya sendiri. Tidak
+        // ada laporan gabungan, tidak ada gambar KPI penuh di modal.
+
         let periodeSekarang = getPeriodeText();
-        const r = infoRT();
-        const totalPelanggan = excelData.length;
 
-        // Hitung ringkasan periode yang akan ditutup
-        let sudahBayar = 0, belumBayar = 0, totalUang = 0;
-        excelData.forEach(it => {
-            if (it.STATUS === "Sudah Bayar") sudahBayar++; else belumBayar++;
-            totalUang += parseFloat(it.CASH) || 0;
-        });
-
-        // Hitung periode baru (sebelum ubah state — pure preview)
+        // Hitung periode baru (preview, belum ubah state)
         let bulanBaru = currentBulanIndex + 1;
         let tahunBaru = currentTahun;
         if (bulanBaru > 11) { bulanBaru = 0; tahunBaru++; }
         const periodeBaruPreview = daftarBulan[bulanBaru] + " " + tahunBaru;
 
-        // Modal konfirmasi tunggal (sebelumnya 2x confirm berurutan yang
-        // membingungkan). Tunjuk RT tujuan, periode saat ini, periode baru,
-        // dan ringkasan pembayaran — biar petugas yakin sebelum lanjut.
-        const konten =
-            '<div class="baris-detail"><span class="k">RT Tujuan</span><span class="v">' + r.label + '</span></div>' +
-            '<div class="baris-detail"><span class="k">Periode Saat Ini</span><span class="v"><b>' + periodeSekarang + '</b></span></div>' +
-            '<div class="baris-detail"><span class="k">Periode Baru</span><span class="v">' + periodeBaruPreview + '</span></div>' +
-            '<div class="baris-detail"><span class="k">Total Pelanggan</span><span class="v">' + totalPelanggan + '</span></div>' +
-            '<div class="baris-detail"><span class="k">Sudah Bayar</span><span class="v" style="color:#059669;">' + sudahBayar + ' pelanggan</span></div>' +
-            '<div class="baris-detail"><span class="k">Belum Bayar</span><span class="v" style="color:#dc2626;">' + belumBayar + ' pelanggan</span></div>' +
-            '<div class="baris-detail"><span class="k">Total Uang Masuk</span><span class="v">Rp ' + totalUang.toLocaleString("id-ID") + '</span></div>';
+        // === Baca data periode ini dari SEMUA RT (loop DAFTAR_RT) ===
+        // Tiap RT dihitung angkanya sendiri: total pelanggan, pakai air,
+        // sudah bayar, belum bayar, uang masuk. Kalau tabel RT belum siap
+        // (mis. RT 09 belum disiapkan di pam.db), tetap tampil dengan label
+        // "tabel belum siap" supaya petugas tahu ada RT yg perlu disiapkan.
+        //
+        // LOGIKA HITUNG (sama dengan dashboard hitungRekap):
+        // - totalPelanggan = SEMUA baris (45)
+        // - pakaiAir = pemakaian > 0 (25) — "aktif"
+        // - sudahBayar = di antara pemakai air, status "Sudah Bayar" (24)
+        // - belumBayar = pakaiAir - sudahBayar (25 - 24 = 1)
+        //   ^ bukan totalPelanggan - sudahBayar, karena 20 pelanggan yg
+        //     tidak pakai air BUKAN "belum bayar" — mereka memang tidak
+        //     pakai air bulan ini (mis. rumah kosong).
+        // - uangMasuk = m³ pemakai air yg sudah bayar × tarif
+        const ringkasanRT = [];
+        for (const rt of DAFTAR_RT) {
+            try {
+                const baris = await dbBacaTabel(rt.tabel, KOLOM, { clauses: ["periode="], args: [periodeSekarang] });
+                let totalPelanggan = baris.length;
+                let pakaiAir = 0, sudahBayar = 0, airLunasM3 = 0;
+                baris.forEach(it => {
+                    const pemakaian = Math.max(0, num(it.meter_akhir) - num(it.meter_awal));
+                    if (pemakaian > 0) {
+                        pakaiAir++;
+                        if (it.status === "Sudah Bayar") {
+                            sudahBayar++;
+                            airLunasM3 += pemakaian;
+                        }
+                    }
+                });
+                const belumBayar = pakaiAir - sudahBayar; // hanya dari pemakai air
+                const uangMasuk = airLunasM3 * TARIF_PER_M3;
+                ringkasanRT.push({ info: rt, suksesBaca: true, totalPelanggan, pakaiAir, sudahBayar, belumBayar, uangMasuk });
+            } catch (e) {
+                ringkasanRT.push({ info: rt, suksesBaca: false });
+            }
+        }
 
+        // === Bangun list rincian per-RT ===
+        // Pola kartu konsisten dashboard (background, border, padding),
+        // TANPA ikon KPI. Tiap RT satu kartu, tunjuk: header RT + 4 angka
+        // kunci dalam grid 2 kolom (Total, Pakai Air, Sudah Bayar, Belum,
+        // Uang Masuk). Periode transisi ditulis di kepala modal (judul).
+        const rincianHTML = ringkasanRT.map(r => {
+            if (!r.suksesBaca) {
+                return '<div class="rincian-rt rincian-gagal">' +
+                    '<div class="rincian-kepala"><b>' + r.info.label + '</b> <span class="rincian-judul">' + r.info.judul + '</span></div>' +
+                    '<div class="rincian-baris-gagal">Tabel belum siap / gagal dibaca di pam.db — Tutup Buku akan melewatkan RT ini.</div>' +
+                '</div>';
+            }
+            return '<div class="rincian-rt">' +
+                '<div class="rincian-kepala"><b>' + r.info.label + '</b> <span class="rincian-judul">' + r.info.judul + '</span></div>' +
+                '<div class="rincian-grid">' +
+                    '<div class="rincian-sel"><span>Total Pelanggan</span><b>' + r.totalPelanggan + '</b></div>' +
+                    '<div class="rincian-sel"><span>Pakai Air</span><b class="teks-cyan">' + r.pakaiAir + ' orang</b></div>' +
+                    '<div class="rincian-sel"><span>Sudah Bayar</span><b class="teks-hijau">' + r.sudahBayar + ' orang</b></div>' +
+                    '<div class="rincian-sel"><span>Belum Bayar</span><b class="teks-merah">' + r.belumBayar + ' orang</b></div>' +
+                    '<div class="rincian-sel rincian-sel-penuh"><span>Uang Masuk</span><b class="teks-hijau">Rp ' + r.uangMasuk.toLocaleString("id-ID") + '</b></div>' +
+                '</div>' +
+            '</div>';
+        }).join("");
+
+        const konten = '<div class="rincian-list">' + rincianHTML + '</div>';
+
+        // === Modal konfirmasi — TIDAK ada badge RT di kepala (karena global) ===
+        // Periode transisi ditulis di judul supaya jelas sekaligus.
         const konfirmasi = await tampilkanKonfirmasi({
             header: "Tutup Buku & Lanjut Periode",
-            judul: "Tutup Buku " + periodeSekarang + "?",
-            sub: "Meter Akhir periode ini akan jadi Meter Awal periode baru, dan sisa deposit/tunggakan otomatis dialihkan.",
+            judul: periodeSekarang + " &rarr; " + periodeBaruPreview,
+            sub: "Meter Akhir periode ini akan jadi Meter Awal periode baru, dan sisa deposit/tunggakan otomatis dialihkan untuk SEMUA RT di bawah ini.",
             ikon: "ganti",
             teksYa: "Ya, Tutup Buku & Lanjut",
             jenisYa: "hijau",
+            tampilkanBadgeRT: false,
             kontenHTML: konten,
             peringatanHTML: "Proses ini <b>PERMANEN</b> — pastikan seluruh data transaksi periode ini sudah 100% valid. Sebaiknya <b>Export Database (backup)</b> dulu sebelum lanjut."
         });
         if (!konfirmasi) return;
 
+        // === Eksekusi: maju periode global, upsert tiap RT ===
         let bulanSekarang = currentBulanIndex;
         let tahunSekarang = currentTahun;
 
@@ -1613,46 +1739,57 @@
             currentBulanIndex = 0;
             currentTahun++;
         }
+        const periodeBaruKey = getPeriodeText();
 
-        let periodeBaruKey = getPeriodeText();
+        for (const rt of DAFTAR_RT) {
+            let barisRT;
+            try {
+                barisRT = await dbBacaTabel(rt.tabel, KOLOM, { clauses: ["periode="], args: [periodeSekarang] });
+            } catch (e) {
+                catatLogKoneksi("gagal", "Tutup Buku lewati " + rt.label + " (tabel belum siap): " + (e.message || e));
+                continue;
+            }
+            const itemsBaru = barisRT.map(item => {
+                const itemUntukHitung = {
+                    NAMA: item.nama,
+                    METER_AWAL: num(item.meter_awal),
+                    METER_AKHIR: num(item.meter_akhir),
+                    CASH: num(item.cash),
+                    BIAYA_BEBAN: num(item.biaya_beban) || BIAYA_BEBAN_STANDAR,
+                    SALDO_LALU: num(item.saldo_lalu),
+                    STATUS: item.status
+                };
+                const infoLama = hitungDetailPelanggan(itemUntukHitung);
+                return {
+                    nama: item.nama,
+                    meter_awal: num(item.meter_akhir) || num(item.meter_awal) || 0,
+                    biaya_beban: BIAYA_BEBAN_STANDAR,
+                    saldo_lalu: infoLama.selisihAset
+                };
+            });
 
-        let itemsBaru = excelData.map(item => {
-            let infoLama = hitungDetailPelanggan(item);
-            return {
-                NAMA: item.NAMA,
-                METER_AWAL: parseFloat(item.METER_AKHIR) || parseFloat(item.METER_AWAL) || 0,
-                BIAYA_BEBAN: BIAYA_BEBAN_STANDAR,
-                SALDO_LALU: infoLama.selisihAset
-            };
-        });
-
-        try {
-            // Upsert 45 baris periode baru: baris baru disisipkan dalam SATU
-            // permintaan array (= satu transaksi di SHTTPS versi baru), baris
-            // yang sudah ada hanya diperbarui meter_awal & saldo_lalu
-            // (input bulan baru yang sudah ada dipertahankan).
             const barisBaru = itemsBaru.map(it => ({
                 periode: periodeBaruKey,
-                nama: it.NAMA,
-                meter_awal: num(it.METER_AWAL),
+                nama: it.nama,
+                meter_awal: num(it.meter_awal),
                 meter_akhir: 0,
                 cash: 0,
-                biaya_beban: num(it.BIAYA_BEBAN),
-                saldo_lalu: num(it.SALDO_LALU),
+                biaya_beban: num(it.biaya_beban),
+                saldo_lalu: num(it.saldo_lalu),
                 status: "Belum Bayar"
             }));
-            await dbUpsertPeriode(periodeBaruKey, barisBaru, ["meter_awal", "saldo_lalu"]);
 
-            simpanPeriodeAktif();
-            await loadDataPeriodeIni();
-            // Sebelumnya pakai alert() native yang blokir & polos. Ganti
-            // dengan toast supaya tidak mengganggu alur kerja petugas.
-            showToast(IK.check + " <b>Tutup Buku Selesai.</b> Selamat bekerja di periode <b>" + periodeBaruKey + "</b>.", "info");
-        } catch (e) {
-            showToast(IK.x + " Gagal Tutup Buku: " + pesanErrorDB(e), "gagal");
-            currentBulanIndex = bulanSekarang;
-            currentTahun = tahunSekarang;
+            try {
+                await dbUpsertPeriodeTabel(rt.tabel, periodeBaruKey, barisBaru, ["meter_awal", "saldo_lalu"]);
+            } catch (e) {
+                catatLogKoneksi("gagal", "Tutup Buku gagal untuk " + rt.label + " (" + rt.tabel + "): " + (e.message || e));
+            }
         }
+
+        simpanPeriodeAktif();
+        await loadDataPeriodeIni();
+
+        showToast(IK.check + " <b>Tutup Buku Selesai.</b> Selamat bekerja di periode <b>" + periodeBaruKey + "</b>.", "info");
     }
 
     function bukaModal(index) {
@@ -1686,24 +1823,37 @@
        ============================================================ */
     let _resolveKonfirmasi = null;
 
-    function _setBadgeKonfirmasi() {
+    function _setBadgeKonfirmasi(tampilkanRT) {
         const r = infoRT();
         const elRT = document.getElementById("konfirmasiBadgeRT");
         const elP = document.getElementById("konfirmasiBadgePeriode");
-        if (elRT) elRT.textContent = r.label;
-        if (elP) elP.textContent = getPeriodeText();
+        // Baris badge di kepala modal — tampilkan/sembunyikan sesuai opsi.
+        // Untuk aksi global (mis. Tutup Buku) badge RT disembunyikan karena
+        // aksi berlaku untuk SEMUA RT, bukan RT aktif saja. Untuk aksi
+        // manajemen pelanggan (tambah/ganti/hapus), badge RT tetap tampil.
+        const barisBadge = elRT ? elRT.closest(".modal-badge-baris") : null;
+        if (barisBadge) {
+            if (tampilkanRT === false) {
+                barisBadge.style.display = "none";
+            } else {
+                barisBadge.style.display = "flex";
+                if (elRT) elRT.textContent = r.label;
+            }
+        }
+        if (elP && tampilkanRT !== false) elP.textContent = getPeriodeText();
     }
 
     /**
      * Tampilkan modal konfirmasi kustom.
      * opts: { judul, sub, header, ikon ("tambah"|"ganti"|"hapus"), kontenHTML,
-     *        peringatanHTML, teksYa, jenisYa ("hijau"|"biru"|"merah") }
+     *        peringatanHTML, teksYa, jenisYa ("hijau"|"biru"|"merah"),
+     *        tampilkanBadgeRT (default true) — false untuk aksi global }
      * Return: Promise<boolean> — true jika Ya, false jika Batal/tutup.
      */
     function tampilkanKonfirmasi(opts) {
         return new Promise(resolve => {
             _resolveKonfirmasi = resolve;
-            _setBadgeKonfirmasi();
+            _setBadgeKonfirmasi(opts.tampilkanBadgeRT !== false);
             const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
             const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val || ""; };
             set("konfirmasiHeader", opts.header || "Konfirmasi");
@@ -1954,10 +2104,11 @@
        ============================================================ */
     function namaFileBackup(ext) {
         const d = new Date();
-        // Format: pam-backup-[rt]-[tahun]-[bulan].ext — RT 09 memakai akhiran
-        // -rt09 (contoh: pam-backup-rt09-2026-september.sql); RT 08 tanpa
-        // akhiran supaya nama file backup lama tidak berubah.
-        return "pam-backup" + (rtAktif === "rt09" ? "-rt09" : "") + "-" + d.getFullYear() + "-" + daftarBulan[d.getMonth()].toLowerCase() + "." + ext;
+        // Format: pam-backup-[tahun]-[bulan].ext — TANPA suffix RT karena
+        // sekarang 1 file berisi data SEMUA RT (RT 08 + RT 09) sekaligus,
+        // sama dengan file .db yg juga berisi kedua tabel. Nama .sql & .db
+        // identik (cuma beda extension) supaya mudah dipasangkan.
+        return "pam-backup-" + d.getFullYear() + "-" + daftarBulan[d.getMonth()].toLowerCase() + "." + ext;
     }
 
     function unduhBlob(blob, namaFile) {
@@ -1976,24 +2127,40 @@
         return String(v).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     }
 
-    function buatDumpSql(baris) {
+    // Bangun dump .sql dari data SEMUA RT. Sebelumnya hanya 1 RT (tabelAktif),
+    // sekarang 1 file berisi 2 blok INSERT — RT 08 (transaksi_pelanggan_rt08)
+    // + RT 09 (transaksi_pelanggan_rt09). Format tetap kompatibel dengan
+    // parser Import aplikasi ini sendiri (regex terima _rt08|_rt09|lama
+    // tanpa suffix) dan dengan website (regex sudah diperbarui sebelumnya).
+    //
+    // Parameter: array berisi { tabel, label, baris } — satu entry per RT.
+    // RT yg tabelnya gagal dibaca dilewati (tidak ada blok INSERT).
+    function buatDumpSql(daftarRT) {
+        const totalBaris = daftarRT.reduce((s, r) => s + (r.baris ? r.baris.length : 0), 0);
         const kop = [
-            "-- Backup Database BPSPAMS Tirta Makmur - " + infoRT().judulFile + " (tabel " + tabelAktif() + ")",
+            "-- Backup Database BPSPAMS Tirta Makmur - SINDUHARJO 08/04 & 09/04",
+            "-- Berisi data SEMUA RT (RT 08 + RT 09) — 1 file, 2 tabel.",
             "-- Dibuat: " + new Date().toLocaleString('id-ID'),
-            "-- Total baris: " + baris.length,
+            "-- Total baris: " + totalBaris,
             "-- Cara memulihkan: letakkan file ini sebagai pam.sql di folder aplikasi,",
             "-- lalu buka Menu Admin > Import pam.sql (baris lama diperbarui, tidak dobel).",
+            "-- Untuk website: upload file ini lewat Menu Import .sql ke Database.",
             ""
         ].join("\n");
-        if (!baris.length) return kop + "-- (database kosong saat backup ini dibuat)\n";
-        const nilai = baris.map(r =>
-            "('" + sqlEscape(r.periode) + "', '" + sqlEscape(r.nama) + "', " +
-            num(r.meter_awal) + ", " + num(r.meter_akhir) + ", " + num(r.cash) + ", " +
-            num(r.biaya_beban) + ", " + num(r.saldo_lalu) + ", '" + sqlEscape(r.status) + "')"
-        ).join(",\n");
-        return kop +
-            "INSERT INTO `" + tabelAktif() + "` (`periode`, `nama`, `meter_awal`, `meter_akhir`, `cash`, `biaya_beban`, `saldo_lalu`, `status`) VALUES\n" +
-            nilai + ";\n";
+
+        const blok = daftarRT.filter(r => r.baris && r.baris.length > 0).map(r => {
+            const nilai = r.baris.map(it =>
+                "('" + sqlEscape(it.periode) + "', '" + sqlEscape(it.nama) + "', " +
+                num(it.meter_awal) + ", " + num(it.meter_akhir) + ", " + num(it.cash) + ", " +
+                num(it.biaya_beban) + ", " + num(it.saldo_lalu) + ", '" + sqlEscape(it.status) + "')"
+            ).join(",\n");
+            return "-- " + r.label + " (" + r.tabel + "): " + r.baris.length + " baris\n" +
+                "INSERT INTO `" + r.tabel + "` (`periode`, `nama`, `meter_awal`, `meter_akhir`, `cash`, `biaya_beban`, `saldo_lalu`, `status`) VALUES\n" +
+                nilai + ";\n";
+        }).join("\n");
+
+        if (!blok) return kop + "-- (database kosong saat backup ini dibuat)\n";
+        return kop + "\n" + blok;
     }
 
     // Muat pustaka sql.js sesuai kebutuhan (sql-wasm.js + sql-wasm.wasm
@@ -2039,39 +2206,43 @@
 
     // Bangun file database SQLite LENGKAP dari data live:
     // struktur (tabel + index unik + trigger updated_at) persis pam.db asli.
-    // REV-4: file .db berisi TABEL MILIK RT AKTIF (diisi baris live) plus
-    // tabel pasangan RT lain dalam keadaan KOSONG — jadi export dari RT 08
-    // sekaligus MENYIAPKAN tabel RT 09 di file pam.db yang dipasang ulang
-    // lewat "Attach existing database" (versi gratis SHTTPS tidak bisa
-    // membuat tabel lewat API).
-    // Hasilnya file .db sungguhan yang bisa dipasang ulang lewat
-    // "Attach existing database".
-    function bangunDbDariBaris(SQL, baris) {
+    // REV: file .db sekarang berisi data SEMUA RT (RT 08 + RT 09), masing-
+    // masing tabel diisi dengan baris live dari tabelnya sendiri — bukan
+    // seperti sebelumnya (RT aktif diisi, pasangan kosong). Jadi 1 file
+    // .db langsung bisa dipasang ulang lewat "Attach existing database"
+    // di SHTTPS untuk kedua RT sekaligus.
+    //
+    // Parameter: array berisi { tabel, baris } — satu entry per RT.
+    function bangunDbDariBaris(SQL, daftarRT) {
         const db = new SQL.Database();
-        const tabelData = tabelAktif();
-        const tabelPasangan = (rtAktif === "rt09") ? "transaksi_pelanggan_rt08" : "transaksi_pelanggan_rt09";
-        buatStrukturTabelTransaksi(db, tabelData);
-        buatStrukturTabelTransaksi(db, tabelPasangan);
-        const stmt = db.prepare(
-            "INSERT INTO " + tabelData + " (id, periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status, updated_at) " +
-            "VALUES (?,?,?,?,?,?,?,?,?,?)"
-        );
-        let maxId = 0;
-        baris.forEach(r => {
-            const id = Number(r.id) || 0;
-            stmt.run([
-                id > 0 ? id : null,
-                String(r.periode || ""),
-                String(r.nama || ""),
-                num(r.meter_awal), num(r.meter_akhir), num(r.cash),
-                num(r.biaya_beban), num(r.saldo_lalu),
-                r.status === "Sudah Bayar" ? "Sudah Bayar" : "Belum Bayar",
-                String(r.updated_at || "") || null
-            ]);
-            if (id > maxId) maxId = id;
+        daftarRT.forEach(r => buatStrukturTabelTransaksi(db, r.tabel));
+        let maxIdGlobal = 0;
+        daftarRT.forEach(r => {
+            if (!r.baris || r.baris.length === 0) return;
+            const stmt = db.prepare(
+                "INSERT INTO " + r.tabel + " (id, periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status, updated_at) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?)"
+            );
+            let maxId = 0;
+            r.baris.forEach(it => {
+                const id = Number(it.id) || 0;
+                stmt.run([
+                    id > 0 ? id : null,
+                    String(it.periode || ""),
+                    String(it.nama || ""),
+                    num(it.meter_awal), num(it.meter_akhir), num(it.cash),
+                    num(it.biaya_beban), num(it.saldo_lalu),
+                    it.status === "Sudah Bayar" ? "Sudah Bayar" : "Belum Bayar",
+                    String(it.updated_at || "") || null
+                ]);
+                if (id > maxId) maxId = id;
+            });
+            stmt.free();
+            if (maxId > 0) {
+                db.run("UPDATE sqlite_sequence SET seq = ? WHERE name = ?", [maxId, r.tabel]);
+                if (maxId > maxIdGlobal) maxIdGlobal = maxId;
+            }
         });
-        stmt.free();
-        if (maxId > 0) db.run("UPDATE sqlite_sequence SET seq = ? WHERE name = ?", [maxId, tabelData]);
         const bytes = db.export();
         db.close();
         return bytes;
@@ -2081,6 +2252,9 @@
         // mode "db"  : bangun pam.db SEGAR dari data live via sql.js
         //              (fallback: file pam.db asli, lalu .sql)
         // mode "sql" : dump teks .sql langsung dari data live (selalu terbaru)
+        // REV: export sekarang GLOBAL — baca data SEMUA RT (RT 08 + RT 09)
+        //      dari database, tulis ke 1 file. Tidak terikat RT mana yg
+        //      sedang aktif di header. Cukup tekan 1x untuk dapat semua RT.
         mode = (mode === "sql") ? "sql" : "db";
         const btnDb = document.getElementById("btnExportDb");
         const btnSql = document.getElementById("btnExportSql");
@@ -2089,29 +2263,44 @@
         if (btnSql) btnSql.disabled = true;
         let alasanFallback = "";
         try {
-            // 1) Baca seluruh baris dari database live (endpoint baca, gratis)
-            const baris = await dbBaca(
-                "id,periode,nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status,updated_at",
-                null, 5000, "id"
-            );
-            baris.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+            // 1) Baca seluruh baris dari SEMUA tabel RT di database live.
+            //    Loop DAFTAR_RT, baca tiap tabel. Tabel yg gagal dibaca
+            //    (mis. RT 09 belum disiapkan di pam.db) dilewati tanpa
+            //    membatalkan export — file tetap berisi RT yg berhasil.
+            const daftarRT = [];
+            for (const rt of DAFTAR_RT) {
+                try {
+                    const baris = await dbBacaTabel(
+                        rt.tabel,
+                        "id,periode,nama,meter_awal,meter_akhir,cash,biaya_beban,saldo_lalu,status,updated_at",
+                        null, 5000, "id"
+                    );
+                    baris.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+                    daftarRT.push({ info: rt, tabel: rt.tabel, label: rt.label, baris, sukses: true });
+                } catch (e) {
+                    daftarRT.push({ info: rt, tabel: rt.tabel, label: rt.label, baris: [], sukses: false, error: e });
+                }
+            }
 
+            // Statistik ringkas (gabungan semua RT)
+            const semuaBaris = daftarRT.filter(r => r.sukses).flatMap(r => r.baris);
             const periodeUnik = [];
-            baris.forEach(r => { if (periodeUnik.indexOf(r.periode) < 0) periodeUnik.push(r.periode); });
-            const ringkas = baris.length + " baris, " + periodeUnik.length + " periode";
+            semuaBaris.forEach(r => { if (periodeUnik.indexOf(r.periode) < 0) periodeUnik.push(r.periode); });
+            const ringkas = semuaBaris.length + " baris, " + periodeUnik.length + " periode, " + daftarRT.filter(r => r.sukses).length + "/" + DAFTAR_RT.length + " RT";
 
             let pakaiFileDb = false;
             let sumberDb = "";
-            // 2) Mode "db" - JALUR UTAMA: bangun file .db SEGAR dari data
-            //    live via sql.js. Selalu terbaru & selalu valid.
+            // 2) Mode "db" - JALUR UTAMA: bangun file .db SEGAR berisi SEMUA RT.
             if (mode === "db") {
                 try {
                     await muatSqlJs();
                     const SQL = await initSqlJs({ locateFile: f => f });
-                    const bytes = bangunDbDariBaris(SQL, baris);
+                    // Bangun .db dengan data kedua RT (yang berhasil dibaca saja).
+                    const dbData = daftarRT.filter(r => r.sukses).map(r => ({ tabel: r.tabel, baris: r.baris }));
+                    const bytes = bangunDbDariBaris(SQL, dbData);
                     unduhBlob(new Blob([bytes], { type: "application/octet-stream" }), namaFileBackup("db"));
                     pakaiFileDb = true;
-                    sumberDb = "database segar dibangun dari data live (" + baris.length + " baris) - selalu terbaru";
+                    sumberDb = "database segar dibangun dari data live (" + semuaBaris.length + " baris dari " + daftarRT.filter(r => r.sukses).length + " RT) - selalu terbaru";
                 } catch (e) {
                     sqlJsPromise = null; // boleh coba muat ulang nanti
                     alasanFallback = String((e && e.message) ? e.message : e);
@@ -2132,7 +2321,7 @@
                             if (valid) {
                                 const lm = res.headers.get("Last-Modified");
                                 let maxUpd = 0;
-                                baris.forEach(r => {
+                                semuaBaris.forEach(r => {
                                     const t = Date.parse(String(r.updated_at || "").replace(" ", "T"));
                                     if (!isNaN(t) && t > maxUpd) maxUpd = t;
                                 });
@@ -2161,8 +2350,16 @@
             // 3) Dump .sql dari data live: mode "sql" langsung, atau fallback
             //    mode "db" (selalu lengkap & terbaru karena dari database aktif)
             if (!pakaiFileDb) {
-                unduhBlob(new Blob([buatDumpSql(baris)], { type: "application/sql" }), namaFileBackup("sql"));
+                const sqlData = daftarRT.filter(r => r.sukses).map(r => ({ tabel: r.tabel, label: r.label, baris: r.baris }));
+                unduhBlob(new Blob([buatDumpSql(sqlData)], { type: "application/sql" }), namaFileBackup("sql"));
             }
+
+            // Ringkas status per-RT untuk pesan info
+            const statusRT = daftarRT.map(r =>
+                r.sukses
+                    ? r.label + ": " + r.baris.length + " baris"
+                    : r.label + ": tabel belum siap"
+            ).join(" · ");
 
             showToast(mode === "sql"
                 ? IK.file + " Backup .sql terunduh (" + ringkas + ")"
@@ -2180,17 +2377,12 @@
                           " — yang diunduh: backup <b>.sql</b> (data tetap lengkap &amp; terbaru)."
                         : "") +
                     "<br>" + (pakaiFileDb
-                        ? "Memulihkan: SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file backup .db ini."
+                        ? "Memulihkan: SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file backup .db ini (sudah berisi kedua tabel RT)."
                         : "Memulihkan: letakkan file .sql ini di folder aplikasi (boleh diganti nama jadi pam.sql), lalu Menu Admin &gt; Import pam.sql.") +
-                    "<br><b>Catatan " + infoRT().label + ":</b> backup ini hanya berisi data " + infoRT().label +
-                    " (tabel " + tabelAktif() + "). Data RT lain tidak ikut — lakukan export terpisah saat RT tersebut aktif." +
-                    (rtAktif === "rt08"
-                        ? " File .db ini sudah berisi tabel kosong RT 09 — pasang ulang lewat Attach existing database untuk menyiapkan RT 09."
-                        : "");
+                    "<br><b>Isi backup:</b> " + statusRT + ". Data RT yg gagal dibaca tidak ikut — siapkan tabelnya di pam.db dulu lalu export ulang.";
             }
         } catch (e) {
-            alert("Gagal Export Database: " + pesanErrorDB(e));
-            showToast(IK.x + " Export database gagal", "gagal");
+            showToast(IK.x + " Export database gagal: " + pesanErrorDB(e), "gagal");
         } finally {
             if (btnDb) btnDb.disabled = false;
             if (btnSql) btnSql.disabled = false;
