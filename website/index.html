@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0369a1">
-    <title>BPSPAMS TIRTA MAKMUR - SINDUHARJO 08 / 04 </title>
+    <title>BPSPAMS TIRTA MAKMUR - SINDUHARJO 08 / 04</title>
 
     <style>
         :root {
@@ -148,6 +148,25 @@
             padding: 14px; margin-bottom: 12px;
         }
         .judul-kartu { font-weight: 800; font-size: .9rem; color: var(--biru-tua); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+        /* ===== PEMILIH RT (tab RT 08 / RT 09, sama dengan aplikasi Petugas) ===== */
+        .rt-switch { display: flex; gap: 8px; margin-bottom: 12px; }
+        .rt-btn {
+            flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            min-height: 56px; padding: 11px 14px;
+            border-radius: 14px; border: 1.5px solid #d3ecfb;
+            background: #fff; color: var(--teks-samar);
+            font-family: inherit; font-size: 1.05rem; font-weight: 800; letter-spacing: .4px;
+            cursor: pointer; box-shadow: 0 1px 2px rgba(2,32,71,.06), 0 8px 24px -12px rgba(2,32,71,.12);
+            transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+        .rt-btn svg { width: 26px; height: 26px; flex: 0 0 26px; stroke-width: 2.4; }
+        .rt-btn:active { transform: scale(.97); }
+        .rt-btn.rt-aktif {
+            background: linear-gradient(135deg, var(--biru-tua), var(--biru));
+            color: #fff; border-color: transparent;
+            box-shadow: 0 8px 18px -8px rgba(3,105,161,.65);
+        }
 
         /* ===== PERIODE ===== */
         .periode-baris {
@@ -426,6 +445,30 @@
         .baris-tombol { display: flex; gap: 6px; margin-bottom: 8px; }
         .baris-tombol .btn { flex: 1; font-size: .78rem; padding: 10px 6px; }
 
+        /* ===== MODAL KONFIRMASI (untuk Import .sql ke Database) ===== */
+        .konfirmasi-ikon { display: flex; align-items: center; justify-content: center;
+            width: 56px; height: 56px; border-radius: 999px; margin: 0 auto 8px; }
+        .konfirmasi-ikon svg { width: 28px; height: 28px; color: #fff; stroke-width: 2.4; }
+        .ikon-kirim { background: linear-gradient(135deg, var(--biru), var(--biru-terang)); box-shadow: 0 8px 22px -8px rgba(3,105,161,.6); }
+        .konfirmasi-judul { text-align: center; font-size: 1.05rem; font-weight: 800; color: var(--biru-tua); margin: 0 0 6px; }
+        .konfirmasi-sub { text-align: center; font-size: .76rem; color: var(--teks-samar); margin: 0 0 12px; line-height: 1.5; }
+        .konfirmasi-konten { background: #f8fafc; border: 1px solid var(--garis); border-radius: 12px;
+            padding: 12px 14px; font-size: .82rem; color: var(--teks); line-height: 1.6; margin-bottom: 12px; }
+        .konfirmasi-konten b { color: var(--biru-tua); }
+        .konfirmasi-konten .baris-detail { display: flex; justify-content: space-between; gap: 10px;
+            padding: 4px 0; border-bottom: 1px dashed #e2e8f0; }
+        .konfirmasi-konten .baris-detail:last-child { border-bottom: 0; }
+        .konfirmasi-konten .baris-detail .k { color: var(--teks-samar); font-size: .74rem; font-weight: 700; }
+        .konfirmasi-konten .baris-detail .v { font-weight: 800; color: var(--teks); text-align: right; }
+        .konfirmasi-peringatan { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+            border-radius: 10px; padding: 8px 11px; font-size: .74rem; line-height: 1.55; margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start; }
+        .konfirmasi-peringatan svg { color: #dc2626; flex: 0 0 16px; width: 16px; height: 16px; margin-top: 1px; }
+        .baris-tombol .btn-hijau-konfirmasi {
+            background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 55%),
+                        linear-gradient(135deg, #047857, #059669);
+            box-shadow: 0 6px 16px -8px rgba(4,120,87,.55);
+        }
+
         /* ===== TOAST ===== */
         .toast-wrap {
             position: fixed; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
@@ -462,7 +505,7 @@
             </div>
             <div class="header-teks">
                 <h2>BPSPAMS TIRTA MAKMUR</h2>
-                <p>&bull; Sinduharjo 08 / 04 &bull; </p>
+                <p>&bull; <span id="headerRT">Sinduharjo 08 / 04</span> &bull; </p>
             </div>
             <button class="btn-impor" id="btnImpor" onclick="togglePopupImpor(event)" aria-expanded="false" title="Setting — Import data & Export Laporan PDF">
                 <span class="ik" aria-hidden="true">
@@ -555,6 +598,18 @@
         </svg>
     </div>
 
+    <!-- PEMILIH RT (tab RT 08 / RT 09) — pemisah data viewer, sama dengan Petugas -->
+    <div class="rt-switch" role="tablist" aria-label="Pilih RT">
+        <button class="rt-btn rt-aktif" id="rtBtn08" onclick="pilihRT('08')" title="Lihat data RT 08">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+            RT 08
+        </button>
+        <button class="rt-btn" id="rtBtn09" onclick="pilihRT('09')" title="Lihat data RT 09">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+            RT 09
+        </button>
+    </div>
+
     <!-- PANEL PERIODE (navigasi antar bulan yang ada datanya) -->
     <div class="card">
         <div class="periode-baris">
@@ -626,7 +681,7 @@
     </div>
 
     <footer class="kaki-app">
-        BPSPAMS TIRTA MAKMUR &bull; SINDUHARJO 08/04<br>
+        BPSPAMS TIRTA MAKMUR &bull; <span id="footerRT">SINDUHARJO 08/04</span><br>
         
     </footer>
 </div>
@@ -644,6 +699,34 @@
                 <div class="baris-tombol">
                     <button class="btn btn-abu" onclick="tutupModal()">Tutup</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL KONFIRMASI IMPORT .sql ke DATABASE -->
+<div id="modalKonfirmasi" class="modal" onclick="if(event.target===this) tutupModalKonfirmasi(false)">
+    <div class="modal-content-wrapper">
+        <div class="form-box">
+            <div class="modal-kepala">
+                <h3><span class="wadah-ikon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg></span>Konfirmasi Import</h3>
+                <button class="tombol-tutup" onclick="tutupModalKonfirmasi(false)" aria-label="Batal"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+            </div>
+            <div class="modal-isi">
+                <div class="konfirmasi-ikon ikon-kirim">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                </div>
+                <h4 class="konfirmasi-judul" id="konfirmasiJudul">Kirim ke Database?</h4>
+                <p class="konfirmasi-sub" id="konfirmasiSub">Pastikan data berikut sudah benar sebelum mengirim.</p>
+                <div class="konfirmasi-konten" id="konfirmasiKonten"></div>
+                <div class="konfirmasi-peringatan" id="konfirmasiPeringatan" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                    <span id="konfirmasiTeksPeringatan"></span>
+                </div>
+                <div class="baris-tombol">
+                    <button class="btn btn-hijau-konfirmasi" id="konfirmasiBtnYa" onclick="tutupModalKonfirmasi(true)"><span id="konfirmasiBtnYaTeks">Ya, Kirim</span></button>
+                </div>
+                <button class="btn btn-abu" style="width:100%; margin-top:8px;" onclick="tutupModalKonfirmasi(false)">Batal</button>
             </div>
         </div>
     </div>
@@ -677,7 +760,10 @@
     /* ---------- PARSER .SQL (identik dengan aplikasi utama) ---------- */
     function ekstrakInserts(sqlText) {
         const hasil = [];
-        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan`?\s*\(/gi;
+        // Terima nama tabel baru (transaksi_pelanggan_rt08 / _rt09) maupun
+        // nama lama (transaksi_pelanggan tanpa suffix) untuk kompatibilitas
+        // backup .sql yang dibuat sebelum rename tabel.
+        const re = /INSERT\s+INTO\s+`?transaksi_pelanggan(?:_rt08|_rt09)?`?\s*\(/gi;
         let m;
         while ((m = re.exec(sqlText)) !== null) {
             let i = m.index, stmt = "", inStr = false;
@@ -705,6 +791,22 @@
         if (mOpen < 0 || mOpen > mVal) return [];
         const kolom = stmt.slice(mOpen + 1, stmt.indexOf(")", mOpen))
             .split(",").map(s => s.trim().replace(/`/g, ""));
+
+        // Ambil nama tabel dari statement INSERT untuk tag RT per baris.
+        // Nama tabel baru: transaksi_pelanggan_rt08 / _rt09. Nama lama:
+        // transaksi_pelanggan (tanpa suffix) → default rt08 (backward compat).
+        // Tag RT ini akan dibawa per baris sampai ke api.php, supaya baris
+        // bisa didistribusikan ke tabel yang benar (sebelumnya api.php pakai
+        // parameter ?rt global yg cuma mengirim semua baris ke satu tabel).
+        let rtTag = "08"; // default bila tidak dikenali
+        const mTabel = stmt.match(/INSERT\s+INTO\s+`?(transaksi_pelanggan(?:_rt08|_rt09)?)`?\s*\(/i);
+        if (mTabel) {
+            const namaTabel = mTabel[1].toLowerCase();
+            if (namaTabel.endsWith("_rt09")) rtTag = "09";
+            else if (namaTabel.endsWith("_rt08")) rtTag = "08";
+            else rtTag = "08"; // nama lama "transaksi_pelanggan" → default RT 08
+        }
+
         const sisa = stmt.slice(stmt.indexOf("(", mVal));
 
         const tupleTeks = [];
@@ -747,6 +849,8 @@
             if (kolom.length === 0 || nilai.length === 0) continue;
             const row = {};
             kolom.forEach((k, idx) => { if (idx < nilai.length) row[k] = nilai[idx]; });
+            // Bawa tag RT supaya api.php tahu baris ini milik tabel mana.
+            row.rt = rtTag;
             hasil.push(row);
         }
         return hasil;
@@ -821,6 +925,45 @@
     /* ---------- MUAT DATA (utama: DATABASE via api.php) ---------- */
     let modeSumber = "db"; // "db" = MySQL via api.php | "lokal" = pam.sql / file manual (tanpa database)
 
+    /* ---------- PEMILIH RT (tab RT 08 / RT 09) ----------
+       Viewer memilih RT untuk menampilkan data. Setiap RT punya tabel
+       sendiri di MySQL (transaksi_pelanggan_rt08 / _rt09). Saat user klik
+       tab RT, aplikasi muat ulang dari api.php?rt=08 atau rt=09.
+       State RT aktif HIDUP DI MEMORI SAJA (tidak disimpan localStorage),
+       default mulai dari RT 08 — sama dengan aplikasi Petugas. */
+    const DAFTAR_RT = [
+        { id: "08", label: "RT 08", judul: "Sinduharjo 08 / 04", judulFile: "SINDUHARJO 08/04" },
+        { id: "09", label: "RT 09", judul: "Sinduharjo 09 / 04", judulFile: "SINDUHARJO 09/04" }
+    ];
+    let rtAktif = "08";
+
+    function infoRT() { return DAFTAR_RT.find(r => r.id === rtAktif) || DAFTAR_RT[0]; }
+
+    function terapkanIdentitasRT() {
+        const info = infoRT();
+        const h = document.getElementById("headerRT");
+        if (h) h.textContent = info.judul;
+        const f = document.getElementById("footerRT");
+        if (f) f.textContent = info.judulFile;
+        document.title = "BPSPAMS TIRTA MAKMUR - " + info.judulFile;
+        DAFTAR_RT.forEach(r => {
+            const btn = document.getElementById("rtBtn" + r.id);
+            if (btn) btn.classList.toggle("rt-aktif", r.id === rtAktif);
+        });
+    }
+
+    function pilihRT(id) {
+        if (id === rtAktif || !DAFTAR_RT.some(r => r.id === id)) return;
+        rtAktif = id;
+        // Reset state tampilan supaya tidak ada sisa RT sebelumnya
+        semuaBaris = []; daftarPeriode = []; excelData = []; idxPeriode = 0;
+        terapkanIdentitasRT();
+        renderSemua();
+        // silent=true supaya toast "Data siap ditampilkan" tidak muncul tiap
+        // ganti tab — cukup indikator status pill di header saja.
+        muatData(true);
+    }
+
     /* ---------- TEKS RENTANG PERIODE (ramah pengunjung) ---------- */
     function teksRentangPeriode() {
         if (!daftarPeriode.length) return "belum ada data";
@@ -854,19 +997,23 @@
         });
     }
 
-    async function muatData() {
-        setStatusSumber("Memuat data...", "#d97706", "putar");
+    async function muatData(silent) {
+        // silent=true → muat data tanpa showToast "Data ... siap ditampilkan"
+        // (dipakai saat ganti tab RT, supaya tidak muncul popup tiap klik)
+        setStatusSumber("Memuat data " + infoRT().label + "...", "#d97706", "putar");
 
-        // 1) UTAMA: database MySQL via api.php
+        // 1) UTAMA: database MySQL via api.php (bawa parameter rt=08/09)
         try {
-            const res = await fetch("api.php?action=get_data&v=" + Date.now());
+            const res = await fetch("api.php?action=get_data&rt=" + rtAktif + "&v=" + Date.now());
             if (!res.ok) throw new Error("HTTP " + res.status);
             const json = await res.json();
             if (!json || json.status !== "success" || !Array.isArray(json.data)) throw new Error("jawaban api tidak dikenali");
             modeSumber = "db";
             const baris = json.data.map(barisDariDb).filter(Boolean);
             terapkanBaris(baris, "Database (MySQL)", true);
-            showToast("Data " + teksRentangPeriode() + " siap ditampilkan", "");
+            // Toast "siap ditampilkan" hanya untuk muat pertama (silent=false),
+            // JANGAN tampilkan saat ganti tab RT — bikin ganggu.
+            if (!silent) showToast("Data " + teksRentangPeriode() + " siap ditampilkan", "");
             return;
         } catch (err) { /* lanjut ke fallback di bawah */ }
 
@@ -878,7 +1025,8 @@
             if (teks.indexOf("INSERT INTO") < 0) throw new Error("format");
             modeSumber = "lokal";
             terapkanSql(teks, "pam.sql (lokal)", false);
-            showToast("Database tidak terjangkau — menampilkan pam.sql lokal", "info");
+            // Hanya tampilkan saat bukan ganti tab RT (silent=false).
+            if (!silent) showToast("Database tidak terjangkau — menampilkan pam.sql lokal", "info");
             return;
         } catch (err) { /* lanjut ke keadaan kosong */ }
 
@@ -887,7 +1035,8 @@
         semuaBaris = []; daftarPeriode = []; excelData = [];
         renderSemua();
         setStatusSumber("Terputus", "#dc2626", "led");
-        showToast("Database tidak terjangkau dan pam.sql tidak ditemukan", "gagal");
+        // Hanya tampilkan saat bukan ganti tab RT (silent=false).
+        if (!silent) showToast("Database tidak terjangkau dan pam.sql tidak ditemukan", "gagal");
     }
 
     function barisMentahDariSql(teksSql) {
@@ -904,9 +1053,9 @@
     }
 
     /* ---------- IMPORT .SQL → KIRIM KE DATABASE ---------- */
-    function muatFileManual(file) {
+    async function muatFileManual(file) {
         const reader = new FileReader();
-        reader.onload = e => {
+        reader.onload = async e => {
             const teks = String(e.target.result || "");
             if (teks.indexOf("INSERT INTO") < 0) {
                 showToast("File tidak berisi INSERT INTO transaksi_pelanggan yang dikenali", "gagal");
@@ -920,20 +1069,47 @@
                 return;
             }
 
-            if (!confirm("Kirim isi file \"" + file.name + "\" ke DATABASE?\n\n" +
-                "Periode yang ada di file akan DIGANTI dengan isi file (tidak dobel).\n" +
-                "Periode lain di database tetap aman.")) return;
+            // Hitung ringkasan isi file: jumlah baris per RT, periode yg ada.
+            // Sebelum kirim ke database, tunjuk ke petugas apa yg akan dikirim
+            // supaya bisa konfirmasi dengan yakin (ganti confirm() native).
+            const baris = barisMentahDariSql(teks);
+            const jumlahRT08 = baris.filter(r => (r.rt || "08") === "08").length;
+            const jumlahRT09 = baris.filter(r => r.rt === "09").length;
+            const periodeUnik = [];
+            baris.forEach(r => { if (periodeUnik.indexOf(r.periode) < 0) periodeUnik.push(r.periode); });
+
+            // Bangun konten modal — tunjuk detail per-RT + periode
+            let konten = '<div class="baris-detail"><span class="k">File</span><span class="v">' + file.name + '</span></div>';
+            konten += '<div class="baris-detail"><span class="k">Total Baris</span><span class="v"><b>' + baris.length + '</b> baris</span></div>';
+            if (jumlahRT08 > 0) {
+                konten += '<div class="baris-detail"><span class="k">RT 08 (transaksi_pelanggan_rt08)</span><span class="v" style="color:#0369a1;">' + jumlahRT08 + ' baris</span></div>';
+            }
+            if (jumlahRT09 > 0) {
+                konten += '<div class="baris-detail"><span class="k">RT 09 (transaksi_pelanggan_rt09)</span><span class="v" style="color:#0369a1;">' + jumlahRT09 + ' baris</span></div>';
+            }
+            konten += '<div class="baris-detail"><span class="k">Periode di File</span><span class="v">' + (periodeUnik.join(", ") || "—") + '</span></div>';
+
+            const konfirmasi = await tampilkanKonfirmasiImport({
+                judul: "Kirim ke Database?",
+                sub: "Isi file akan didistribusikan ke tabel sesuai RT-nya. Periode yg sama di database akan DIGANTI (tidak dobel).",
+                teksYa: "Ya, Kirim",
+                kontenHTML: konten,
+                peringatanHTML: "Periode yg ada di file akan <b>DIGANTI</b> dengan isi file (tidak dobel). Periode lain di database tetap aman."
+            });
+            if (!konfirmasi) return;
 
             setStatusSumber("Mengirim ke database...", "#d97706", "putar");
             fetch("api.php?action=import_rows", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ password: PASS_IMPOR, rows: barisMentahDariSql(teks) })
+                body: JSON.stringify({ password: PASS_IMPOR, rows: baris })
             })
             .then(r => r.json())
             .then(json => {
                 if (!json || json.status !== "success") throw new Error((json && json.message) || "gagal tanpa keterangan");
-                showToast("Tersimpan ke database: " + json.tersimpan + " baris (" + (json.periode || []).join(", ") + ")", "");
+                // Tunjuk juga RT mana yg tersimpan (kalau api.php balas field "rt")
+                const infoRT = (json.rt && json.rt.length > 0) ? " — " + json.rt.join(", ") : "";
+                showToast("Tersimpan: " + json.tersimpan + " baris (" + (json.periode || []).join(", ") + infoRT + ")", "");
                 tutupPopupImpor(); // kotak kecil ditutup, daftar segar terlihat
                 muatData(); // baca ulang isi database terbaru
             })
@@ -1171,7 +1347,7 @@
         const kepala = `
             <div class="nota-atas">
                 <div class="nota-judul">BUKTI PEMBAYARAN AIR - BPSPAMS TIRTA MAKMUR</div>
-                <div class="nota-sub">SINDUHARJO 08/04, SOMOPURO, JOGONALAN</div>
+                <div class="nota-sub">${infoRT().judulFile}, SOMOPURO, JOGONALAN</div>
             </div>`;
         let html = '';
 
@@ -1259,6 +1435,38 @@
     }
 
     function tutupModal() { document.getElementById('modalRincian').style.display = 'none'; }
+
+    /* ---------- MODAL KONFIRMASI IMPORT .sql ---------- */
+    let _resolveKonfirmasi = null;
+
+    /**
+     * Tampilkan modal konfirmasi kustom untuk Import .sql.
+     * opts: { judul, sub, teksYa, kontenHTML, peringatanHTML }
+     * Return: Promise<boolean> — true jika Ya, false jika Batal/tutup.
+     */
+    function tampilkanKonfirmasiImport(opts) {
+        return new Promise(resolve => {
+            _resolveKonfirmasi = resolve;
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val || ""; };
+            set("konfirmasiJudul", opts.judul || "Kirim ke Database?");
+            set("konfirmasiSub", opts.sub || "Pastikan data berikut sudah benar sebelum mengirim.");
+            set("konfirmasiBtnYaTeks", opts.teksYa || "Ya, Kirim");
+            setHTML("konfirmasiKonten", opts.kontenHTML || "");
+            setHTML("konfirmasiTeksPeringatan", opts.peringatanHTML || "");
+            document.getElementById("konfirmasiPeringatan").style.display = opts.peringatanHTML ? "flex" : "none";
+            document.getElementById("modalKonfirmasi").style.display = "block";
+        });
+    }
+
+    function tutupModalKonfirmasi(ya) {
+        document.getElementById("modalKonfirmasi").style.display = "none";
+        if (_resolveKonfirmasi) {
+            const r = _resolveKonfirmasi;
+            _resolveKonfirmasi = null;
+            r(!!ya);
+        }
+    }
 
     /* ---------- TOAST ---------- */
     function showToast(pesan, tipe) {
@@ -1374,7 +1582,7 @@
         doc.text('BPSPAMS TIRTA MAKMUR', 24.3, 12.4, { charSpace: 0.55 });
         doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8);
         doc.setTextColor(100, 116, 139);
-        doc.text('Penagihan Air • Sinduharjo 08/04, Somopuro, Jogonalan', 24.4, 17.4, { charSpace: 0.15 });
+        doc.text('Penagihan Air • ' + (infoRT().judul).toLowerCase() + ', Somopuro, Jogonalan', 24.4, 17.4, { charSpace: 0.15 });
 
         // blok periode kanan-atas: label mikro berjarak + nilai tebal biru
         doc.setFont('helvetica', 'normal'); doc.setFontSize(6.6);
@@ -1568,6 +1776,7 @@
     });
 
     /* ---------- MULAI ---------- */
+    terapkanIdentitasRT();
     muatData();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
