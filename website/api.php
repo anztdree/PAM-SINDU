@@ -10,16 +10,19 @@ header("Content-Type: application/json; charset=UTF-8");
    - action=import_rows : simpan hasil parse file .sql ke database
                           (per periode DIGANTI, tidak dobel;
                            periode lain di database tetap aman)
-   Tidak ada lagi save_item / tutup_buku — viewer hanya baca,
-   satu-satunya tulisan adalah import hasil export .sql.
+   - action=kosongkan_data : hapus SEMUA baris RT 08 + RT 09
+                          (gerbang password sama dengan import)
+   Tidak ada lagi save_item / tutup_buku — viewer hanya baca;
+   satu-satunya tulisan adalah import hasil export .sql dan
+   kosongkan data (keduanya lewat gerbang password).
    ============================================================ */
 
 // KONFIGURASI DATABASE (hosting InfinityFree)
 // Saran: ganti password DB ini dari panel InfinityFree bila sempat.
-$host = "sql208.infinityfree.com";
-$user = "if0_42771179";
-$pass = "LTEMWvwgTLzp";
-$db   = "if0_42771179_pam";
+$host = "192.168.0.100";
+$user = "asuueuor_pam";
+$pass = "bTTE5dkKJnvkY6gPSAVE";
+$db   = "asuueuor_pam";
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
@@ -199,8 +202,40 @@ if ($action === 'import_rows') {
     ]);
 }
 
+// ---------- 3. KOSONGKAN DATA (hapus semua baris RT 08 + RT 09) ----------
+if ($action === 'kosongkan_data') {
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    // Gerbang password — harus sama dengan PASS_IMPOR di index.html
+    if (!isset($input['password']) || $input['password'] !== 'root') {
+        echo json_encode(["status" => "error", "message" => "Password salah"]);
+        $conn->close();
+        exit;
+    }
+
+    $conn->begin_transaction();
+    $terhapus = 0;
+    $ok = true;
+    foreach (['transaksi_pelanggan_rt08', 'transaksi_pelanggan_rt09'] as $tabel) {
+        $res = $conn->query("DELETE FROM " . $tabel);
+        if (!$res) {
+            $ok = false;
+            break;
+        }
+        $terhapus += $conn->affected_rows;
+    }
+    if (!$ok) {
+        $conn->rollback();
+        echo json_encode(["status" => "error", "message" => "Gagal menghapus data: " . $conn->error]);
+        $conn->close();
+        exit;
+    }
+    $conn->commit();
+    echo json_encode(["status" => "success", "terhapus" => $terhapus]);
+}
+
 if ($action === '' ) {
-    echo json_encode(["status" => "error", "message" => "Paramter action wajib: get_data / import_rows"]);
+    echo json_encode(["status" => "error", "message" => "Paramter action wajib: get_data / import_rows / kosongkan_data"]);
 }
 
 $conn->close();

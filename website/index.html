@@ -210,6 +210,7 @@
         .btn-blok { width: 100%; }
         .btn-primer { background: linear-gradient(135deg, var(--biru), var(--biru-terang)); }
         .btn-ungu { background: linear-gradient(135deg, #4338ca, #4f46e5); }
+        .btn-merah { background: linear-gradient(135deg, #b91c1c, #dc2626); }
         .btn-abu { background: #64748b; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
@@ -575,6 +576,7 @@
                         <button class="btn btn-ungu btn-blok" onclick="document.getElementById('fileSql').click()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg> Pilih File .sql</button>
                         <input type="file" id="fileSql" accept=".sql,.txt" style="display:none;">
                         <div id="infoMuat" class="info-inline"></div>
+                        <button class="btn btn-merah btn-blok" style="margin-top:8px;" onclick="kosongkanDataDatabase()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Kosongkan Data</button>
                     </div>
                 </div>
 
@@ -1128,6 +1130,41 @@
             });
         };
         reader.readAsText(file);
+    }
+
+    /* ---------- KOSONGKAN DATA DI DATABASE (RT 08 + RT 09) ---------- */
+    async function kosongkanDataDatabase() {
+        if (modeSumber !== "db") {
+            showToast("Database tidak terjangkau — tidak ada yang bisa dikosongkan", "gagal");
+            return;
+        }
+        const konfirmasi = await tampilkanKonfirmasiImport({
+            judul: "Kosongkan Data?",
+            sub: "Semua baris RT 08 & RT 09 di database akan DIHAPUS.",
+            teksYa: "Ya, Kosongkan",
+            kontenHTML: '<div class="baris-detail"><span class="k">RT 08 (transaksi_pelanggan_rt08)</span><span class="v">semua periode</span></div>' +
+                        '<div class="baris-detail"><span class="k">RT 09 (transaksi_pelanggan_rt09)</span><span class="v">semua periode</span></div>',
+            peringatanHTML: "Proses <b>PERMANEN</b> — website tampil kosong total. Data asli tetap aman di aplikasi Petugas; import ulang file .sql untuk mengisi kembali."
+        });
+        if (!konfirmasi) return;
+
+        setStatusSumber("Mengosongkan data...", "#d97706", "putar");
+        fetch("api.php?action=kosongkan_data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: PASS_IMPOR })
+        })
+        .then(r => r.json())
+        .then(json => {
+            if (!json || json.status !== "success") throw new Error((json && json.message) || "gagal tanpa keterangan");
+            showToast("Data dikosongkan — " + json.terhapus + " baris terhapus", "info");
+            tutupPopupImpor();
+            muatData();
+        })
+        .catch(err => {
+            setStatusSumber("Data tidak dikosongkan", "#dc2626", "led");
+            showToast("Gagal kosongkan data: " + err.message, "gagal");
+        });
     }
 
     /* ---------- RENDER ---------- */
