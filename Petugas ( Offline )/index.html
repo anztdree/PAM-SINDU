@@ -126,6 +126,14 @@
         .modal-isi .btn-export { background: #f8fafc; border-color: #e2e8f0; box-shadow: none; }
         .isi-backup { display: grid; gap: 10px; }
         .isi-backup-tombol { display: grid; gap: 8px; }
+        .baris-folder-simpan { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .btn-folder { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px;
+            font-size: .74rem; font-weight: 800; background: #eef2ff; color: #3730a3;
+            border: 1px solid #c7d2fe; border-radius: 10px; cursor: pointer; }
+        .btn-folder:active { transform: scale(.96); }
+        .btn-folder svg { width: 14px; height: 14px; }
+        .ket-folder { font-size: .72rem; color: #475569; line-height: 1.45; flex: 1 1 170px; }
+        .ket-folder a { color: #2563eb; font-weight: 700; }
         @media (max-width: 430px) {
             .header-teks h2 { font-size: .98rem; }
             .tombol-backup { padding: 7px 11px; font-size: .72rem; }
@@ -758,33 +766,50 @@
             </div>
             <div class="modal-isi isi-backup">
                 <p class="catatan" style="margin:0;">
-                    Simpan salinan data kapan saja — <b>tanpa password</b>.
-                    <b>.db</b> = database utuh untuk aplikasi Petugas,
-                    <b>.sql</b> = file teks untuk diupload ke Website.
+                    Simpan salinan data kapan saja — <b>tanpa password</b>,
+                    <b>langsung terunduh tanpa dialog</b>. Nama file otomatis
+                    menyertakan <b>bulan &amp; tahun</b> (contoh:
+                    <b>pam-2026-september.db</b>) supaya backup baru TIDAK
+                    menimpa backup lama. <b>.db</b> = database utuh aplikasi
+                    Petugas (RT 08 + RT 09), <b>.sql</b> = file teks untuk
+                    diupload ke Website.
                 </p>
                 <div class="isi-backup-tombol">
                     <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')" title="Backup file database SQLite (.db) — selalu terbaru dari data live">
                         <span class="ik ik-biru" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
-                        <span class="tx"><b>Export .db</b><small>Data utuh — selalu terbaru</small></span>
+                        <span class="tx"><b>Export .db</b><small>pam-&lt;tahun&gt;-&lt;bulan&gt;.db — utuh RT 08 + RT 09</small></span>
                     </button>
                     <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')" title="Backup file teks .sql untuk diupload ke website">
                         <span class="ik ik-amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-                        <span class="tx"><b>Export .sql</b><small>File teks — untuk Website</small></span>
+                        <span class="tx"><b>Export .sql</b><small>pam-&lt;tahun&gt;-&lt;bulan&gt;.sql — untuk Website</small></span>
                     </button>
+                </div>
+                <div class="baris-folder-simpan">
+                    <button class="btn-folder" onclick="pilihFolderSimpan()" title="Pilih folder aplikasi SEKALI — export berikutnya tersimpan langsung di situ (sejajar index.html, tanpa dialog)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Simpan Sejajar index.html…</button>
+                    <span id="infoFolderSimpan" class="ket-folder"></span>
                 </div>
                 <div id="infoExport" class="info-inline" style="margin-top:0;">Belum ada backup — tekan tombol Export di panel ini.</div>
                 <details class="panel" style="margin-top:0;">
                     <summary class="panel-summary"><span class="panel-chevron">▶</span><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg> Menu Admin (Import / Reset Data)</summary>
                     <div class="panel-isi">
                         <p class="catatan">
-                            Letakkan <b>pam.sql</b> di folder aplikasi lalu tekan Import
-                            (baris baru ditambah, lama diperbarui — aman diulang).
+                            Import memulihkan data dari file <b>.db</b> (database SQLite
+                            utuh — berisi RT 08 + RT 09). Pilih file dari penyimpanan,
+                            atau letakkan file .db hasil Export (mis.
+                            <b>pam-2026-september.db</b>) di folder aplikasi
+                            (<b>sejajar dengan index.html</b>) lalu tekan Import dari
+                            Folder — nama bulan berjalan, bulan lalu, dan pam.db lama
+                            dikenali otomatis. Baris baru ditambah, yang sudah ada
+                            diperbarui — aman diulang. Untuk pemulihan penuh sesuai
+                            urutan backup: <b>Kosongkan Data</b> dulu, baru Import.
                             Reset mengosongkan seluruh transaksi.
                         </p>
                         <div class="grid-2">
-                            <button class="btn btn-ungu" onclick="importDataLama()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg> Import pam.sql</button>
-                            <button class="btn btn-merah" onclick="kosongkanData()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Kosongkan Data</button>
+                            <button class="btn btn-ungu" onclick="importDatabase()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Import dari Folder</button>
+                            <button class="btn btn-primer" onclick="document.getElementById('fileImportDb').click()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg> Pilih File .db…</button>
                         </div>
+                        <button class="btn btn-merah btn-blok" style="margin-top:8px;" onclick="kosongkanData()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Kosongkan Data</button>
+                        <input type="file" id="fileImportDb" accept=".db,.sqlite,.sqlite3,.db3,.sql,.txt" style="display:none;" onchange="importDbFileInput(this)">
                         <div id="infoImport" class="info-inline"></div>
                     </div>
                 </details>
@@ -1094,7 +1119,7 @@
         }
         if (!res.ok) {
             catatLogKoneksi("gagal", "HTTP " + res.status + " — tabel '" + tabelCek + "' belum ada (matikan lalu nyalakan 'Enable SQLite database', pilih ATTACH EXISTING DATABASE file pam.db)");
-            if (rtAktif === "rt09") catatLogKoneksi("info", "Tabel RT 09 belum siap — caranya: saat RT 08 aktif & terhubung, buka Backup > Export Database (.db). File pam.db hasil export sudah berisi tabel kosong RT 09, lalu pasang ulang di SHTTPS lewat Attach existing database.");
+            if (rtAktif === "rt09") catatLogKoneksi("info", "Tabel RT 09 belum siap — caranya: saat RT 08 aktif & terhubung, buka Backup > Export Database (.db). File .db hasil export sudah berisi tabel kosong RT 09, lalu pasang ulang di SHTTPS lewat Attach existing database.");
         } else {
             catatLogKoneksi("ok", "Tabel '" + tabelCek + "' ditemukan — koneksi lengkap (" + infoRT().label + ")");
         }
@@ -1251,7 +1276,7 @@
         const m = String(err.message || err);
         if (m.includes("DB_OFF")) return "Database belum aktif - aktifkan 'Enable SQLite database' di Pengaturan SHTTPS lalu pilih 'Attach existing database' dengan file pam.db";
         if (m.includes("TABEL_TIDAK_ADA")) return (rtAktif === "rt09"
-            ? "Tabel RT 09 (" + tabelAktif() + ") belum ada di database. Cara menyiapkan: saat RT 08 aktif & terhubung, buka Backup > Export Database (.db) — file pam.db hasil export sudah berisi tabel kosong RT 09 — lalu di SHTTPS matikan 'Enable SQLite database', ganti file pam.db, nyalakan lagi dan pilih ATTACH EXISTING DATABASE."
+            ? "Tabel RT 09 (" + tabelAktif() + ") belum ada di database. Cara menyiapkan: saat RT 08 aktif & terhubung, buka Backup > Export Database (.db) — file .db hasil export sudah berisi tabel kosong RT 09 — lalu di SHTTPS matikan 'Enable SQLite database', ganti file pam.db dengan file hasil export itu, nyalakan lagi dan pilih ATTACH EXISTING DATABASE."
             : "Tabel belum ada di database. Matikan lalu nyalakan lagi 'Enable SQLite database' di SHTTPS, lalu pilih ATTACH EXISTING DATABASE dengan file pam.db (jangan Create new - versi gratis tidak bisa membuat tabel dari aplikasi ini)");
         if (m.includes("EDIT_OFF")) return "Aktifkan toggle 'Enable API to modify tables data' di Pengaturan > Database SHTTPS (fitur GRATIS, bukan PLUS)";
         if (m.includes("AUTH")) return "Perlu login - masuk dulu ke SHTTPS (username & password)";
@@ -1812,7 +1837,10 @@
 
     function tutupModal() { document.getElementById('modalInput').style.display = 'none'; }
 
-    function bukaModalBackup() { document.getElementById('modalBackup').style.display = 'block'; }
+    function bukaModalBackup() {
+        document.getElementById('modalBackup').style.display = 'block';
+        segarkanInfoFolder();
+    }
     function tutupModalBackup() { document.getElementById('modalBackup').style.display = 'none'; }
 
     /* ============================================================
@@ -2086,29 +2114,66 @@
     /* ============================================================
        EXPORT DATABASE (BACKUP LENGKAP) - 2 MODE
        Tombolnya ada di HEADER (di bawah judul):
-       mode "db"  : file pam.db SEGAR DIBANGUN DARI DATA LIVE via
+       mode "db"  : file .db SEGAR DIBANGUN DARI DATA LIVE via
                     sql.js (SQLite asli untuk browser): struktur
-                    tabel + index + trigger persis pam.db asli,
+                    tabel + index + trigger persis database asli,
                     isinya data terbaru saat tombol ditekan.
                     Jadi export .db SELALU berhasil dan SELALU
-                    mutakhir - tidak tergantung file pam.db di
+                    mutakhir - tidak tergantung file .db di
                     folder. Bila pustaka sql.js tidak tersedia,
-                    fallback: unduh file pam.db asli di folder
-                    (divalidasi dulu); bila itu pun gagal:
-                    dump .sql (data tetap lengkap).
+                    fallback: unduh file .db asli di folder
+                    (dicari lewat kandidatFileDb(), divalidasi
+                    dulu); bila itu pun gagal: dump .sql (data
+                    tetap lengkap).
        mode "sql" : dump teks .sql LANGSUNG dari data live lewat
-                    API baca gratis - selalu terbaru, formatnya
-                    sama dengan pam.sql sehingga bisa dipulihkan
-                    lewat tombol Import (petugas) dan diupload
-                    ke website (Menu Import).
+                    API baca gratis - selalu terbaru. File .sql
+                    ini khusus untuk WEBSITE (Menu Import .sql ke
+                    Database); pemulihan aplikasi Petugas memakai
+                    file .db (Menu Admin > Import).
+       NAMA FILE : pam-<tahun>-<bulan>.<ext> — contoh pam-2026-september.db
+                    / pam-2026-september.sql. Bulan & tahun WAJIB ada:
+                    tanpa itu, export bulan baru menimpa backup bulan lalu
+                    dan salinan lama HILANG (sangat berbahaya). Dengan
+                    nama berbeda per bulan, salinan lama tetap aman.
+                    Tanggal backup lengkap tetap tercantum di kop .sql
+                    dan pesan info panel ini.
+       LOKASI    : bila browser mendukung File System Access API,
+                    user bisa memilih folder aplikasi langsung
+                    (file tersimpan sejajar index.html tanpa
+                    lewat folder Download); bila tidak, file
+                    terunduh dengan nama yang sama.
        ============================================================ */
+    // Nama bulan Indonesia — dipakai menyusun nama file backup.
+    const NAMA_BULAN_ID = ["januari", "februari", "maret", "april", "mei", "juni",
+        "juli", "agustus", "september", "oktober", "november", "desember"];
+
     function namaFileBackup(ext) {
+        // Nama file backup menyertakan BULAN & TAHUN saat tombol ditekan:
+        // pam-2026-september.db / pam-2026-september.sql.
+        // DULU namanya tetap pam.db / pam.sql (tanpa tanggal) — berbahaya:
+        // export bulan berikutnya menimpa backup bulan lalu, salinan lama
+        // hilang permanen. Sekarang tiap bulan punya file sendiri, salinan
+        // lama tetap ada. Tanggal lengkap juga tercantum di kop .sql dan
+        // pesan info panel. File tetap bisa diletakkan SEJAJAR dengan
+        // index.html (Import dari Folder mengenali namanya otomatis).
         const d = new Date();
-        // Format: pam-backup-[tahun]-[bulan].ext — TANPA suffix RT karena
-        // sekarang 1 file berisi data SEMUA RT (RT 08 + RT 09) sekaligus,
-        // sama dengan file .db yg juga berisi kedua tabel. Nama .sql & .db
-        // identik (cuma beda extension) supaya mudah dipasangkan.
-        return "pam-backup-" + d.getFullYear() + "-" + daftarBulan[d.getMonth()].toLowerCase() + "." + ext;
+        return "pam-" + d.getFullYear() + "-" + NAMA_BULAN_ID[d.getMonth()] + "." + ext;
+    }
+
+    // Daftar kandidat nama file .db yang dicari SEJAJAR index.html di
+    // folder aplikasi — dipakai Import dari Folder maupun fallback Export:
+    //   1) pam-<bulan berjalan>.db   (hasil export bulan ini)
+    //   2) pam-<bulan sebelumnya>.db (backup akhir bulan lalu yang baru
+    //      dipulihkan awal bulan ini — skenario paling sering)
+    //   3) pam.db                    (nama lama — kompatibilitas backup lama)
+    function kandidatFileDb() {
+        const d = new Date();
+        const lalu = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+        return [
+            "pam-" + d.getFullYear() + "-" + NAMA_BULAN_ID[d.getMonth()] + ".db",
+            "pam-" + lalu.getFullYear() + "-" + NAMA_BULAN_ID[lalu.getMonth()] + ".db",
+            "pam.db"
+        ];
     }
 
     function unduhBlob(blob, namaFile) {
@@ -2119,6 +2184,133 @@
         document.body.appendChild(a);
         a.click();
         setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 3000);
+    }
+
+    /* ============ LOKASI SIMPAN BACKUP — TANPA DIALOG WAJIB ============
+       DULU: tiap export memunculkan dialog "Save As" (showSaveFilePicker).
+       Itu bikin export gampang gagal — user bingung / menekan Batal →
+       "Export dibatalkan" dan TIDAK ADA file sama sekali; di sebagian
+       browser dialog malah error. Sekarang:
+       1) Export = LANGSUNG TERUNDUH ke folder Download (seperti semula,
+          anti-gagal, nama file tetap ber-bulan & tahun).
+       2) Bisa dipasang SATU KALI "folder aplikasi" lewat tombol
+          "Simpan Sejajar index.html…" (showDirectoryPicker). Handle
+          folder disimpan di IndexedDB, sehingga export BERIKUTNYA
+          menulis file langsung ke folder itu — sejajar index.html,
+          TANPA dialog. Bila izin lepas / tulis gagal → otomatis jatuh
+          ke unduhan biasa (tidak mungkin tidak ada file).            */
+
+    // ---- Penyimpanan handle folder tujuan (IndexedDB) ----
+    const FS_DB_NAMA = "pam-fs", FS_STORE_NAMA = "handles", FS_KUNCI = "folderAplikasi";
+    function bukaDbFs() {
+        return new Promise((resolve, reject) => {
+            if (!window.indexedDB) { reject(new Error("indexedDB tidak tersedia")); return; }
+            const req = indexedDB.open(FS_DB_NAMA, 1);
+            req.onupgradeneeded = () => { req.result.createObjectStore(FS_STORE_NAMA); };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error || new Error("IndexedDB gagal dibuka"));
+        });
+    }
+    async function simpanHandleFolder(handle) {
+        const db = await bukaDbFs();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(FS_STORE_NAMA, "readwrite");
+            tx.objectStore(FS_STORE_NAMA).put(handle, FS_KUNCI);
+            tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+    }
+    async function ambilHandleFolder() {
+        try {
+            const db = await bukaDbFs();
+            const h = await new Promise((resolve, reject) => {
+                const req = db.transaction(FS_STORE_NAMA).objectStore(FS_STORE_NAMA).get(FS_KUNCI);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror = () => reject(req.error);
+            });
+            db.close();
+            return h;
+        } catch (e) { return null; }
+    }
+    async function hapusHandleFolder() {
+        try {
+            const db = await bukaDbFs();
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(FS_STORE_NAMA, "readwrite");
+                tx.objectStore(FS_STORE_NAMA).delete(FS_KUNCI);
+                tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
+            });
+            db.close();
+        } catch (e) { /* abaikan */ }
+    }
+
+    // Pasang folder aplikasi (SEKALI saja). Dipanggil tombol di modal Backup.
+    // Berjalan langsung atas klik user → gesture aman untuk dialog folder.
+    async function pilihFolderSimpan() {
+        const info = document.getElementById("infoFolderSimpan");
+        if (!window.showDirectoryPicker) {
+            if (info) info.innerHTML = IK.alert + " Browser ini tidak mendukung memilih folder. Backup otomatis masuk folder <b>Download</b> — tinggal dipindah sejajar index.html.";
+            return;
+        }
+        try {
+            const handle = await window.showDirectoryPicker({ mode: "readwrite" });
+            await simpanHandleFolder(handle);
+            await segarkanInfoFolder();
+            showToast(IK.check + " Folder \"" + handle.name + "\" terpasang — backup berikutnya tersimpan langsung di situ (sejajar index.html).", "info");
+        } catch (e) {
+            if (e && e.name === "AbortError") return; // user batal memilih folder — bukan error
+            if (info) info.innerHTML = IK.alert + " Tidak bisa memasang folder: " + (e.message || e);
+        }
+    }
+    async function lepasFolderSimpan() {
+        await hapusHandleFolder();
+        await segarkanInfoFolder();
+        showToast("Folder tujuan backup dilepas — file kembali terunduh ke folder Download.", "info");
+    }
+    function escTeks(s) {
+        return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]));
+    }
+    async function segarkanInfoFolder() {
+        const el = document.getElementById("infoFolderSimpan");
+        if (!el) return;
+        const handle = await ambilHandleFolder();
+        el.innerHTML = handle
+            ? "Tujuan backup: folder <b>" + escTeks(handle.name) + "</b> (sejajar index.html, tanpa dialog) · <a href=\"#\" onclick=\"lepasFolderSimpan(); return false;\">lepas</a>"
+            : "Backup terunduh ke folder <b>Download</b>. Ingin langsung <b>sejajar index.html</b>? Pasang folder aplikasi sekali di atas — export berikutnya tidak pakai dialog lagi.";
+    }
+
+    // Tentukan target simpan SEBELUM membaca data — permintaan izin folder
+    // harus berlangsung dalam gesture klik (sebelum await jaringan yang
+    // bisa makan waktu). Nilai balik: { jenis: "folder", handle } atau
+    // { jenis: "unduh" }. TIDAK PERNAH memunculkan dialog Save As.
+    async function siapkanTargetSimpan() {
+        const handle = await ambilHandleFolder();
+        if (handle) {
+            try {
+                if (await handle.queryPermission({ mode: "readwrite" }) !== "granted") {
+                    const izin = await handle.requestPermission({ mode: "readwrite" });
+                    if (izin !== "granted") return { jenis: "unduh" };
+                }
+                return { jenis: "folder", handle: handle };
+            } catch (e) { /* izin tak bisa diminta → jatuh ke unduhan */ }
+        }
+        return { jenis: "unduh" };
+    }
+
+    // Tulis file backup ke target. Folder gagal ditulis (izin ditarik,
+    // folder dipindah/dihapus) → otomatis unduhan biasa. Selalu ada file.
+    async function tulisFileBackup(target, blob, namaFile) {
+        if (target && target.jenis === "folder") {
+            try {
+                const fh = await target.handle.getFileHandle(namaFile, { create: true });
+                const w = await fh.createWritable();
+                await w.write(blob);
+                await w.close();
+                return "folder:" + target.handle.name;
+            } catch (e) { /* jatuh ke unduhan di bawah */ }
+        }
+        unduhBlob(blob, namaFile);
+        return "unduh";
     }
 
     // Escape nilai untuk dump SQL gaya phpMyAdmin (kutip & backslash),
@@ -2142,9 +2334,10 @@
             "-- Berisi data SEMUA RT (RT 08 + RT 09) — 1 file, 2 tabel.",
             "-- Dibuat: " + new Date().toLocaleString('id-ID'),
             "-- Total baris: " + totalBaris,
-            "-- Cara memulihkan: letakkan file ini sebagai pam.sql di folder aplikasi,",
-            "-- lalu buka Menu Admin > Import pam.sql (baris lama diperbarui, tidak dobel).",
-            "-- Untuk website: upload file ini lewat Menu Import .sql ke Database.",
+            "-- Pemakaian: file ini untuk diupload ke Website lewat Menu Import .sql",
+            "-- ke Database (periode yang sama DIGANTI, periode lain tetap aman).",
+            "-- Pemulihan aplikasi Petugas memakai file .db hasil Export",
+            "-- (Menu Admin > Import).",
             ""
         ].join("\n");
 
@@ -2213,6 +2406,15 @@
     // di SHTTPS untuk kedua RT sekaligus.
     //
     // Parameter: array berisi { tabel, baris } — satu entry per RT.
+    // Waktu lokal format SQLite "YYYY-MM-DD HH:MM:SS" — dipakai mengisi
+    // updated_at bila baris tidak membawanya (kolom NOT NULL di schema,
+    // jadi tidak boleh null: baris kosong membuat Export .db gagal total).
+    function waktuLokalSql() {
+        const d = new Date(), p = n => String(n).padStart(2, "0");
+        return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " +
+            p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+    }
+
     function bangunDbDariBaris(SQL, daftarRT) {
         const db = new SQL.Database();
         daftarRT.forEach(r => buatStrukturTabelTransaksi(db, r.tabel));
@@ -2233,7 +2435,7 @@
                     num(it.meter_awal), num(it.meter_akhir), num(it.cash),
                     num(it.biaya_beban), num(it.saldo_lalu),
                     it.status === "Sudah Bayar" ? "Sudah Bayar" : "Belum Bayar",
-                    String(it.updated_at || "") || null
+                    String(it.updated_at || "") || waktuLokalSql()
                 ]);
                 if (id > maxId) maxId = id;
             });
@@ -2249,8 +2451,8 @@
     }
 
     async function exportDatabase(mode) {
-        // mode "db"  : bangun pam.db SEGAR dari data live via sql.js
-        //              (fallback: file pam.db asli, lalu .sql)
+        // mode "db"  : bangun file .db SEGAR dari data live via sql.js
+        //              (fallback: file .db asli di folder, lalu .sql)
         // mode "sql" : dump teks .sql langsung dari data live (selalu terbaru)
         // REV: export sekarang GLOBAL — baca data SEMUA RT (RT 08 + RT 09)
         //      dari database, tulis ke 1 file. Tidak terikat RT mana yg
@@ -2263,6 +2465,10 @@
         if (btnSql) btnSql.disabled = true;
         let alasanFallback = "";
         try {
+            // 0) Tentukan lokasi simpan DULU (dalam gesture klik): folder
+            //    aplikasi terpasang (sejajar index.html) atau unduhan biasa.
+            const target = await siapkanTargetSimpan();
+
             // 1) Baca seluruh baris dari SEMUA tabel RT di database live.
             //    Loop DAFTAR_RT, baca tiap tabel. Tabel yg gagal dibaca
             //    (mis. RT 09 belum disiapkan di pam.db) dilewati tanpa
@@ -2290,6 +2496,7 @@
 
             let pakaiFileDb = false;
             let sumberDb = "";
+            let caraSimpan = "unduh"; // "unduh" = folder Download, atau "folder:<nama>"
             // 2) Mode "db" - JALUR UTAMA: bangun file .db SEGAR berisi SEMUA RT.
             if (mode === "db") {
                 try {
@@ -2298,51 +2505,58 @@
                     // Bangun .db dengan data kedua RT (yang berhasil dibaca saja).
                     const dbData = daftarRT.filter(r => r.sukses).map(r => ({ tabel: r.tabel, baris: r.baris }));
                     const bytes = bangunDbDariBaris(SQL, dbData);
-                    unduhBlob(new Blob([bytes], { type: "application/octet-stream" }), namaFileBackup("db"));
+                    const simpan = await tulisFileBackup(target, new Blob([bytes], { type: "application/octet-stream" }), namaFileBackup("db"));
+                    caraSimpan = simpan;
                     pakaiFileDb = true;
                     sumberDb = "database segar dibangun dari data live (" + semuaBaris.length + " baris dari " + daftarRT.filter(r => r.sukses).length + " RT) - selalu terbaru";
                 } catch (e) {
                     sqlJsPromise = null; // boleh coba muat ulang nanti
                     alasanFallback = String((e && e.message) ? e.message : e);
-                    // 2b) FALLBACK: file pam.db asli di folder aplikasi.
-                    //     Validasi: harus file SQLite asli ("SQLite format 3")
-                    //     dan tidak lebih tua dari data terbaru (toleransi 60 menit).
+                    // 2b) FALLBACK: file .db asli di folder aplikasi — dicari
+                    //     dengan beberapa kandidat nama (bulan berjalan,
+                    //     bulan lalu, pam.db lama). Validasi: harus file
+                    //     SQLite asli ("SQLite format 3") dan tidak lebih
+                    //     tua dari data terbaru (toleransi 60 menit).
                     try {
-                        const res = await fetch("pam.db?v=" + Date.now());
-                        if (res.ok) {
-                            const buf = await res.arrayBuffer();
-                            const bytes = new Uint8Array(buf);
-                            let valid = bytes.length > 100;
-                            const tanda = "SQLite format 3";
-                            for (let i = 0; i < tanda.length && valid; i++) {
-                                if (bytes[i] !== tanda.charCodeAt(i)) valid = false;
+                        let ketemuNama = "", bufKetemu = null, lmKetemu = null;
+                        for (const namaKandidat of kandidatFileDb()) {
+                            const res = await fetch(encodeURIComponent(namaKandidat) + "?v=" + Date.now());
+                            if (!res.ok) continue;
+                            const b = await res.arrayBuffer();
+                            const by = new Uint8Array(b);
+                            if (!terlihatSqlite(by)) {
+                                alasanFallback += " - file " + namaKandidat + " di folder bukan database SQLite yang valid";
+                                continue;
                             }
-                            if (!valid) alasanFallback += " - file pam.db di folder bukan database SQLite yang valid";
-                            if (valid) {
-                                const lm = res.headers.get("Last-Modified");
-                                let maxUpd = 0;
-                                semuaBaris.forEach(r => {
-                                    const t = Date.parse(String(r.updated_at || "").replace(" ", "T"));
-                                    if (!isNaN(t) && t > maxUpd) maxUpd = t;
-                                });
-                                if (lm && maxUpd) {
-                                    const tFile = Date.parse(lm);
-                                    if (!isNaN(tFile) && tFile + 3600000 < maxUpd) {
-                                        valid = false;
-                                        alasanFallback += " - file pam.db di folder lebih lama dari data terbaru (kemungkinan bukan database yang sedang aktif)";
-                                    }
+                            ketemuNama = namaKandidat; bufKetemu = b; lmKetemu = res.headers.get("Last-Modified");
+                            break;
+                        }
+                        if (!ketemuNama && !alasanFallback) {
+                            alasanFallback += " - file .db tidak ditemukan di folder aplikasi (dicari: " + kandidatFileDb().join(" / ") + ")";
+                        }
+                        if (ketemuNama) {
+                            let valid = true;
+                            let maxUpd = 0;
+                            semuaBaris.forEach(r => {
+                                const t = Date.parse(String(r.updated_at || "").replace(" ", "T"));
+                                if (!isNaN(t) && t > maxUpd) maxUpd = t;
+                            });
+                            if (lmKetemu && maxUpd) {
+                                const tFile = Date.parse(lmKetemu);
+                                if (!isNaN(tFile) && tFile + 3600000 < maxUpd) {
+                                    valid = false;
+                                    alasanFallback += " - file " + ketemuNama + " di folder lebih lama dari data terbaru (kemungkinan bukan database yang sedang aktif)";
                                 }
                             }
                             if (valid) {
-                                unduhBlob(new Blob([buf], { type: "application/octet-stream" }), namaFileBackup("db"));
+                                const simpan = await tulisFileBackup(target, new Blob([bufKetemu], { type: "application/octet-stream" }), namaFileBackup("db"));
+                                caraSimpan = simpan;
                                 pakaiFileDb = true;
-                                sumberDb = "file pam.db asli dari folder (pustaka sql.js tidak tersedia)";
+                                sumberDb = "file " + ketemuNama + " dari folder (pustaka sql.js tidak tersedia)";
                             }
-                        } else {
-                            alasanFallback += " - file pam.db juga tidak ditemukan di folder aplikasi";
                         }
                     } catch (e2) {
-                        alasanFallback += " - file pam.db juga tidak bisa diambil dari folder aplikasi";
+                        alasanFallback += " - file .db juga tidak bisa diambil dari folder aplikasi";
                     }
                 }
             }
@@ -2351,7 +2565,8 @@
             //    mode "db" (selalu lengkap & terbaru karena dari database aktif)
             if (!pakaiFileDb) {
                 const sqlData = daftarRT.filter(r => r.sukses).map(r => ({ tabel: r.tabel, label: r.label, baris: r.baris }));
-                unduhBlob(new Blob([buatDumpSql(sqlData)], { type: "application/sql" }), namaFileBackup("sql"));
+                const simpan = await tulisFileBackup(target, new Blob([buatDumpSql(sqlData)], { type: "application/sql" }), namaFileBackup("sql"));
+                caraSimpan = simpan;
             }
 
             // Ringkas status per-RT untuk pesan info
@@ -2361,25 +2576,31 @@
                     : r.label + ": tabel belum siap"
             ).join(" · ");
 
+            const ketSimpan = (caraSimpan === "unduh")
+                ? "terunduh ke folder Download"
+                : "disimpan SEJAJAR index.html di folder \"" + caraSimpan.slice(7) + "\"";
+            const namaHasil = namaFileBackup(pakaiFileDb ? "db" : "sql");
             showToast(mode === "sql"
-                ? IK.file + " Backup .sql terunduh (" + ringkas + ")"
+                ? IK.file + " " + namaHasil + " " + ketSimpan + " (" + ringkas + ")"
                 : (pakaiFileDb
-                    ? IK.db + " Backup .db terunduh (" + ringkas + ")"
-                    : IK.db + " Export .db gagal — backup .sql terunduh (" + ringkas + ")"));
+                    ? IK.db + " " + namaHasil + " " + ketSimpan + " (" + ringkas + ")"
+                    : IK.db + " Export .db gagal — " + namaHasil + " " + ketSimpan + " (" + ringkas + ")"));
             if (info) {
-                info.innerHTML = IK.check + " <b>Backup terakhir:</b> " + namaFileBackup(pakaiFileDb ? "db" : "sql") +
-                    " (" + ringkas + ") — format <b>." + (pakaiFileDb ? "db" : "sql") + "</b>." +
+                info.innerHTML = IK.check + " <b>Backup terakhir:</b> " + namaHasil +
+                    " — " + new Date().toLocaleString('id-ID') + " (" + ringkas + ")" +
                     (mode === "db" && pakaiFileDb
                         ? "<br>" + IK.db + " " + sumberDb + "."
                         : "") +
                     (mode === "db" && !pakaiFileDb
                         ? "<br>" + IK.alert + " " + (alasanFallback || "Export .db tidak bisa dilakukan") +
-                          " — yang diunduh: backup <b>.sql</b> (data tetap lengkap &amp; terbaru)."
+                          " — yang disimpan: backup <b>.sql</b> (data tetap lengkap &amp; terbaru)."
                         : "") +
                     "<br>" + (pakaiFileDb
-                        ? "Memulihkan: SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file backup .db ini (sudah berisi kedua tabel RT)."
-                        : "Memulihkan: letakkan file .sql ini di folder aplikasi (boleh diganti nama jadi pam.sql), lalu Menu Admin &gt; Import pam.sql.") +
-                    "<br><b>Isi backup:</b> " + statusRT + ". Data RT yg gagal dibaca tidak ikut — siapkan tabelnya di pam.db dulu lalu export ulang.";
+                        ? (caraSimpan === "unduh"
+                            ? "Memasang ulang: pindahkan " + namaHasil + " ke folder aplikasi (SEJAJAR dengan index.html), lalu SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file tersebut (sudah berisi kedua tabel RT)."
+                            : "File sudah tersimpan sejajar index.html di folder \"" + caraSimpan.slice(7) + "\". Memasang ulang: SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file tersebut (sudah berisi kedua tabel RT).")
+                        : namaHasil + " dipakai WEBSITE: upload lewat Menu Import .sql ke Database. Pemulihan aplikasi Petugas memakai file .db (Menu Admin &gt; Import dari Folder).") +
+                    "<br><b>Isi backup:</b> " + statusRT + ". Data RT yg gagal dibaca tidak ikut — siapkan tabelnya dulu lalu export ulang.";
             }
         } catch (e) {
             showToast(IK.x + " Export database gagal: " + pesanErrorDB(e), "gagal");
@@ -2402,13 +2623,23 @@
         if (kosong) kosong.style.display = (input && nTampil === 0) ? 'block' : 'none';
     }
 
-    // ============ IMPORT DATA LAMA DARI pam.sql (client-side) ============
+    // ============ IMPORT DATABASE (.db — UTAMA) ============
+    // Import memulihkan data dari file .db SQLite (bukan .sql lagi):
+    // file .db hasil Export berisi KEDUA tabel RT sekaligus, maka
+    // import juga mengembalikan RT 08 + RT 09 dalam satu jalanan.
+    // Dua pintu masuk, sama-sama berujung ke eksekusiImportDaftarRT:
+    //   1) importDatabase()      — cari file .db SEJAJAR index.html di
+    //                              folder aplikasi: pam-<bulan ini>.db,
+    //                              pam-<bulan lalu>.db, lalu pam.db lama
+    //   2) importDbFileInput(el) — pilih file dari penyimpanan (.db utama;
+    //      .sql lama tetap diterima demi kompatibilitas, dideteksi otomatis)
+    // Semantik tulis: UPSERT per (periode, nama) — baris baru DITAMBAHKAN,
+    // yang sudah ada DIPERBARUI, periode lain tidak disentuh. Aman diulang.
 
     // Scanner sadar-kutip: ambil statement INSERT untuk tabel RT mana pun
     // (transaksi_pelanggan_rt08 ATAU transaksi_pelanggan_rt09 — dua-duanya
-    // diterima); baris hasil parse selalu ditulis ke tabel RT AKTIF.
-    // Kompatibilitas: juga terima nama lama "transaksi_pelanggan" (tanpa
-    // suffix _rt08) supaya backup .sql lama tetap bisa diimport.
+    // diterima). Kompatibilitas: juga terima nama lama "transaksi_pelanggan"
+    // (tanpa suffix _rt08) supaya backup .sql lama tetap bisa dibaca.
     function ekstrakInserts(sqlText) {
         const hasil = [];
         const re = /INSERT\s+INTO\s+`?transaksi_pelanggan(?:_rt08|_rt09)?`?\s*\(/gi;
@@ -2442,6 +2673,14 @@
         if (mOpen < 0 || mOpen > mVal) return [];
         const kolom = stmt.slice(mOpen + 1, stmt.indexOf(")", mOpen))
             .split(",").map(s => s.trim().replace(/`/g, ""));
+
+        // Tag RT per baris dari nama tabel pada statement INSERT — import
+        // .sql menyusun baris ke tabel RT yang BENAR (rt08 / rt09), bukan
+        // semua ke tabel RT aktif (perilaku versi lama). Nama lama tanpa
+        // suffix dianggap milik RT 08 (kompatibilitas backup lama).
+        let rtTag = "08";
+        const mTabel = stmt.match(/INSERT\s+INTO\s+`?(transaksi_pelanggan(?:_rt08|_rt09)?)`?\s*\(/i);
+        if (mTabel && mTabel[1].toLowerCase().endsWith("_rt09")) rtTag = "09";
         const sisa = stmt.slice(stmt.indexOf("(", mVal));
 
         // pecah menjadi tuple-tuple sadar-kutip: (..),(..),...
@@ -2486,6 +2725,7 @@
             if (kolom.length === 0 || nilai.length === 0) continue;
             const row = {};
             kolom.forEach((k, idx) => { if (idx < nilai.length) row[k] = nilai[idx]; });
+            row.rt = rtTag; // dibaca eksekusiImportSqlTeks untuk routing per tabel
             hasil.push(row);
         }
         return hasil;
@@ -2506,55 +2746,223 @@
         };
     }
 
-    async function importDataLama() {
-        const info = document.getElementById('infoImport');
-        if (!confirm("Import data dari pam.sql ke " + infoRT().label + " (tabel " + tabelAktif() + ")?\n\nBaris yang belum ada akan DITAMBAHKAN, baris yang sudah ada akan DIPERBARUI (data periode lain tetap aman).")) return;
+    // Deteksi file SQLite asli: header "SQLite format 3" di 16 byte pertama
+    function terlihatSqlite(bytes) {
+        const tanda = "SQLite format 3";
+        if (!bytes || bytes.length < 100) return false;
+        for (let i = 0; i < tanda.length; i++) {
+            if (bytes[i] !== tanda.charCodeAt(i)) return false;
+        }
+        return true;
+    }
 
-        info.innerText = "Membaca pam.sql...";
+    // Baca file .db via sql.js → daftar per-RT { tabel, label, baris }.
+    // File .db hasil Export berisi tabel rt08 + rt09 (keduanya dibaca;
+    // yang tidak ada di file dianggap kosong). Baris diurutkan menurut kolom
+    // id file supaya urutan rumah terjaga saat dipulihkan. Tabel lama
+    // "transaksi_pelanggan" (tanpa suffix) dianggap milik RT 08 bila tabel
+    // rt08 tidak ada / kosong di file (kompatibilitas backup lama).
+    function bacaTabelDariDbFile(SQL, bytes) {
+        const db = new SQL.Database(bytes);
+        const kolomSql = "id, periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status";
+        const bacaSatu = nama => {
+            const rows = [];
+            try {
+                const stmt = db.prepare("SELECT " + kolomSql + " FROM " + nama + " ORDER BY id");
+                while (stmt.step()) rows.push(stmt.getAsObject());
+                stmt.free();
+            } catch (e) { /* tabel tidak ada di file ini — dianggap kosong */ }
+            return rows;
+        };
+        const hasil = DAFTAR_RT.map(rt => ({
+            tabel: rt.tabel, label: rt.label,
+            baris: bacaSatu(rt.tabel).map(barisDariSql).filter(Boolean)
+        }));
+        const lama = bacaSatu("transaksi_pelanggan").map(barisDariSql).filter(Boolean);
+        if (lama.length && hasil[0].baris.length === 0) hasil[0].baris = lama;
+        db.close();
+        return hasil;
+    }
+
+    // Cek satu tabel siap di database live (endpoint schema, gratis).
+    async function tabelSiap(tabel) {
         try {
-            // parameter acak agar browser tidak memakai pam.sql versi lama dari cache
-            const res = await fetch("pam.sql?v=" + Date.now());
-            if (!res.ok) throw new Error("FILE_SQL_TIDAK_ADA");
-            const raw = await res.text();
+            const res = await fetch("/api/db/schema?table=" + encodeURIComponent(tabel));
+            return res.ok;
+        } catch (e) {
+            catatLogKoneksi("gagal", "Fetch /api/db/schema?table=" + tabel + " gagal: " + (e.message || e));
+            throw e;
+        }
+    }
 
-            info.innerText = "Memproses " + raw.length.toLocaleString('id-ID') + " byte...";
-            const stmts = ekstrakInserts(raw);
-            if (stmts.length === 0) throw new Error("TIDAK_ADA_INSERT");
+    // Tulis daftar per-RT hasil baca file ke database live (upsert per
+    // periode). Tabel RT yang belum ada di database live DILEWATI (dengan
+    // catatan di Log Koneksi) — sama seperti perilaku Tutup Buku — supaya
+    // satu tabel belum siap tidak menggagalkan pemulihan tabel lainnya.
+    async function eksekusiImportDaftarRT(daftarRTFile, info) {
+        const cek = await dbCek();
+        if (!cek.dbAktif) throw new Error("DB_OFF");
+        if (cek.auth) throw new Error("AUTH");
 
-            const barisSemua = stmts.flatMap(s => parseInsertBaris(s)).map(barisDariSql).filter(Boolean);
-            if (barisSemua.length === 0) throw new Error("TIDAK_ADA_INSERT");
+        const totalFile = daftarRTFile.reduce((s, r) => s + r.baris.length, 0);
+        if (!totalFile) throw new Error("IMPORT_KOSONG");
 
-            // Pastikan database aktif & tabel ada
-            if (window._dbSiapTabel !== tabelAktif()) {
-                const cek = await dbCek();
-                if (!cek.dbAktif) throw new Error("DB_OFF");
-                if (cek.auth) throw new Error("AUTH");
-                if (!cek.tabelAda) throw new Error("TABEL_TIDAK_ADA");
-                window._dbSiapTabel = tabelAktif();
+        let totalSisip = 0, totalUbah = 0;
+        const dilewati = [];
+        for (const rt of daftarRTFile) {
+            if (!rt.baris.length) continue;
+            info.innerText = "Menyiapkan " + rt.label + " (" + rt.baris.length + " baris)...";
+            let siap = false;
+            try { siap = await tabelSiap(rt.tabel); }
+            catch (e) { throw new Error("HTTP_PUTUS"); }
+            if (!siap) {
+                dilewati.push(rt.label);
+                catatLogKoneksi("info", "Import melewati " + rt.label + " — tabel " + rt.tabel + " belum ada di database live (siapkan lewat Attach existing database pam.db).");
+                continue;
             }
 
-            // Kelompokkan per periode lalu upsert per periode
+            // Kelompokkan per periode — urutan baris dalam periode dijaga
+            // sama dengan urutan file (id) supaya urutan rumah tetap benar.
             const perPeriode = {};
-            barisSemua.forEach(r => { (perPeriode[r.periode] = perPeriode[r.periode] || []).push(r); });
-            let totalSisip = 0, totalUbah = 0;
+            rt.baris.forEach(r => { (perPeriode[r.periode] = perPeriode[r.periode] || []).push(r); });
             for (const periode of Object.keys(perPeriode)) {
-                info.innerText = "Mengimpor " + periode + "...";
-                const hasil = await dbUpsertPeriode(periode, perPeriode[periode], null);
+                info.innerText = "Mengimpor " + rt.label + " — " + periode + "...";
+                const hasil = await dbUpsertPeriodeTabel(rt.tabel, periode, perPeriode[periode], null);
                 totalSisip += hasil.sisip; totalUbah += hasil.ubah;
             }
+        }
+        return { totalSisip, totalUbah, dilewati, totalFile };
+    }
 
-            info.innerHTML = IK.check + " <b>Import BERHASIL</b> — " + totalSisip + " baris baru, " + totalUbah + " diperbarui. Memuat ulang...";
-            await loadDataPeriodeIni();
-            alert("Import selesai!\n" + totalSisip + " baris baru ditambahkan, " + totalUbah + " baris diperbarui.");
+    function selesaiImport(hasil, info, namaSumber) {
+        info.innerHTML = IK.check + " <b>Import BERHASIL</b> dari " + namaSumber + " — " +
+            hasil.totalSisip + " baris baru, " + hasil.totalUbah + " diperbarui" +
+            (hasil.dilewati.length ? ". Dilewati: <b>" + hasil.dilewati.join(", ") + "</b> (tabel belum ada di database live)" : "") +
+            ". Memuat ulang...";
+        loadDataPeriodeIni();
+        showToast(IK.check + " Import " + namaSumber + " selesai — " + hasil.totalSisip + " baru, " + hasil.totalUbah + " diperbarui" +
+            (hasil.dilewati.length ? " · dilewati: " + hasil.dilewati.join(", ") : ""), "info");
+    }
+
+    function tampilkanErrorImport(e, info) {
+        const m = String((e && e.message) || e);
+        let pesan = m;
+        if (m.indexOf("BUKAN_SQLITE_FILE:") === 0) pesan = "File " + m.slice(18) + " di folder bukan database SQLite yang valid. Pakai tombol <b>Pilih File .db</b> dan pilih file hasil Export .db.";
+        else if (m.includes("FILE_DB_TIDAK_ADA")) pesan = "File .db tidak ditemukan di folder aplikasi (dicari: " + kandidatFileDb().join(", ") + "). Letakkan file .db hasil Export SEJAJAR dengan index.html, atau pakai tombol <b>Pilih File .db</b>.";
+        else if (m.includes("BUKAN_SQLITE")) pesan = "File bukan database SQLite yang valid. Pastikan memilih file <b>.db</b> hasil Export (bukan file .sql).";
+        else if (m.includes("IMPORT_KOSONG")) pesan = "File tidak berisi baris transaksi yang bisa dibaca (kedua tabel RT kosong di file).";
+        else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File tidak berisi statement INSERT untuk tabel transaksi_pelanggan_rt08 / transaksi_pelanggan_rt09.";
+        else if (m.includes("DB_OFF")) pesan = pesanErrorDB(new Error("DB_OFF"));
+        else if (m.includes("AUTH")) pesan = pesanErrorDB(new Error("AUTH"));
+        else if (m.includes("SQL_ERR")) pesan = "Database menolak: " + m.replace("SQL_ERR: ", "").slice(0, 150);
+        else if (m.includes("HTTP_PUTUS")) pesan = "Server terputus di tengah import — coba lagi (baris yang sudah masuk tidak akan dobel).";
+        else pesan = pesanErrorDB(e);
+        info.innerHTML = IK.x + " <b>Import gagal:</b> " + pesan;
+        alert("Import gagal: " + pesan);
+    }
+
+    // Jalur .db: validasi header SQLite → muat sql.js → baca kedua tabel → tulis
+    async function eksekusiImportDbBytes(bytes, info, namaFile) {
+        namaFile = namaFile || namaFileBackup("db");
+        if (!terlihatSqlite(bytes)) throw new Error("BUKAN_SQLITE");
+        info.innerText = "Menyiapkan pustaka sql.js...";
+        await muatSqlJs();
+        const SQL = await initSqlJs({ locateFile: f => f });
+        info.innerText = "Membaca isi " + namaFile + "...";
+        const daftarRTFile = bacaTabelDariDbFile(SQL, bytes);
+        const hasil = await eksekusiImportDaftarRT(daftarRTFile, info);
+        selesaiImport(hasil, info, namaFile);
+    }
+
+    // Jalur .sql lama (kompatibilitas): parse INSERT lalu route per tabel
+    // sesuai tag RT — baris rt09 tidak lagi masuk tabel rt08.
+    async function eksekusiImportSqlTeks(teks, info, namaFile) {
+        namaFile = namaFile || namaFileBackup("sql");
+        info.innerText = "Memproses " + teks.length.toLocaleString('id-ID') + " byte...";
+        const stmts = ekstrakInserts(teks);
+        if (stmts.length === 0) throw new Error("TIDAK_ADA_INSERT");
+        const kelompok = { "08": [], "09": [] };
+        stmts.flatMap(s => parseInsertBaris(s)).forEach(r => {
+            const b = barisDariSql(r);
+            if (!b) return;
+            kelompok[(r.rt === "09") ? "09" : "08"].push(b);
+        });
+        const daftarRTFile = DAFTAR_RT.map(rt => ({
+            tabel: rt.tabel, label: rt.label,
+            baris: kelompok[(rt.id === "rt09") ? "09" : "08"]
+        }));
+        const hasil = await eksekusiImportDaftarRT(daftarRTFile, info);
+        selesaiImport(hasil, info, namaFile);
+    }
+
+    // PINTU 1 — cari file .db yang SEJAJAR dengan index.html di folder
+    // aplikasi. Dicari berurutan lewat kandidatFileDb(): pam-<bulan ini>.db,
+    // pam-<bulan lalu>.db, lalu pam.db (nama lama). File pertama yang
+    // ditemukan & valid SQLite-lah yang dipulihkan.
+    async function importDatabase() {
+        const info = document.getElementById('infoImport');
+        const kandidat = kandidatFileDb();
+        const lanjut = await tampilkanKonfirmasi({
+            header: "Import dari Folder",
+            judul: "Pulihkan data dari file .db di folder aplikasi?",
+            sub: "Dicari berurutan: " + kandidat.join(", ") + " — semuanya SEJAJAR dengan index.html. Isi file dibaca utuh — RT 08 + RT 09. Baris baru ditambah, yang sudah ada diperbarui; periode lain tidak disentuh.",
+            ikon: "ganti",
+            teksYa: "Ya, Import dari Folder",
+            jenisYa: "biru"
+        });
+        if (!lanjut) return;
+
+        info.innerText = "Mencari file .db di folder aplikasi...";
+        try {
+            let ketemu = "", bufKetemu = null, kandidatRusak = "";
+            for (const namaKandidat of kandidat) {
+                // parameter acak agar browser tidak memakai versi lama dari cache
+                const res = await fetch(encodeURIComponent(namaKandidat) + "?v=" + Date.now());
+                if (!res.ok) continue;
+                const b = new Uint8Array(await res.arrayBuffer());
+                if (!terlihatSqlite(b)) { if (!kandidatRusak) kandidatRusak = namaKandidat; continue; }
+                ketemu = namaKandidat; bufKetemu = b;
+                break;
+            }
+            if (!bufKetemu) {
+                if (kandidatRusak) throw new Error("BUKAN_SQLITE_FILE:" + kandidatRusak);
+                throw new Error("FILE_DB_TIDAK_ADA");
+            }
+            await eksekusiImportDbBytes(bufKetemu, info, ketemu);
         } catch (e) {
-            const m = String(e.message || e);
-            let pesan = m;
-            if (m.includes("FILE_SQL_TIDAK_ADA")) pesan = "File pam.sql tidak ditemukan. Letakkan pam.sql di folder yang sama dengan index.html, lalu coba lagi.";
-            else if (m.includes("TIDAK_ADA_INSERT")) pesan = "File pam.sql tidak berisi statement INSERT untuk tabel transaksi_pelanggan_rt08 / transaksi_pelanggan_rt09.";
-            else if (m.includes("SQL_ERR")) pesan = "Database menolak: " + m.replace("SQL_ERR: ", "").slice(0, 150);
-            else pesan = pesanErrorDB(e);
-            info.innerHTML = IK.x + " <b>Import gagal:</b> " + pesan;
-            alert("Import gagal: " + pesan);
+            tampilkanErrorImport(e, info);
+        }
+    }
+
+    // PINTU 2 — file dipilih manual dari penyimpanan. .db = jalur utama;
+    // .sql/.txt lama tetap diterima (dideteksi otomatis dari isi file,
+    // bukan dari ekstensi, supaya file tanpa ekstensi pun tetap jalan).
+    async function importDbFileInput(el) {
+        const file = el.files && el.files[0];
+        el.value = ""; // agar file yang sama bisa dipilih ulang nanti
+        if (!file) return;
+        const info = document.getElementById('infoImport');
+        const lanjut = await tampilkanKonfirmasi({
+            header: "Import File Database",
+            judul: 'Pulihkan data dari "' + file.name + '"?',
+            sub: "Isi file didistribusikan ke tabel RT masing-masing (RT 08 + RT 09). Baris baru ditambah, yang sudah ada diperbarui; periode lain tidak disentuh.",
+            ikon: "ganti",
+            teksYa: "Ya, Import File",
+            jenisYa: "biru"
+        });
+        if (!lanjut) return;
+
+        info.innerText = "Membaca " + file.name + "...";
+        try {
+            const buf = new Uint8Array(await file.arrayBuffer());
+            if (terlihatSqlite(buf)) {
+                await eksekusiImportDbBytes(buf, info, file.name);
+            } else {
+                const teks = new TextDecoder().decode(buf);
+                await eksekusiImportSqlTeks(teks, info, file.name);
+            }
+        } catch (e) {
+            tampilkanErrorImport(e, info);
         }
     }
 
