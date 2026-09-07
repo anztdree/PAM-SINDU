@@ -164,6 +164,15 @@
         .periode-tengah { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
         .periode-label { font-size: .66rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--teks-samar); }
         .periode-nilai { font-size: 1.32rem; font-weight: 800; color: var(--biru-tua); line-height: 1.3; }
+        .badge-kunci {
+            display: inline-flex; align-items: center; gap: 4px; margin-top: 5px;
+            font-size: .6rem; font-weight: 800; letter-spacing: .4px;
+            color: #b45309; background: #fef3c7; border: 1px solid #fcd34d;
+            border-radius: 999px; padding: 2px 9px;
+        }
+        .badge-kunci .svgi { width: 11px; height: 11px; }
+        .info-rentang { font-size: .62rem; font-weight: 600; color: var(--teks-samar); margin-top: 3px; line-height: 1.35; }
+        .info-rentang:empty { display: none; }
 
         /* ===== PEMILIH RT (REV-4) — tombol RT 08 / RT 09 tepat di atas Periode Aktif ===== */
         .rt-switch { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -330,6 +339,8 @@
         .btn-aksi:active { transform: scale(.94); }
         .btn-aksi-catat { background: linear-gradient(135deg, var(--biru), var(--biru-terang)); }
         .btn-aksi-edit { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .btn-aksi-lihat { background: linear-gradient(135deg, #64748b, #94a3b8); }
+        .form-input:disabled { opacity: .65; background: #f1f5f9; cursor: not-allowed; }
         /* baris 2: meter + pemakaian (kiri) • saldo + tagihan (kanan) */
         .pel-bawah {
             display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
@@ -606,6 +617,8 @@
             <div class="periode-tengah">
                 <span class="periode-label">Periode Aktif</span>
                 <span class="periode-nilai" id="labelPeriodeAktif">Juni 2026</span>
+                <span class="badge-kunci" id="badgePeriodeKunci" style="display:none;"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Terkunci — lihat saja</span>
+                <span class="info-rentang" id="infoRentangData"></span>
             </div>
             <button class="tombol-chevron" onclick="lanjutBulanBerikutnya()" aria-label="Bulan sesudahnya">&#8250;</button>
         </div>
@@ -705,7 +718,7 @@
     <div class="modal-content-wrapper">
         <div class="form-box">
             <div class="modal-kepala">
-                <h3><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pencatatan Meteran</h3>
+                <h3><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> <span id="modalJudulInput">Pencatatan Meteran</span></h3>
                 <button class="tombol-tutup" onclick="tutupModal()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-badge-baris">
@@ -746,11 +759,11 @@
                     </details>
                 </div>
 
-                <div class="baris-tombol">
+                <div class="baris-tombol" id="barisTombolModal">
                     <button class="btn btn-hijau" onclick="simpanSudahBayar()">Sudah Bayar <svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></button>
                     <button class="btn btn-amber" onclick="simpanBelumBayar()">Catat Saja <svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
                 </div>
-                <button class="btn tombol-batal" onclick="tutupModal()">Batal</button>
+                <button class="btn tombol-batal" id="btnBatalModal" onclick="tutupModal()">Batal</button>
             </div>
         </div>
     </div>
@@ -765,45 +778,25 @@
                 <button class="tombol-tutup" onclick="tutupModalBackup()" aria-label="Tutup"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-isi isi-backup">
-                <p class="catatan" style="margin:0;">
-                    Simpan salinan data kapan saja — <b>tanpa password</b>,
-                    <b>langsung terunduh tanpa dialog</b>. Nama file otomatis
-                    menyertakan <b>bulan &amp; tahun</b> (contoh:
-                    <b>pam-2026-september.db</b>) supaya backup baru TIDAK
-                    menimpa backup lama. <b>.db</b> = database utuh aplikasi
-                    Petugas (RT 08 + RT 09), <b>.sql</b> = file teks untuk
-                    diupload ke Website.
-                </p>
                 <div class="isi-backup-tombol">
-                    <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')" title="Backup file database SQLite (.db) — selalu terbaru dari data live">
+                    <button class="btn-export" id="btnExportDb" onclick="exportDatabase('db')">
                         <span class="ik ik-biru" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
-                        <span class="tx"><b>Export .db</b><small>pam-&lt;tahun&gt;-&lt;bulan&gt;.db — utuh RT 08 + RT 09</small></span>
+                        <span class="tx"><b>Export .db</b></span>
                     </button>
-                    <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')" title="Backup file teks .sql untuk diupload ke website">
+                    <button class="btn-export" id="btnExportSql" onclick="exportDatabase('sql')">
                         <span class="ik ik-amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-                        <span class="tx"><b>Export .sql</b><small>pam-&lt;tahun&gt;-&lt;bulan&gt;.sql — untuk Website</small></span>
+                        <span class="tx"><b>Export .sql</b></span>
                     </button>
                 </div>
                 <div class="baris-folder-simpan">
                     <button class="btn-folder" onclick="pilihFolderSimpan()" title="Pilih folder aplikasi SEKALI — export berikutnya tersimpan langsung di situ (sejajar index.html, tanpa dialog)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Simpan Sejajar index.html…</button>
                     <span id="infoFolderSimpan" class="ket-folder"></span>
                 </div>
-                <div id="infoExport" class="info-inline" style="margin-top:0;">Belum ada backup — tekan tombol Export di panel ini.</div>
+                <div id="infoExport" class="info-inline" style="margin-top:0;"></div>
                 <details class="panel" style="margin-top:0;">
                     <summary class="panel-summary"><span class="panel-chevron">▶</span><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg> Menu Admin (Import / Reset Data)</summary>
                     <div class="panel-isi">
-                        <p class="catatan">
-                            Import memulihkan data dari file <b>.db</b> (database SQLite
-                            utuh — berisi RT 08 + RT 09). Pilih file dari penyimpanan,
-                            atau letakkan file .db hasil Export (mis.
-                            <b>pam-2026-september.db</b>) di folder aplikasi
-                            (<b>sejajar dengan index.html</b>) lalu tekan Import dari
-                            Folder — nama bulan berjalan, bulan lalu, dan pam.db lama
-                            dikenali otomatis. Baris baru ditambah, yang sudah ada
-                            diperbarui — aman diulang. Untuk pemulihan penuh sesuai
-                            urutan backup: <b>Kosongkan Data</b> dulu, baru Import.
-                            Reset mengosongkan seluruh transaksi.
-                        </p>
+                        <p class="catatan">Import menambah baris baru, memperbarui yang sama. Mulai dari nol: <b>Kosongkan Data</b> dulu.</p>
                         <div class="grid-2">
                             <button class="btn btn-ungu" onclick="importDatabase()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Import dari Folder</button>
                             <button class="btn btn-primer" onclick="document.getElementById('fileImportDb').click()"><svg class="svgi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg> Pilih File .db…</button>
@@ -1191,6 +1184,264 @@
     }
 
     /* ============================================================
+       BATAS NAVIGASI PERIODE — bulan lama lihat saja, bulan kerja
+       terbuka. DUA aturan (permintaan pemilik, sejajar versi Online):
+       1. BATAS SEJARAH = Agustus 2026. Semua periode SEBELUM itu
+          (Juni, Juli, dst.) terkunci permanen — hanya tombol "Lihat",
+          RT 08 maupun RT 09. Berlaku WALAU database belum berisi
+          bulan itu; RT 09 yang masih kosong pun tetap terkunci.
+       2. Periode terbuka = PENANDA bulan kerja, tapi TIDAK PERNAH di
+          bawah batas sejarah. Bulan setelahnya baru terbuka lewat
+          Tutup Buku manual — mencegah salah input ke bulan jauh di
+          depan (mis. langsung ke Desember).
+       VERSI OFFLINE: SHTTPS gratis tidak punya endpoint SQL bebas,
+       maka penanda bulan kerja disimpan di localStorage perangkat
+       (kunci "pamBulanKerja") — satu perangkat satu penanda. Rentang
+       data tetap DIPINDAI langsung dari kedua tabel RT di pam.db
+       (bukan ditebak) supaya kuncian mengikuti isi database. Baris
+       kerangka kosong (hasil Tutup Buku yang belum diisi) TIDAK
+       dihitung "berisi" — kerangka warisan backup lama tidak lagi
+       membuka bulannya sendiri. Perbandingan pakai kunci angka
+       (tahun*12+bulan) — aman lintas tahun 2027 dan seterusnya.
+       ============================================================ */
+    let rentangPeriode = null; // {min, maks} kunci periode; null = DB tak terbaca
+    let sudahMendaratAwal = false; // false = aplikasi baru dibuka, belum pernah membaca rentang
+    let mendaratSekaliLagi = false; // dipasang saat import selesai -> mendarat di bulan terbaru
+
+    function kunciPeriode(bulanIdx, tahun) {
+        return tahun * 12 + bulanIdx;
+    }
+
+    function kunciPeriodeAktif() {
+        return kunciPeriode(currentBulanIndex, currentTahun);
+    }
+
+    function teksDariKunciPeriode(k) {
+        return daftarBulan[k % 12] + " " + Math.floor(k / 12);
+    }
+
+    // BATAS SEJARAH: mulai Agustus 2026 bulan boleh diedit (permintaan
+    // pemilik). Semua periode sebelum ini = sejarah — lihat saja.
+    const BATAS_SEJARAH = kunciPeriode(7, 2026); // Agustus 2026
+
+    // PENANDA BULAN KERJA — kunci numerik di localStorage. null = belum
+    // pernah disimpan (aplikasi dianggap baru di perangkat ini).
+    const KUNCI_BULAN_KERJA = "pamBulanKerja";
+    let bulanKerjaKunci = (function () {
+        try {
+            const v = parseInt(localStorage.getItem(KUNCI_BULAN_KERJA), 10);
+            return Number.isFinite(v) ? v : null;
+        } catch (e) { return null; }
+    })();
+
+    function simpanBulanKerja(k) {
+        bulanKerjaKunci = k;
+        try { localStorage.setItem(KUNCI_BULAN_KERJA, String(k)); } catch (e) {}
+    }
+
+    function periodeTerbuka() {
+        const k = (bulanKerjaKunci === null) ? BATAS_SEJARAH : bulanKerjaKunci;
+        return Math.max(k, BATAS_SEJARAH);
+    }
+
+    // Nama bulan (huruf apa pun) -> indeks 0-11. Terima nama penuh dan
+    // singkatan umum — data import bisa beda gaya penulisan.
+    function indeksBulanDariTeks(n) {
+        const peta = { januari:0, jan:0, februari:1, feb:1, maret:2, mar:2,
+            april:3, apr:3, mei:4, may:4, juni:5, jun:5, juli:6, jul:6,
+            agustus:7, agu:7, agt:7, aug:7, september:8, sep:8,
+            oktober:9, okt:9, oct:9, november:10, nov:10,
+            desember:11, des:11, dec:11 };
+        return (n in peta) ? peta[n] : -1;
+    }
+
+    // Teks periode -> kunci numerik. Tahan berbagai format yang sering
+    // muncul dari data import: "Juni 2026", "juni 2026", "Juni2026",
+    // "2026-06", "2026/6", "06-2026", "6/2026". Tak dikenal -> null.
+    function parsePeriodeTeks(teks) {
+        const t = String(teks == null ? "" : teks).replace(/\u00A0/g, " ").trim().toLowerCase();
+        if (!t) return null;
+        let m = t.match(/^([a-z]+)\.?\s+(\d{4})$/) || t.match(/^([a-z]+)(\d{4})$/);
+        if (m) {
+            const idx = indeksBulanDariTeks(m[1]);
+            const th = parseInt(m[2], 10);
+            if (idx >= 0 && th >= 2000 && th <= 2100) return kunciPeriode(idx, th);
+            return null;
+        }
+        m = t.match(/^(\d{4})[-\/. ](\d{1,2})$/);
+        if (m) {
+            const th = parseInt(m[1], 10), bl = parseInt(m[2], 10);
+            if (th >= 2000 && th <= 2100 && bl >= 1 && bl <= 12) return kunciPeriode(bl - 1, th);
+            return null;
+        }
+        m = t.match(/^(\d{1,2})[-\/. ](\d{4})$/);
+        if (m) {
+            const bl = parseInt(m[1], 10), th = parseInt(m[2], 10);
+            if (th >= 2000 && th <= 2100 && bl >= 1 && bl <= 12) return kunciPeriode(bl - 1, th);
+        }
+        return null;
+    }
+
+    // Murni (mudah diuji): daftar teks periode dari SEMUA RT ->
+    // {min, maks} kunci numerik. Teks tak dikenal diabaikan;
+    // daftar kosong -> null. RT 09 yang baru/kosong tidak menahan
+    // rentang — yang menentukan bulan TERBARU dari RT mana pun.
+    // petaBerisi (opsional): {teks periode: jumlah baris berisi data
+    // nyata}. Periode yang barisnya SEMUA kerangka kosong (hasil cetakan
+    // Tutup Buku yang belum diisi) dianggap BELUM ada — kerangka warisan
+    // backup lama tidak lagi membuka bulannya sendiri.
+    function hitungRentang(daftarTeks, petaBerisi) {
+        const kunci = [];
+        (daftarTeks || []).forEach(t => {
+            if (petaBerisi && Object.prototype.hasOwnProperty.call(petaBerisi, t) &&
+                !(parseInt(petaBerisi[t], 10) > 0)) return;
+            const k = parsePeriodeTeks(t);
+            if (k !== null) kunci.push(k);
+        });
+        if (!kunci.length) return null;
+        return { min: Math.min.apply(null, kunci), maks: Math.max.apply(null, kunci) };
+    }
+
+    // Murni: posisi k harus ditarik ke periode terbuka terakhir?
+    function perluMendaratMaks(k, rentang, paksa) {
+        if (!rentang) return false;
+        return paksa || k < rentang.min || k > rentang.maks;
+    }
+
+    // Murni: dari barisan mentah gabungan tabel RT -> {periode: [teks...],
+    // berisi: {teks: jumlah baris berisi data nyata}}. Baris kerangka
+    // (meter akhir 0, tanpa uang, belum bayar) TIDAK dihitung berisi.
+    function susunPeriodeDariBaris(baris) {
+        const teks = [];
+        const berisi = {};
+        (baris || []).forEach(b => {
+            if (!b) return;
+            const p = String(b.periode == null ? "" : b.periode).replace(/\u00A0/g, " ").trim();
+            if (!p) return;
+            if (!Object.prototype.hasOwnProperty.call(berisi, p)) { berisi[p] = 0; teks.push(p); }
+            if ((parseFloat(b.meter_akhir) || 0) > 0 ||
+                (parseFloat(b.cash) || 0) > 0 ||
+                String(b.status || "") === "Sudah Bayar") berisi[p]++;
+        });
+        return { periode: teks, berisi: berisi };
+    }
+
+    // Pindai langsung kedua tabel RT di pam.db lewat /api/db/table.
+    // Tabel RT yang belum siap (mis. RT 09 belum di-attach) DILEWATI —
+    // kuncian tetap jalan dari tabel RT yang terbaca.
+    async function pindaiPeriodeDariTabel() {
+        const gabungan = [];
+        for (const rt of DAFTAR_RT) {
+            try {
+                const baris = await dbBacaTabel(rt.tabel, "periode,meter_akhir,cash,status", null, 5000);
+                for (const b of baris) gabungan.push(b);
+            } catch (e) {
+                catatLogKoneksi("info", "Pindai periode lewati " + rt.label + " (tabel belum siap): " + (e.message || e));
+            }
+        }
+        return susunPeriodeDariBaris(gabungan);
+    }
+
+    // Satu baris kecil di bawah judul periode: menunjukkan rentang yang
+    // BENAR-BENAR terbaca dari pam.db — sumber kebenaran kuncian bulan.
+    function tulisInfoRentang(rentang, dbKosong) {
+        const el = document.getElementById("infoRentangData");
+        if (!el) return;
+        if (!rentang) { el.textContent = ""; return; }
+        if (dbKosong) { el.textContent = "Belum ada data di database"; return; }
+        el.textContent = (rentang.min === rentang.maks)
+            ? "Data tersimpan: " + teksDariKunciPeriode(rentang.min)
+            : "Data tersimpan: " + teksDariKunciPeriode(rentang.min) + " – " + teksDariKunciPeriode(rentang.maks);
+        // Database belum berisi bulan kerja (mis. baru sampai Juni/Juli)
+        // -> tulis bulan kerjanya supaya jelas kenapa bulan itu masih
+        // kosong di database tapi sudah bisa diedit.
+        const terbuka = periodeTerbuka();
+        if (terbuka !== null && terbuka > rentang.maks) {
+            el.textContent += " · bulan kerja: " + teksDariKunciPeriode(terbuka);
+        }
+    }
+
+    // Ambil daftar periode + jumlah baris berisi dari kedua tabel RT &
+    // simpan rentangnya. Return true bila posisi ditarik ke periode
+    // terbuka dan sudah dikoreksi — pemanggil (loadDataPeriodeIni) wajib
+    // memuat ulang.
+    async function segarkanRentangPeriode() {
+        let sumber = null;
+        try { sumber = await pindaiPeriodeDariTabel(); } catch (e) { sumber = null; }
+        if (!sumber) {
+            // Server benar-benar tak terbaca: jangan kunci navigasi — tanpa
+            // server tidak ada yang bisa diinput juga.
+            rentangPeriode = null;
+            tulisInfoRentang(null, false);
+            return false;
+        }
+        rentangPeriode = hitungRentang(sumber.periode, sumber.berisi || null);
+        if (!rentangPeriode) {
+            // Database tidak berisi satu pun bulan berdata (masih kosong,
+            // atau baru kerangka): rentang = periode terbuka — bulan lain
+            // tak bisa dibuka sampai ada data (input / import / tutup buku).
+            const terbukaKosong = periodeTerbuka();
+            rentangPeriode = { min: terbukaKosong, maks: terbukaKosong };
+            sudahMendaratAwal = true;
+            tulisInfoRentang(rentangPeriode, true);
+            if (kunciPeriodeAktif() !== terbukaKosong) {
+                const bagianKosong = teksDariKunciPeriode(terbukaKosong).split(/\s+/);
+                currentBulanIndex = daftarBulan.indexOf(bagianKosong[0]);
+                currentTahun = parseInt(bagianKosong[1], 10);
+                simpanPeriodeAktif();
+                catatLogKoneksi("info", "Dialihkan ke " + teksDariKunciPeriode(terbukaKosong) + " — bulan kerja terbaru.");
+                showToast(IK.check + " Dialihkan ke " + teksDariKunciPeriode(terbukaKosong) + " — bulan kerja terbaru.", "info");
+                return true;
+            }
+            return false;
+        }
+        tulisInfoRentang(rentangPeriode, false);
+        const k = kunciPeriodeAktif();
+        const terbuka = periodeTerbuka();
+        // paksa = baru selesai import (pulih backup) ATAU pembukaan
+        // aplikasi dengan posisi tersimpan di bawah bulan kerja terbuka
+        // (sisa storage lama) — supaya RT 08 dan RT 09 selalu mendarat di
+        // bulan yang sama, yaitu bulan kerja terbuka (paling tidak Agustus
+        // 2026 — batas sejarah).
+        const paksa = mendaratSekaliLagi || (!sudahMendaratAwal && k < terbuka);
+        sudahMendaratAwal = true;
+        mendaratSekaliLagi = false;
+        if (perluMendaratMaks(k, { min: rentangPeriode.min, maks: terbuka }, paksa)) {
+            // Koreksi mandiri: periode aktif di luar jendela [bulan berdata
+            // terlama .. bulan kerja terbuka] -> mendarat di bulan kerja.
+            const bagian = teksDariKunciPeriode(terbuka).split(/\s+/);
+            currentBulanIndex = daftarBulan.indexOf(bagian[0]);
+            currentTahun = parseInt(bagian[1], 10);
+            simpanPeriodeAktif();
+            catatLogKoneksi("info", "Dialihkan ke " + teksDariKunciPeriode(terbuka) + " — bulan kerja terbaru.");
+            showToast(IK.check + " Dialihkan ke " + teksDariKunciPeriode(terbuka) + " — bulan kerja terbaru.", "info");
+            return true;
+        }
+        return false;
+    }
+
+    // Gerbang navigasi: target harus di dalam rentang periode berisi data.
+    function navPeriodeBoleh(kunciTarget) {
+        if (!rentangPeriode) return true;
+        if (kunciTarget < rentangPeriode.min) {
+            showToast(IK.alert + " Tidak ada data sebelum " + teksDariKunciPeriode(rentangPeriode.min) + ".", "gagal");
+            return false;
+        }
+        if (kunciTarget > periodeTerbuka()) {
+            showToast(IK.alert + " " + teksDariKunciPeriode(kunciTarget) + " belum terbuka — Tutup Buku dulu untuk membukanya.", "gagal");
+            return false;
+        }
+        return true;
+    }
+
+    // Bulan yang sedang dilihat boleh diedit hanya bila itu PERSIS periode
+    // terbuka (paling tidak Agustus 2026 — batas sejarah). Bulan sebelum
+    // maupun sesudahnya = bukan bulan kerja — lihat saja, tulis terkunci.
+    function periodeDilihatBolehEdit() {
+        return !rentangPeriode || kunciPeriodeAktif() === periodeTerbuka();
+    }
+
+    /* ============================================================
        PEMILIH RT (REV-4) — tombol RT 08 / RT 09 tepat di atas kartu
        Periode Aktif. Pindah RT = ganti tabel sumber data lalu muat
        ulang seluruh tampilan. Pengaman: selama masih ada operasi
@@ -1386,6 +1637,16 @@
             hitungPelanggan = susun.hitung;
 
             updateStatusKoneksi(true);
+
+            // Batas navigasi bulan mengikuti isi database (pindai kedua tabel
+            // RT). Bila periode aktif ternyata di luar rentang, koreksi lalu
+            // muat ulang sekali.
+            if (await segarkanRentangPeriode()) { await loadDataPeriodeIni(); return; }
+
+            // Lencana kunci: tampil bila yang dilihat adalah bulan lama
+            const elKunci = document.getElementById("badgePeriodeKunci");
+            if (elKunci) elKunci.style.display = periodeDilihatBolehEdit() ? "none" : "inline-flex";
+
             catatLogKoneksi("ok", "[" + infoRT().label + "] Data " + key + " termuat (" + daftarPelanggan.length + " pelanggan, " + baris.length + " baris periode)");
 
             // Susun data periode ini mengikuti urutan daftar pelanggan;
@@ -1551,7 +1812,15 @@
 
             let labelAksi = 'Catat';
             let kelasAksi = 'btn-aksi-catat';
-            if (item.STATUS === 'Sudah Bayar') { labelAksi = 'Edit'; kelasAksi = 'btn-aksi-edit'; }
+            let arguAksi = '';
+            if (!periodeDilihatBolehEdit()) {
+                // Bulan terkunci (mis. Juni & Juli 2026): SATU tombol "Lihat" —
+                // modal terbuka mode baca-saja tanpa jalur simpan.
+                labelAksi = 'Lihat';
+                kelasAksi = 'btn-aksi-lihat';
+                arguAksi = ', true';
+            }
+            else if (item.STATUS === 'Sudah Bayar') { labelAksi = 'Edit'; kelasAksi = 'btn-aksi-edit'; }
             else if (isMeterEntered) { labelAksi = 'Edit'; kelasAksi = 'btn-aksi-edit'; }
 
             // meter: tampil "?" bila belum dicatat (bukan 0 yang membingungkan)
@@ -1575,7 +1844,7 @@
                     <span class="pel-nomor">${index + 1}</span>
                     <span class="pel-nama" title="${item.NAMA}">${item.NAMA}</span>
                     ${statusMiniHtml}
-                    <button class="btn-aksi ${kelasAksi}" onclick="bukaModal(${index})">${labelAksi}</button>
+                    <button class="btn-aksi ${kelasAksi}" onclick="bukaModal(${index}${arguAksi})">${labelAksi}</button>
                 </div>
                 <div class="pel-bawah">
                     <span class="pel-ringkas"><b>${info.pemakaian} m³</b> · ${meterTeks}</span>
@@ -1635,6 +1904,7 @@
     }
 
     function kembaliBulanLalu() {
+        if (!navPeriodeBoleh(kunciPeriodeAktif() - 1)) return;
         currentBulanIndex--;
         if (currentBulanIndex < 0) {
             currentBulanIndex = 11;
@@ -1645,6 +1915,7 @@
     }
 
     function lanjutBulanBerikutnya() {
+        if (!navPeriodeBoleh(kunciPeriodeAktif() + 1)) return;
         currentBulanIndex++;
         if (currentBulanIndex > 11) {
             currentBulanIndex = 0;
@@ -1655,6 +1926,13 @@
     }
 
     async function prosesTutupBukuDanLanjut() {
+        // Gerbang: Tutup Buku hanya dari periode terbuka terakhir —
+        // dijalankan dari bulan lama berarti menimpa data periode berikutnya.
+        if (!periodeDilihatBolehEdit()) {
+            showToast(IK.lock + " Tutup Buku hanya dari periode terbuka (" + (rentangPeriode ? teksDariKunciPeriode(periodeTerbuka()) : getPeriodeText()) + ").", "gagal");
+            return;
+        }
+
         // KOREKSI: Tutup Buku sekarang GLOBAL untuk SEMUA RT sekaligus.
         // Sebelumnya Tutup Buku hanya memproses RT yang sedang aktif di
         // header — akibatnya bila petugas di RT 08 tekan Tutup Buku, tabel
@@ -1744,14 +2022,14 @@
         // Periode transisi ditulis di judul supaya jelas sekaligus.
         const konfirmasi = await tampilkanKonfirmasi({
             header: "Tutup Buku & Lanjut Periode",
-            judul: periodeSekarang + " &rarr; " + periodeBaruPreview,
-            sub: "Meter Akhir periode ini akan jadi Meter Awal periode baru, dan sisa deposit/tunggakan otomatis dialihkan untuk SEMUA RT di bawah ini.",
+            judul: periodeSekarang + " → " + periodeBaruPreview,
+            sub: "Meter Akhir jadi Meter Awal — sisa deposit/tunggakan otomatis dialihkan.",
             ikon: "ganti",
             teksYa: "Ya, Tutup Buku & Lanjut",
             jenisYa: "hijau",
             tampilkanBadgeRT: false,
             kontenHTML: konten,
-            peringatanHTML: "Proses ini <b>PERMANEN</b> — pastikan seluruh data transaksi periode ini sudah 100% valid. Sebaiknya <b>Export Database (backup)</b> dulu sebelum lanjut."
+            peringatanHTML: "Proses <b>PERMANEN</b> — pastikan data periode ini sudah benar. Sebaiknya <b>Export</b> dulu."
         });
         if (!konfirmasi) return;
 
@@ -1811,19 +2089,44 @@
             }
         }
 
+        // Kunci bulan yang barusan ditutup: penanda "bulan kerja" maju ke
+        // periode baru (disimpan di localStorage perangkat ini). Bulan lama
+        // otomatis jadi lihat-saja. Di versi Online penanda disimpan di
+        // server agar sama di semua perangkat; versi Offline jalan di satu
+        // perangkat (SHTTPS) jadi localStorage memadai.
+        simpanBulanKerja(kunciPeriode(currentBulanIndex, currentTahun));
+
         simpanPeriodeAktif();
         await loadDataPeriodeIni();
 
         showToast(IK.check + " <b>Tutup Buku Selesai.</b> Selamat bekerja di periode <b>" + periodeBaruKey + "</b>.", "info");
     }
 
-    function bukaModal(index) {
+    function bukaModal(index, modeLihat) {
+        // lihat = true berarti LIHAT SAJA (bulan terkunci) — tanpa jalur simpan
+        const lihat = modeLihat === true;
+        if (!lihat && !periodeDilihatBolehEdit()) {
+            showToast(IK.lock + " " + getPeriodeText() + " sudah dikunci — bulan lama hanya bisa dilihat.", "gagal");
+            return;
+        }
         selectedIndex = index;
         let item = excelData[index];
         document.getElementById('formNama').value = item.NAMA;
         document.getElementById('mLalu').value = item.METER_AWAL || 0;
         document.getElementById('mKini').value = item.METER_AKHIR || 0;
         document.getElementById('mCash').value = item.CASH || "";
+        // Mode lihat: input dimatikan & tombol simpan disembunyikan — petugas
+        // tetap bisa memeriksa rincian tagihan bulan terkunci tanpa bisa menulis.
+        ["mLalu", "mKini", "mCash"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = lihat;
+        });
+        const elJudul = document.getElementById("modalJudulInput");
+        if (elJudul) elJudul.textContent = lihat ? "Lihat Detail" : "Pencatatan Meteran";
+        const elSimpan = document.getElementById("barisTombolModal");
+        if (elSimpan) elSimpan.style.display = lihat ? "none" : "flex";
+        const elBatal = document.getElementById("btnBatalModal");
+        if (elBatal) elBatal.textContent = lihat ? "Tutup" : "Batal";
         // Badge konteks: RT aktif & periode aktif, biar petugas yakin
         // sedang catat untuk RT mana & bulan apa sebelum tekan "Sudah Bayar".
         const r = infoRT();
@@ -2026,6 +2329,12 @@
 
     async function simpanSudahBayar() {
         if (selectedIndex === null) return;
+        // Pengaman tambahan: bulan terkunci tidak boleh menulis apa pun.
+        if (!periodeDilihatBolehEdit()) {
+            tutupModal();
+            showToast(IK.lock + " " + getPeriodeText() + " sudah dikunci — tidak bisa menyimpan.", "gagal");
+            return;
+        }
 
         let item = excelData[selectedIndex];
         let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
@@ -2068,6 +2377,12 @@
 
     async function simpanBelumBayar() {
         if (selectedIndex === null) return;
+        // Pengaman tambahan: bulan terkunci tidak boleh menulis apa pun.
+        if (!periodeDilihatBolehEdit()) {
+            tutupModal();
+            showToast(IK.lock + " " + getPeriodeText() + " sudah dikunci — tidak bisa menyimpan.", "gagal");
+            return;
+        }
 
         let item = excelData[selectedIndex];
         let mLalu = parseFloat(document.getElementById('mLalu').value) || 0;
@@ -2490,12 +2805,9 @@
 
             // Statistik ringkas (gabungan semua RT)
             const semuaBaris = daftarRT.filter(r => r.sukses).flatMap(r => r.baris);
-            const periodeUnik = [];
-            semuaBaris.forEach(r => { if (periodeUnik.indexOf(r.periode) < 0) periodeUnik.push(r.periode); });
-            const ringkas = semuaBaris.length + " baris, " + periodeUnik.length + " periode, " + daftarRT.filter(r => r.sukses).length + "/" + DAFTAR_RT.length + " RT";
+            const totalBaris = semuaBaris.length;
 
             let pakaiFileDb = false;
-            let sumberDb = "";
             let caraSimpan = "unduh"; // "unduh" = folder Download, atau "folder:<nama>"
             // 2) Mode "db" - JALUR UTAMA: bangun file .db SEGAR berisi SEMUA RT.
             if (mode === "db") {
@@ -2508,7 +2820,6 @@
                     const simpan = await tulisFileBackup(target, new Blob([bytes], { type: "application/octet-stream" }), namaFileBackup("db"));
                     caraSimpan = simpan;
                     pakaiFileDb = true;
-                    sumberDb = "database segar dibangun dari data live (" + semuaBaris.length + " baris dari " + daftarRT.filter(r => r.sukses).length + " RT) - selalu terbaru";
                 } catch (e) {
                     sqlJsPromise = null; // boleh coba muat ulang nanti
                     alasanFallback = String((e && e.message) ? e.message : e);
@@ -2552,7 +2863,6 @@
                                 const simpan = await tulisFileBackup(target, new Blob([bufKetemu], { type: "application/octet-stream" }), namaFileBackup("db"));
                                 caraSimpan = simpan;
                                 pakaiFileDb = true;
-                                sumberDb = "file " + ketemuNama + " dari folder (pustaka sql.js tidak tersedia)";
                             }
                         }
                     } catch (e2) {
@@ -2569,38 +2879,14 @@
                 caraSimpan = simpan;
             }
 
-            // Ringkas status per-RT untuk pesan info
-            const statusRT = daftarRT.map(r =>
-                r.sukses
-                    ? r.label + ": " + r.baris.length + " baris"
-                    : r.label + ": tabel belum siap"
-            ).join(" · ");
-
-            const ketSimpan = (caraSimpan === "unduh")
-                ? "terunduh ke folder Download"
-                : "disimpan SEJAJAR index.html di folder \"" + caraSimpan.slice(7) + "\"";
             const namaHasil = namaFileBackup(pakaiFileDb ? "db" : "sql");
-            showToast(mode === "sql"
-                ? IK.file + " " + namaHasil + " " + ketSimpan + " (" + ringkas + ")"
-                : (pakaiFileDb
-                    ? IK.db + " " + namaHasil + " " + ketSimpan + " (" + ringkas + ")"
-                    : IK.db + " Export .db gagal — " + namaHasil + " " + ketSimpan + " (" + ringkas + ")"));
+            showToast(IK.check + " " + namaHasil + (totalBaris > 0 ? " (" + totalBaris + " baris)" : ""));
             if (info) {
-                info.innerHTML = IK.check + " <b>Backup terakhir:</b> " + namaHasil +
-                    " — " + new Date().toLocaleString('id-ID') + " (" + ringkas + ")" +
-                    (mode === "db" && pakaiFileDb
-                        ? "<br>" + IK.db + " " + sumberDb + "."
-                        : "") +
-                    (mode === "db" && !pakaiFileDb
-                        ? "<br>" + IK.alert + " " + (alasanFallback || "Export .db tidak bisa dilakukan") +
-                          " — yang disimpan: backup <b>.sql</b> (data tetap lengkap &amp; terbaru)."
-                        : "") +
-                    "<br>" + (pakaiFileDb
-                        ? (caraSimpan === "unduh"
-                            ? "Memasang ulang: pindahkan " + namaHasil + " ke folder aplikasi (SEJAJAR dengan index.html), lalu SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file tersebut (sudah berisi kedua tabel RT)."
-                            : "File sudah tersimpan sejajar index.html di folder \"" + caraSimpan.slice(7) + "\". Memasang ulang: SHTTPS &gt; Pengaturan &gt; Database &gt; <i>Attach existing database</i> &gt; pilih file tersebut (sudah berisi kedua tabel RT).")
-                        : namaHasil + " dipakai WEBSITE: upload lewat Menu Import .sql ke Database. Pemulihan aplikasi Petugas memakai file .db (Menu Admin &gt; Import dari Folder).") +
-                    "<br><b>Isi backup:</b> " + statusRT + ". Data RT yg gagal dibaca tidak ikut — siapkan tabelnya dulu lalu export ulang.";
+                const d = new Date();
+                const waktu = d.getDate() + "/" + (d.getMonth() + 1) + " " +
+                    ("0" + d.getHours()).slice(-2) + "." + ("0" + d.getMinutes()).slice(-2);
+                info.innerHTML = IK.check + " " + namaHasil + " · " + waktu +
+                    (caraSimpan === "unduh" ? "" : " · tersimpan sejajar index.html");
             }
         } catch (e) {
             showToast(IK.x + " Export database gagal: " + pesanErrorDB(e), "gagal");
@@ -2834,14 +3120,13 @@
         return { totalSisip, totalUbah, dilewati, totalFile };
     }
 
-    function selesaiImport(hasil, info, namaSumber) {
-        info.innerHTML = IK.check + " <b>Import BERHASIL</b> dari " + namaSumber + " — " +
-            hasil.totalSisip + " baris baru, " + hasil.totalUbah + " diperbarui" +
-            (hasil.dilewati.length ? ". Dilewati: <b>" + hasil.dilewati.join(", ") + "</b> (tabel belum ada di database live)" : "") +
-            ". Memuat ulang...";
+    function selesaiImport(hasil, info) {
+        const ringkas = IK.check + " Import selesai — " + hasil.totalSisip + " baru, " + hasil.totalUbah + " diperbarui" +
+            (hasil.dilewati.length ? " · dilewati: " + hasil.dilewati.join(", ") : "");
+        info.innerHTML = ringkas;
+        mendaratSekaliLagi = true; // setelah pulih data, langsung ke bulan kerja terbaru
         loadDataPeriodeIni();
-        showToast(IK.check + " Import " + namaSumber + " selesai — " + hasil.totalSisip + " baru, " + hasil.totalUbah + " diperbarui" +
-            (hasil.dilewati.length ? " · dilewati: " + hasil.dilewati.join(", ") : ""), "info");
+        showToast(ringkas, "info");
     }
 
     function tampilkanErrorImport(e, info) {
@@ -2871,7 +3156,7 @@
         info.innerText = "Membaca isi " + namaFile + "...";
         const daftarRTFile = bacaTabelDariDbFile(SQL, bytes);
         const hasil = await eksekusiImportDaftarRT(daftarRTFile, info);
-        selesaiImport(hasil, info, namaFile);
+        selesaiImport(hasil, info);
     }
 
     // Jalur .sql lama (kompatibilitas): parse INSERT lalu route per tabel
@@ -2892,7 +3177,7 @@
             baris: kelompok[(rt.id === "rt09") ? "09" : "08"]
         }));
         const hasil = await eksekusiImportDaftarRT(daftarRTFile, info);
-        selesaiImport(hasil, info, namaFile);
+        selesaiImport(hasil, info);
     }
 
     // PINTU 1 — cari file .db yang SEJAJAR dengan index.html di folder
@@ -3124,6 +3409,10 @@
     }
 
     async function tambahPelangganBaru() {
+        if (!periodeDilihatBolehEdit()) {
+            infoPelangganTeks(IK.lock + " Bulan lama terkunci — pindah dulu ke periode terbuka untuk menambah pelanggan.");
+            return;
+        }
         const nama = (document.getElementById("inputNamaBaru").value || "").trim().toUpperCase();
         if (!nama) { infoPelangganTeks(IK.x + " Tulis nama pelanggan baru dulu."); return; }
         if (daftarPelanggan.includes(nama)) { infoPelangganTeks(IK.x + " Nama <b>" + nama + "</b> sudah ada di daftar."); return; }
