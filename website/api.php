@@ -61,15 +61,40 @@ $action = isset($_GET['action']) ? $_GET['action'] : '';
 
 // ---------- 1. BACA DATA ----------
 if ($action === 'get_data') {
+    // Cek dulu apakah tabel RT ini sudah dibuat di MySQL. Bila belum
+    // (mis. RT 09 belum di-migrate), balas data kosong — supaya viewer
+    // tetap menampilkan "Terhubung" dengan pesan "belum ada data RT 09",
+    // bukan error 500 yg bikin status pill jadi "Terputus".
+    $cekTabel = $conn->query("SHOW TABLES LIKE '" . $tabelRT . "'");
+    if (!$cekTabel || $cekTabel->num_rows === 0) {
+        echo json_encode([
+            "status" => "success",
+            "data" => [],
+            "info" => "Tabel " . $tabelRT . " belum dibuat di database — import file .sql dari Petugas untuk menyiapkan data RT " . $rt . "."
+        ]);
+        $conn->close();
+        exit;
+    }
+
     if (!empty($_GET['periode'])) {
         $stmt = $conn->prepare("SELECT periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status
                                 FROM " . $tabelRT . " WHERE periode = ? ORDER BY id");
+        if (!$stmt) {
+            echo json_encode(["status" => "error", "message" => "Gagal prepare query: " . $conn->error]);
+            $conn->close();
+            exit;
+        }
         $stmt->bind_param("s", $_GET['periode']);
         $stmt->execute();
         $result = $stmt->get_result();
     } else {
         $result = $conn->query("SELECT periode, nama, meter_awal, meter_akhir, cash, biaya_beban, saldo_lalu, status
                                 FROM " . $tabelRT . " ORDER BY id");
+        if (!$result) {
+            echo json_encode(["status" => "error", "message" => "Gagal query: " . $conn->error]);
+            $conn->close();
+            exit;
+        }
     }
     $data = [];
     while ($row = $result->fetch_assoc()) {

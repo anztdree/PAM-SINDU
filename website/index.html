@@ -582,7 +582,10 @@
                 <div id="panelLaporan" style="display:none;">
                     <button class="btn-kembali" onclick="kembaliMenuSetting()">&lsaquo; Menu Setting</button>
                     <p class="catatan" style="margin:4px 0 8px;">Laporan PDF untuk <b>bulan ini saja</b>: <b id="lblPeriodeLaporan">—</b>. Isi seperti buku catatan: nomor, nama pelanggan, meteran awal–akhir, pemakaian air, dan iuran air. <b>Beban tidak dicantumkan</b> — yang hanya bayar beban ditulis kosong; yang belum bayar (meteran berjalan) diblok kuning <b>tanpa angka rupiah</b>.</p>
-                    <button class="btn btn-primer btn-blok" onclick="exportLaporanPDF()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Buat Laporan PDF</button>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn btn-primer" style="flex:1;" onclick="exportLaporanPDF('08')"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Cetak RT 08</button>
+                        <button class="btn btn-primer" style="flex:1;" onclick="exportLaporanPDF('09')"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Cetak RT 09</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -959,8 +962,9 @@
         semuaBaris = []; daftarPeriode = []; excelData = []; idxPeriode = 0;
         terapkanIdentitasRT();
         renderSemua();
-        // silent=true supaya toast "Data siap ditampilkan" tidak muncul tiap
-        // ganti tab — cukup indikator status pill di header saja.
+        // Sembunyikan toast lama yg mungkin masih muncul dari RT sebelumnya,
+        // lalu muat data baru dengan silent=true (tidak ada toast).
+        document.querySelectorAll('.toast').forEach(t => t.remove());
         muatData(true);
     }
 
@@ -998,8 +1002,10 @@
     }
 
     async function muatData(silent) {
-        // silent=true → muat data tanpa showToast "Data ... siap ditampilkan"
-        // (dipakai saat ganti tab RT, supaya tidak muncul popup tiap klik)
+        // silent=true → muat data tanpa toast "Data ... siap ditampilkan"
+        // (dipakai saat ganti tab RT, supaya toast sukses tidak ganggu).
+        // Tapi toast ERROR (database terputus, gagal) tetap muncul supaya
+        // user tahu ada masalah (mis. tabel RT 09 belum dibuat di MySQL).
         setStatusSumber("Memuat data " + infoRT().label + "...", "#d97706", "putar");
 
         // 1) UTAMA: database MySQL via api.php (bawa parameter rt=08/09)
@@ -1014,6 +1020,9 @@
             // Toast "siap ditampilkan" hanya untuk muat pertama (silent=false),
             // JANGAN tampilkan saat ganti tab RT — bikin ganggu.
             if (!silent) showToast("Data " + teksRentangPeriode() + " siap ditampilkan", "");
+            // Kalau api.php balas field "info" (mis. tabel RT 09 belum ada),
+            // tampilkan toast info 1x supaya user tahu harus import data dulu.
+            if (json.info) showToast(json.info, "info");
             return;
         } catch (err) { /* lanjut ke fallback di bawah */ }
 
@@ -1727,14 +1736,63 @@
         return doc;
     }
 
-    function exportLaporanPDF() {
+    async function exportLaporanPDF(rtTarget) {
+        // rtTarget = "08" atau "09". Fungsi ini mengambil data RT target
+        // langsung dari api.php (bukan pakai excelData RT aktif), supaya
+        // user bisa cetak RT 09 walaupun sedang di tab RT 08.
+        if (!rtTarget) rtTarget = rtAktif; // fallback: RT aktif
         if (!window.jspdf || !window.jspdf.jsPDF) { showToast("Pustaka PDF belum termuat - cek koneksi internet", "gagal"); return; }
-        if (!excelData.length) { showToast("Belum ada data pada periode ini", "gagal"); return; }
+
+        // Simpan state tampilan utk dipulihkan nanti
+        const simpanSemuaBaris = semuaBaris.slice();
+        const simpanDaftarPeriode = daftarPeriode.slice();
+        const simpanIdxPeriode = idxPeriode;
+        const simpanExcelData = excelData.slice();
+        const simpanRtAktif = rtAktif;
+
+        // Ambil data RT target dari api.php
+        showToast("Mengambil data RT " + rtTarget + "...", "info");
+        let dataRT;
+        try {
+            const res = await fetch("api.php?action=get_data&rt=" + rtTarget + "&v=" + Date.now());
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const json = await res.json();
+            if (!json || json.status !== "success") throw new Error((json && json.message) || "gagal");
+            dataRT = (json.data || []).map(barisDariDb).filter(Boolean);
+        } catch (e) {
+            showToast("Gagal ambil data RT " + rtTarget + ": " + e.message, "gagal");
+            return;
+        }
+
+        if (!dataRT.length) {
+            showToast("RT " + rtTarget + " belum ada data — import file .sql dari Petugas dulu", "gagal");
+            return;
+        }
+
+        // Set state sementara pakai data RT target
+        rtAktif = rtTarget;
+        terapkanIdentitasRT();
+        semuaBaris = dataRT;
+        daftarPeriode = susunPeriode(semuaBaris);
+        idxPeriode = daftarPeriode.length ? daftarPeriode.length - 1 : 0;
+        const teks = daftarPeriode[idxPeriode] || "";
+        excelData = semuaBaris.filter(b => b.periode === teks);
+
+        // Buat PDF
         const doc = buatDokumenLaporanPDF();
         const periode = daftarPeriode[idxPeriode] || 'laporan';
         tutupPopupImpor();
-        doc.save("Laporan-" + periode.replace(/\s+/g, "-") + ".pdf");
-        showToast("Laporan PDF " + periode + " dibuat", "");
+        doc.save("Laporan-RT" + rtTarget + "-" + periode.replace(/\s+/g, "-") + ".pdf");
+        showToast("Laporan PDF RT " + rtTarget + " " + periode + " dibuat", "");
+
+        // Pulihkan state RT aktif asli
+        rtAktif = simpanRtAktif;
+        terapkanIdentitasRT();
+        semuaBaris = simpanSemuaBaris;
+        daftarPeriode = simpanDaftarPeriode;
+        idxPeriode = simpanIdxPeriode;
+        excelData = simpanExcelData;
+        renderSemua();
     }
 
     /* ---------- WIRING ---------- */
