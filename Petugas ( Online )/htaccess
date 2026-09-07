@@ -1,0 +1,12 @@
+# PAM SINDU — Petugas ( Online )
+# Lindungi file database SQLite dari akses langsung lewat browser.
+# Aplikasi tetap membaca/menulis lewat api.php (PHP), bukan lewat URL file.
+<FilesMatch "\.(db|db3|sqlite|sqlite3|wal|shm)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
