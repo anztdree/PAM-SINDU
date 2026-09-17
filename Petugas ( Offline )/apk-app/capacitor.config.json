@@ -1,0 +1,16 @@
+{
+  "appId": "id.bpspams.pamsindu",
+  "appName": "PAM Sindu Petugas",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#0369a1",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  }
+}
